@@ -61,7 +61,7 @@ SCRIPT
 
 $node_dependencies = <<SCRIPT
     curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash -
-    apt-get install -y nodejs        
+    apt-get install -y nodejs
 SCRIPT
 
 Vagrant.configure(2) do |config|
@@ -73,7 +73,7 @@ Vagrant.configure(2) do |config|
 
   config.ssh.forward_agent = true
   config.vm.network :forwarded_port, host: 8282, guest: 8282
-  config.vm.network :forwarded_port, guest: 27019, host: 27019
+  config.vm.network :forwarded_port, guest: 27017, host: 27017
 
   config.vm.provision "shell", inline: $dependencies
   # config.vm.provision "shell", inline: $ethereumcpp
