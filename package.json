@@ -1,0 +1,29 @@
+{
+  "name": "gnosisdb",
+  "version": "1.0.0",
+  "description": "Gnosis Core Database Layer",
+  "main": "index.js",
+  "scripts": {
+    "install": "cd api && npm install",
+    "start": "cd api && npm start",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gnosis/gnosisdb.git"
+  },
+  "keywords": [
+    "gnosis",
+    "ethereum",
+    "search",
+    "engine",
+    "database",
+    "layer"
+  ],
+  "author": "stefan@gnosis.pm, denis@gnosis.pm, giacomo.licari@gnosis.pm",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/gnosis/gnosisdb/issues"
+  },
+  "homepage": "https://github.com/gnosis/gnosisdb#readme"
+}
