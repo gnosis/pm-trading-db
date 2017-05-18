@@ -1,0 +1,20 @@
+{
+  "name": "gnosisdb",
+  "version": "1.0.0",
+  "engines":{
+    "node":"6.9.4"
+  },
+  "description": "Main package.json istalls submodules",
+  "main": "index.js",
+  "scripts": {
+    "test": "",
+    "install": ""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gnosis/gnosisdb.git"
+  },
+  "author": "denis@gnosis.pm",
+  "license": "ISC",
+  "homepage": "https://github.com/gnosis/gnosisdb#readme"
+}
