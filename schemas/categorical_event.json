@@ -1,0 +1,18 @@
+{
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "resolutionDate": {
+      "date-time": "%Y-%m-%dT%H:%M:%SZ"
+    },
+    "outcomes": {
+      "type": "array",
+      "minItems": 2
+    }
+  }
+}
