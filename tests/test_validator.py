@@ -54,45 +54,98 @@ class TestValidator(unittest.TestCase):
         with self.assertRaises(ValidationError):
             GnosisValidator(schema).validate(invalid_data)
 
+    def test_validator_errors(self):
+        valid_scalar_data = {
+            "title": "test",
+            "description": "test",
+            "resolutionDate": "2015-12-31T23:59:00Z",
+            "unit": "MilliBit",
+            "decimals": 10
+        }
+
+        validator = Validator()
+
+        with self.assertRaises(Exception):
+            validator.validate(valid_scalar_data)
+
+        validator.load_schema('scalar_event.json')
+
+        with self.assertRaises(Exception):
+            validator.validate()
+
+        validator.validate(valid_scalar_data)
+
+        # test custom validator
+        with self.assertRaises(Exception):
+            validator.extend_validator('test')
+
+        validator.extend_validator('date-time')
+        self.assertIsNotNone(validator.custom_validator)
+
     def test_validator(self):
 
-        valid_data = {
+        valid_categorical_data = {
             "title": "test",
             "description": "test",
             "resolutionDate": "2015-12-31T23:59:00Z",
             "outcomes": [0, 1]
         }
 
-        invalid_data = {
+        invalid_categorical_data = {
             "title": "test",
             "description": "test",
             "resolutionDate": "2015-12-31",
             "outcomes": [0, 1]
         }
 
+        valid_scalar_data = {
+            "title": "test",
+            "description": "test",
+            "resolutionDate": "2015-12-31T23:59:00Z",
+            "unit": "MilliBit",
+            "decimals": 10
+        }
+
+        # Empty title
+        invalid_scalar_data = {
+            "title": "",
+            "description": "test",
+            "resolutionDate": "2015-12-31",
+            "unit": "MilliBit",
+            "decimals": 10
+        }
+
         validator = Validator()
+        # test categorical_event first
         validator.load_schema('categorical_event.json')
         validator.extend_validator('date-time')
-        validator.validate(valid_data)
+        validator.validate(valid_categorical_data)
 
         with self.assertRaises(ValidationError):
-            validator.validate(invalid_data)
+            validator.validate(invalid_categorical_data)
 
         # Set a valid resolutionDate
-        invalid_data['resolutionDate'] = valid_data['resolutionDate']
+        invalid_categorical_data['resolutionDate'] = valid_categorical_data['resolutionDate']
         # Remove 1 item from outcomes
-        invalid_data['outcomes'].pop()
+        invalid_categorical_data['outcomes'].pop()
 
         with self.assertRaises(ValidationError):
-            validator.validate(invalid_data)
+            validator.validate(invalid_categorical_data)
 
         # Reach the outcomes min-length
-        invalid_data['outcomes'].append(1)
-        validator.validate(valid_data)
+        invalid_categorical_data['outcomes'].append(1)
+        validator.validate(valid_categorical_data)
 
         # load an invalid file
         with self.assertRaises(IOError):
             validator.load_schema('fake.json')
+
+        # test scalar event
+        validator.load_schema('scalar_event.json')
+        validator.validate(valid_scalar_data)
+
+        with self.assertRaises(ValidationError):
+            validator.validate(invalid_scalar_data)
 
 
 if __name__ == '__main__':

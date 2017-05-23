@@ -1,6 +1,6 @@
 from jsonschema import validate
 from jsonschema.exceptions import ValidationError
-from jsonschema import Draft4Validator, validators
+from jsonschema import Draft4Validator, validators, validate
 import datetime
 import json
 
@@ -77,7 +77,11 @@ class Validator(object):
         """
         if not self.schema:
             raise Exception('Schema dictionary not provided')
-        else:
+        elif self.custom_validator:
             self.custom_validator(self.schema).validate(data)
             return True
+        else:
+            validate(data, self.schema)
+            return True
+
 

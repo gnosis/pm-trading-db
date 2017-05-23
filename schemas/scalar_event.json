@@ -12,9 +12,12 @@
     "resolutionDate": {
       "date-time": "%Y-%m-%dT%H:%M:%SZ"
     },
-    "outcomes": {
-      "type": "array",
-      "minItems": 2
+    "unit": {
+      "type": "string",
+      "minLength": 1
+    },
+    "decimals": {
+      "type": "number"
     }
   }
 }
