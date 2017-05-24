@@ -60,3 +60,4 @@ typings/
 .vagrant
 .idea/
 *.pyc
+*~
