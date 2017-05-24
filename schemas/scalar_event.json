@@ -10,7 +10,7 @@
       "minLength": 1
     },
     "resolutionDate": {
-      "date-time": "%Y-%m-%dT%H:%M:%SZ"
+      "date-time-ISO8601": "%Y-%m-%dT%H:%M:%SZ"
     },
     "unit": {
       "type": "string",
@@ -19,5 +19,6 @@
     "decimals": {
       "type": "number"
     }
-  }
+  },
+  "required": ["title", "description", "resolutionDate", "unit", "decimals"]
 }

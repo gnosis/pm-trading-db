@@ -10,11 +10,12 @@
       "minLength": 1
     },
     "resolutionDate": {
-      "date-time": "%Y-%m-%dT%H:%M:%SZ"
+      "date-time-ISO8601": "%Y-%m-%dT%H:%M:%SZ"
     },
     "outcomes": {
       "type": "array",
       "minItems": 2
     }
-  }
+  },
+  "required": ["title", "description", "resolutionDate", "outcomes"]
 }

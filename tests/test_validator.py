@@ -34,7 +34,7 @@ class TestValidator(unittest.TestCase):
             "outcomes": [0, 1]
         }
 
-        # Creating a custom date-time validator
+        # Creating a custom date-time-ISO8601 validator
         def date_validator(validator, format, instance, schema):
             if not validator.is_type(instance, "string"):
                 return
@@ -45,7 +45,7 @@ class TestValidator(unittest.TestCase):
                 yield ValidationError(ve.message)
 
         new_validators = {
-            'date-time': date_validator
+            'date-time-ISO8601': date_validator
         }
 
         GnosisValidator = validators.extend(Draft4Validator, validators=new_validators)
@@ -79,7 +79,7 @@ class TestValidator(unittest.TestCase):
         with self.assertRaises(Exception):
             validator.extend_validator('test')
 
-        validator.extend_validator('date-time')
+        validator.extend_validator('date-time-ISO8601')
         self.assertIsNotNone(validator.custom_validator)
 
     def test_validator(self):
@@ -89,6 +89,16 @@ class TestValidator(unittest.TestCase):
             "description": "test",
             "resolutionDate": "2015-12-31T23:59:00Z",
             "outcomes": [0, 1]
+        }
+
+        valid_optional_categorical_data = {
+            "title": "test",
+            "description": "test",
+            "resolutionDate": "2015-12-31T23:59:00Z",
+            "outcomes": [0, 1],
+            "property": "value",
+            "other_property": 10,
+            "other_other_property": [1, 2, 3]
         }
 
         invalid_categorical_data = {
@@ -106,6 +116,17 @@ class TestValidator(unittest.TestCase):
             "decimals": 10
         }
 
+        valid_optional_scalar_data = {
+            "title": "test",
+            "description": "test",
+            "resolutionDate": "2015-12-31T23:59:00Z",
+            "unit": "MilliBit",
+            "decimals": 10,
+            "property": "value",
+            "other_property": 10,
+            "other_other_property": [1, 2, 3]
+        }
+
         # Empty title
         invalid_scalar_data = {
             "title": "",
@@ -118,8 +139,10 @@ class TestValidator(unittest.TestCase):
         validator = Validator()
         # test categorical_event first
         validator.load_schema('categorical_event.json')
-        validator.extend_validator('date-time')
+        validator.extend_validator('date-time-ISO8601')
         validator.validate(valid_categorical_data)
+        # Test optional properties
+        validator.validate(valid_optional_categorical_data)
 
         with self.assertRaises(ValidationError):
             validator.validate(invalid_categorical_data)
@@ -143,6 +166,8 @@ class TestValidator(unittest.TestCase):
         # test scalar event
         validator.load_schema('scalar_event.json')
         validator.validate(valid_scalar_data)
+        # Test optional properties
+        validator.validate(valid_optional_scalar_data)
 
         with self.assertRaises(ValidationError):
             validator.validate(invalid_scalar_data)

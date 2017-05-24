@@ -49,7 +49,7 @@ class Validator(object):
         Returns:
             The custom validator function, None otherwise.
         """
-        if name == 'date-time':
+        if name == 'date-time-ISO8601':
             def date_time_validator(validator, format, instance, schema):
                 if not validator.is_type(instance, "string"):
                     return
