@@ -19,6 +19,8 @@ class TestMongo(unittest.TestCase):
         data = {'name': 'Giacomo'}
         _id = self.db.test_collection.insert_one(data).inserted_id
         self.assertIsNotNone(_id)
+        db_data = self.db.test_collection.find_one({"_id": _id})
+        self.assertEquals(data.get('name'), db_data.get('name'))
 
 
 
