@@ -1,6 +1,5 @@
 # PyCharm fix
 from __future__ import absolute_import
-import os
 import unittest
 from pymongo import MongoClient
 

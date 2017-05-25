@@ -5,6 +5,11 @@ import datetime
 import json
 
 
+class GnosisValidationError(ValidationError):
+    def __init__(self, *args, **kwargs):
+        super(GnosisValidationError, self).__init__(*args, **kwargs)
+
+
 class Validator(object):
     """JSON Schema Validator class"""
 
@@ -73,13 +78,16 @@ class Validator(object):
 
         Raises:
             Exception: if schema is not provided
-            jsonschema.exceptions.ValidationError: if data is cannot be validated
+            GnosisValidationError: if data is cannot be validated
         """
         if not self.schema:
             raise Exception('Schema dictionary not provided')
         elif self.custom_validator:
-            self.custom_validator(self.schema).validate(data)
-            return True
+            try:
+                self.custom_validator(self.schema).validate(data)
+                return True
+            except ValidationError as ve:
+                raise GnosisValidationError(ve)
         else:
             validate(data, self.schema)
             return True

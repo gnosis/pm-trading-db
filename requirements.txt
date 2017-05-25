@@ -1,4 +1,5 @@
 flask
+flask-restful
 pymongo
 jsonschema
 bitcoin==1.1.39
