@@ -18,7 +18,7 @@ class Adapter:
         :param config:
         """
         self.config = config
-        self.database = None
+        self.client = None
 
     @abstractmethod
     def connect(self):
