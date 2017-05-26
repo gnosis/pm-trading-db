@@ -11,10 +11,11 @@ class MongoAdapter(Adapter):
             raise Exception("Adapter needs uri and database params")
 
     def connect(self):
-        self.database = MongoClient(self.config['uri'])[self.config['database']]
+        self.client = MongoClient(self.config['uri'])
 
     def disconnect(self):
-        pass
+        self.client.close()
+        self.client = None
 
     def write(self, collection, schema, data):
-        pass
+        return self.client[self.config['database']][collection].insert_one(data)
