@@ -116,6 +116,9 @@ class TestFlaskExtension(unittest.TestCase):
 
         self.assertEquals(413, oversize_post_data.status_code)
 
+    def test_config(self):
+        self.assertIsNotNone(self.app.config.get('GNOSISDB_DATABASE'))
+
 
 if __name__ == '__main__':
     unittest.main()
