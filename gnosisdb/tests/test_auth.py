@@ -34,3 +34,8 @@ class TestAuth(unittest.TestCase):
         self.other_pubkey = privtopub(self.other_privkey)
 
         self.assertNotEquals(self.privkey, self.other_privkey)
+
+    def test_singleton(self):
+        auth1 = Auth()
+        auth2 = Auth()
+        self.assertEquals(auth1, auth2)

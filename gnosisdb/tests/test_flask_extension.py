@@ -3,6 +3,7 @@ from __future__ import absolute_import
 
 import json
 import unittest
+import copy
 
 from bitcoin import ecdsa_raw_sign
 from ethereum.utils import sha3
@@ -122,12 +123,46 @@ class TestFlaskExtension(unittest.TestCase):
 
     def test_config(self):
         self.assertIsNotNone(self.app.config.get('GNOSISDB_DATABASE'))
+        TestKoClass = type('TestKoClass', (object,), {})
+        TestOkClass = type('TestOkClass', (adapter.Adapter,), {'connect': lambda x: x, 'disconnect': lambda x: x, 'write': lambda x: x})
+        TestOkClassNoImpl = type('TestKoClass', (adapter.Adapter,), {}) # this doesn't implement the abstract methods
+        self.assertIsInstance(TestOkClass({}), adapter.Adapter)
+        self.assertNotIsInstance(TestKoClass(), adapter.Adapter)
 
-        TestClass = type('TestClass', (object,), {})
+        app2 = Flask(__name__)
+        # not valid configuration
+        app2.config['GNOSISDB_DATABASE'] = {
+            'ADAPTER': TestKoClass,
+            'URI': 'mongodb://mongo:27017/'
+        }
 
-        TestOkClass = type('TestOkClass', (adapter.Adapter,), {})
-        #TestOkClass.__new__()
-        #self.assertIsInstance(TestOkClass({}), adapter.Adapter)
+        with self.assertRaises(Exception):
+            GnosisDB(app2)
+
+        # not valid configuration
+        app2.config['GNOSISDB_DATABASE'] = {
+            'ADAPTER': TestOkClassNoImpl,
+            'URI': 'mongodb://mongo:27017/'
+        }
+
+        with self.assertRaises(Exception):
+            GnosisDB(app2)
+
+        # not valid configuration
+        app2.config['GNOSISDB_DATABASE'] = {
+            'URI': 'mongodb://mongo:27017/'
+        }
+
+        with self.assertRaises(Exception):
+            GnosisDB(app2)
+
+        # not valid configuration
+        app2.config['GNOSISDB_DATABASE'] = {
+            'ADAPTER': TestKoClass,
+        }
+
+        with self.assertRaises(Exception):
+            GnosisDB(app2)
 
 
 if __name__ == '__main__':

@@ -1,11 +1,9 @@
 from bitcoin import ecdsa_recover, ecdsa_raw_recover, encode_pubkey, pubkey_to_address, ecdsa_raw_verify
 from ethereum.utils import sha3
+from utils import singleton
 
-
+@singleton
 class Auth(object):
-
-    def __init__(self):
-        pass
 
     def extract_pubkey(self, msg_hash, v, r, s):
         return encode_pubkey(ecdsa_raw_recover(msg_hash, [v, r, s]), 'hex')
@@ -27,6 +25,10 @@ class Auth(object):
     def verify_address(self, msg_hash, v, r, s):
         pubkey = self.extract_pubkey(msg_hash, v, r, s)
         return ecdsa_raw_verify(msg_hash, [v,r,s], pubkey)
+
+    def personal_sign(self, message, private_key):
+        # TODO
+        pass
 
     def recover_address(self, v, r, s, msg_hash):
         is_valid = self.verify_address(msg_hash, v, r, s)

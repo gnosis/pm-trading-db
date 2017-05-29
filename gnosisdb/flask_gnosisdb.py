@@ -51,6 +51,8 @@ class GnosisAPI(Resource):
         # This is old eth_sign implementation
         # TODO use personal sign
         msg_hash = sha3(msg).encode('hex')
+
+        # msg_hash = keccack256("\x19Ethereum Signed Message:\n" + len(message) + message))
         try:
             address = self.auth.recover_address(v, r, s, msg_hash)
         except Exception:
@@ -152,7 +154,8 @@ class GnosisDB(object):
         config_vars = [x for x in self.app.config.keys() if x.isupper() and 'GNOSISDB_' in x]
 
         if 'GNOSISDB_DATABASE' in config_vars:
-            _gnosisdb_database = config_vars[config_vars.index('GNOSISDB_DATABASE')]
+            # _gnosisdb_database = config_vars[config_vars.index('GNOSISDB_DATABASE')]
+            _gnosisdb_database = self.app.config.get('GNOSISDB_DATABASE')
             if not isinstance(_gnosisdb_database, dict):
                 raise Exception('GNOSISDB_DATABASE must be a dictionary')
 
@@ -160,11 +163,18 @@ class GnosisDB(object):
                 raise Exception('GNOSISDB_DATABASE.ADAPTER is required')
 
             else:
-                if not isinstance(_gnosisdb_database.get('ADAPTER'), adapter.Adapter):
+                if not issubclass(_gnosisdb_database.get('ADAPTER'), adapter.Adapter):
                     raise Exception('Your adapter must inherit from Adapter')
 
             if not 'URI' in _gnosisdb_database:
                 raise Exception('GNOSISDB_DATABASE.URI is required')
+
+            # check the Adapter implements all the abstract methods
+            methods = list(adapter.Adapter.__abstractmethods__)
+            check = [method for method in _gnosisdb_database.get('ADAPTER').__dict__.keys() if x in list(adapter.Adapter.__abstractmethods__)]
+            if not check or len(check) < len(methods):
+                raise Exception('Please implement all the Adapter abstract methods: %s' % ', '.join([m for m in methods]))
+
 
     def __load_file(self, import_name, silent=False):
         """Imports an object based on a string.  This is useful if you want to
