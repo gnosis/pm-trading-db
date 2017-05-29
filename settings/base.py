@@ -6,6 +6,10 @@ GNOSISDB_DATABASE = {
 }
 
 # TODO declare dictionary: collection => schema
+GNOSISDB_SCHEMAS = {
+    'CategoricalEvent': 'categorical_event.json',
+    'ScalarEvent': 'scalar_event.json'
+}
 
 GNOSISDB_MAX_DOCUMENT_SIZE = 4096
 

@@ -16,9 +16,11 @@ class Validator(object):
     def __init__(self, base_path='schemas'):
         self.base_path = base_path
         self.schema = None
+        self.schemas = None
         self.custom_validator = None
 
     def load_schema(self, file_name):
+        # TODO delete
         """Loads a JSON Schema
         Args:
             file_name: the JSON file name, along with its .json exstension
@@ -29,6 +31,28 @@ class Validator(object):
         """
         with open(self.base_path + '/' + file_name) as f:
             self.schema = json.load(f)
+
+    def load_schemas(self, schemas):
+        """Loads the JSON Schemas
+        Args:
+            schemas: a dictionary containing the collection name as key
+                     and the file name as value
+
+        Raises:
+            IOError: if the file doesn't exists
+            ValueError: if the json file isn't well formatted
+        """
+        self.schemas = {}
+        for k, v in schemas.items():
+            with open(self.base_path + '/' + v) as f:
+                self.schemas.update({k:json.load(f)})
+
+    def set_schema(self, schema_name):
+        schema = self.schemas.get(schema_name)
+        if not schema:
+            raise Exception('Invalid collection')
+
+        self.schema = schema
 
     def extend_validator(self, name):
         """Sets a custom validator extending a Draft4Validator

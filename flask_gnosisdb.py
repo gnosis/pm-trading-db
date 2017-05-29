@@ -5,6 +5,7 @@ from auth import Auth
 from utils import limit_content_length
 from ethereum.utils import sha3
 from adapters import adapter
+from settings import base as base_config
 import json
 import sys
 
@@ -18,14 +19,13 @@ except ImportError:
 
 
 class GnosisAPI(Resource):
+    """GnosisDB rest API class"""
 
     def __init__(self, *args, **kwargs):
-        super(Resource, self).__init__(*args, **kwargs)
-        self.validator = Validator()
         self.auth = Auth()
+        self.validator = kwargs.get('validator')
 
-    # TODO get from config
-    @limit_content_length(8192)
+    @limit_content_length(base_config.GNOSISDB_MAX_DOCUMENT_SIZE)
     def post(self):
         schema = None
         address = None
@@ -44,7 +44,7 @@ class GnosisAPI(Resource):
         v = json_data.get('signature').get('v')
         r = json_data.get('signature').get('r')
         s = json_data.get('signature').get('s')
-        # TODO Do data field object
+
         msg = json.dumps(json_data.get('data'), separators=(',', ':'))
         # This is old eth_sign implementation
         # TODO use personal sign
@@ -55,15 +55,12 @@ class GnosisAPI(Resource):
             abort(400, description='Not valid signature')
 
         # check if collection in available collections - retrieve info from config
-        # TODO get schema from memory (dict)
-        schema = GnosisDB.get_schema_file_name(json_data.get('collection'))
+        # schema = GnosisDB.get_schema_file_name(json_data.get('collection'))
+        try:
+            self.validator.set_schema(json_data.get('collection'))
+        except Exception as e:
+            abort(400, description=e.message)
 
-        if not schema:
-            abort(400, description='Invalid collection')
-
-        # validate schema
-        self.validator.load_schema(schema)
-        self.validator.extend_validator('date-time-ISO8601')
         try:
             self.validator.validate(json_data.get('data'))
         except GnosisValidationError:
@@ -78,17 +75,21 @@ class GnosisDB(object):
 
     def __init__(self, app):
         self.API_PREFIX = '/gnosisdb/'
+        self.validator = None
         self.app = app
         self.api = Api(self.app)
         self.init_app()
 
     def init_app(self):
+        """Initializes the flask extension"""
+
         # load config
         self.__load_config()
+        # load schemas and apply validator extension
+        self.__load_validator()
+        self.__load_schemas()
         # load api routes
         self.__load_api()
-
-        # TODO load schemas and apply validator extension
 
         # load adapter
 
@@ -101,13 +102,28 @@ class GnosisDB(object):
 
     def teardown(self, exception):
         # do something on flask shutdown
+        # TODO close adapter connection
         pass
+
+    def __load_validator(self):
+        """Loads the validator class and adds extensions"""
+        self.validator = Validator()
+        self.validator.extend_validator('date-time-ISO8601')
+
+    def __load_schemas(self):
+        """Loads the schemas declared in the Flask app configuration"""
+        if not self.validator:
+            self.__load_validator()
+
+        schemas = self.app.config.get('GNOSISDB_SCHEMAS')
+        self.validator.load_schemas(schemas)
 
     def __load_api(self):
         """Defines the API routes"""
-        self.api.add_resource(GnosisAPI, self.API_PREFIX)
+        self.api.add_resource(GnosisAPI, self.API_PREFIX, resource_class_kwargs={'validator': self.validator})
 
     def __load_config(self):
+        """Loads the base config and merges it with the Flask app configuration"""
         filez = self.__load_file('settings.base')
         variables = [x for x in dir(filez) if x.isupper() and 'GNOSISDB' in x]
         default_config = {}
@@ -127,7 +143,10 @@ class GnosisDB(object):
         self.app.config.update(default_config)
 
     def __check_user_config(self):
-        # todo, verify if the user provided a compliant configuration
+        """Verifies if the user provided a compliant configuration
+            Raises:
+                Exception: if the a configuration field isn't valid
+        """
         config_vars = [x for x in self.app.config.keys() if x.isupper() and 'GNOSISDB_' in x]
 
         if 'GNOSISDB_DATABASE' in config_vars:
@@ -187,17 +206,6 @@ class GnosisDB(object):
         except ImportError as e:
             if not silent:
                 raise Exception(sys.exc_info()[2])
-
-    @staticmethod
-    def get_schema_file_name(collection_name):
-        if collection_name == 'CategoricalEvent':
-            return 'categorical_event.json'
-        elif collection_name == 'ScalarEvent':
-            return 'scalar_Event.json'
-        else:
-            return None
-
-
 
     """
     @property
