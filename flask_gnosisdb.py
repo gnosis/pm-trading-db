@@ -24,6 +24,7 @@ class GnosisAPI(Resource):
         self.validator = Validator()
         self.auth = Auth()
 
+    # TODO get from config
     @limit_content_length(8192)
     def post(self):
         schema = None
@@ -43,7 +44,10 @@ class GnosisAPI(Resource):
         v = json_data.get('signature').get('v')
         r = json_data.get('signature').get('r')
         s = json_data.get('signature').get('s')
+        # TODO Do data field object
         msg = json.dumps(json_data.get('data'), separators=(',', ':'))
+        # This is old eth_sign implementation
+        # TODO use personal sign
         msg_hash = sha3(msg).encode('hex')
         try:
             address = self.auth.recover_address(v, r, s, msg_hash)
@@ -51,6 +55,7 @@ class GnosisAPI(Resource):
             abort(400, description='Not valid signature')
 
         # check if collection in available collections - retrieve info from config
+        # TODO get schema from memory (dict)
         schema = GnosisDB.get_schema_file_name(json_data.get('collection'))
 
         if not schema:
@@ -83,6 +88,8 @@ class GnosisDB(object):
         # load api routes
         self.__load_api()
 
+        # TODO load schemas and apply validator extension
+
         # load adapter
 
         # Use the newstyle teardown_appcontext if it's available,
@@ -91,7 +98,6 @@ class GnosisDB(object):
             self.app.teardown_appcontext(self.teardown)
         else:
             self.app.teardown_request(self.teardown)
-
 
     def teardown(self, exception):
         # do something on flask shutdown
@@ -120,7 +126,6 @@ class GnosisDB(object):
         # load configuration
         self.app.config.update(default_config)
 
-
     def __check_user_config(self):
         # todo, verify if the user provided a compliant configuration
         config_vars = [x for x in self.app.config.keys() if x.isupper() and 'GNOSISDB_' in x]
@@ -139,7 +144,6 @@ class GnosisDB(object):
 
             if not 'URI' in _gnosisdb_database:
                 raise Exception('GNOSISDB_DATABASE.URI is required')
-
 
     def __load_file(self, import_name, silent=False):
         """Imports an object based on a string.  This is useful if you want to
