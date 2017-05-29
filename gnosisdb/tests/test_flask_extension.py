@@ -1,11 +1,15 @@
 # PyCharm fix
 from __future__ import absolute_import
-from flask import Flask, request
-from flask_gnosisdb import GnosisDB
+
+import json
+import unittest
+
 from bitcoin import ecdsa_raw_sign
 from ethereum.utils import sha3
-import unittest
-import json
+from flask import Flask, request
+
+from gnosisdb.adapters import adapter
+from gnosisdb.flask_gnosisdb import GnosisDB
 
 
 class TestFlaskExtension(unittest.TestCase):
@@ -118,6 +122,12 @@ class TestFlaskExtension(unittest.TestCase):
 
     def test_config(self):
         self.assertIsNotNone(self.app.config.get('GNOSISDB_DATABASE'))
+
+        TestClass = type('TestClass', (object,), {})
+
+        TestOkClass = type('TestOkClass', (adapter.Adapter,), {})
+        #TestOkClass.__new__()
+        #self.assertIsInstance(TestOkClass({}), adapter.Adapter)
 
 
 if __name__ == '__main__':

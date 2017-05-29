@@ -1,11 +1,14 @@
 # PyCharm fix
 from __future__ import absolute_import
-import unittest
+
+import datetime
 import json
+import unittest
+
 from jsonschema import Draft4Validator, validators
 from jsonschema.exceptions import ValidationError
-from schema_validator import Validator
-import datetime
+
+from gnosisdb.schema_validator import Validator
 
 
 class TestValidator(unittest.TestCase):

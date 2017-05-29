@@ -1,9 +1,12 @@
 from __future__ import absolute_import
+
+import json
+import unittest
+
 from bitcoin import ecdsa_raw_sign, privtopub
 from ethereum.utils import sha3
-from auth import Auth
-import unittest
-import json
+
+from gnosisdb.auth import Auth
 
 
 class TestAuth(unittest.TestCase):

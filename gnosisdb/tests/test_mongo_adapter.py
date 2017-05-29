@@ -1,6 +1,5 @@
 from unittest import TestCase
-from adapters.mongo_adapter import MongoAdapter
-
+from gnosisdb.adapters.mongo_adapter import MongoAdapter
 
 class TestMongoAdapter(TestCase):
 

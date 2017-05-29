@@ -1,13 +1,15 @@
-from flask_restful import Resource, Api, abort
-from flask import request
-from schema_validator import Validator, GnosisValidationError
-from auth import Auth
-from utils import limit_content_length
-from ethereum.utils import sha3
-from adapters import adapter
-from settings import base as base_config
 import json
 import sys
+
+from ethereum.utils import sha3
+from flask import request
+from flask_restful import Resource, Api, abort
+
+from gnosisdb.adapters import adapter
+from gnosisdb.auth import Auth
+from gnosisdb.settings import base as base_config
+from schema_validator import Validator, GnosisValidationError
+from utils import limit_content_length
 
 # Find the stack on which we want to store the database connection.
 # Starting with Flask 0.9, the _app_ctx_stack is the correct one,
@@ -124,7 +126,7 @@ class GnosisDB(object):
 
     def __load_config(self):
         """Loads the base config and merges it with the Flask app configuration"""
-        filez = self.__load_file('settings.base')
+        filez = self.__load_file('gnosisdb.settings.base')
         variables = [x for x in dir(filez) if x.isupper() and 'GNOSISDB' in x]
         default_config = {}
         # set default config values
