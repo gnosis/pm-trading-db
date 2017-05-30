@@ -1,12 +1,12 @@
-from __future__ import absolute_import
-
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals, absolute_import
 import json
 import unittest
 
 from bitcoin import ecdsa_raw_sign, privtopub
 from ethereum.utils import sha3
 
-from gnosisdb.auth import Auth
+from gnosisdb.auth.auth import Auth
 
 
 class TestAuth(unittest.TestCase):

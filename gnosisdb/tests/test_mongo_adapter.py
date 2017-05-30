@@ -1,5 +1,8 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals, absolute_import
 from unittest import TestCase
 from gnosisdb.adapters.mongo_adapter import MongoAdapter
+
 
 class TestMongoAdapter(TestCase):
 

@@ -1,6 +1,6 @@
 from bitcoin import ecdsa_recover, ecdsa_raw_recover, encode_pubkey, pubkey_to_address, ecdsa_raw_verify
 from ethereum.utils import sha3
-from utils import singleton
+from gnosisdb.utils import singleton
 
 @singleton
 class Auth(object):

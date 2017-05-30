@@ -1,5 +1,5 @@
-# PyCharm fix
-from __future__ import absolute_import
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals, absolute_import
 
 import datetime
 import json
@@ -8,7 +8,7 @@ import unittest
 from jsonschema import Draft4Validator, validators
 from jsonschema.exceptions import ValidationError
 
-from gnosisdb.schema_validator import Validator
+from gnosisdb.validators.schema_validator import Validator
 
 
 class TestValidator(unittest.TestCase):
