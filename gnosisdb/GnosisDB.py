@@ -3,11 +3,10 @@ from adapters import adapter
 from django.conf import settings
 import sys
 
-#TODO rewrite configuration checks from Django
+
 class GnosisDB(object):
 
     def __init__(self):
-        self.API_PREFIX = '/gnosisdb/'
         self.validator = None
         self.init_app()
 
@@ -26,6 +25,7 @@ class GnosisDB(object):
         """Loads the validator class and adds extensions"""
         self.validator = Validator()
         self.validator.extend_validator('date-time-ISO8601')
+        setattr(settings, 'GNOSISDB_VALIDATOR', self.validator)
 
     def __load_schemas(self):
         """Loads the schemas declared in the Flask app configuration"""

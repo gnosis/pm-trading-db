@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 from rest_framework.generics import CreateAPIView
-from rest_framework import status, permissions
+from rest_framework import status
 from rest_framework.response import Response
+from django.conf import settings
 from ethereum.utils import sha3
 from validators.schema_validator import Validator, GnosisValidationError
-from auth import Auth
+from auth.auth import Auth
+from utils import limit_content_length
 import json
 
 
@@ -13,9 +15,10 @@ class CreateView(CreateAPIView):
 
     def __init__(self, *args, **kwargs):
         self.auth = Auth()
-        self.validator = kwargs.get('validator')
+        self.validator = getattr(settings, 'GNOSISDB_VALIDATOR')
         super(CreateView, self).__init__(*args, **kwargs)
 
+    @limit_content_length(settings.GNOSISDB_MAX_DOCUMENT_SIZE)
     def post(self, request, *args, **kwargs):
 
         # check all required main fields
@@ -55,5 +58,5 @@ class CreateView(CreateAPIView):
 
         # TODO write data
 
-        return {}
+        return Response(status=status.HTTP_200_OK, data={})
 
