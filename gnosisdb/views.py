@@ -5,8 +5,8 @@ from rest_framework import status
 from rest_framework.response import Response
 from django.conf import settings
 from ethereum.utils import sha3
-from validators.schema_validator import Validator, GnosisValidationError
-from auth.auth import Auth
+from gnosisdb.validators.schema_validator import Validator, GnosisValidationError
+from gnosisdb.auth.auth import Auth
 from utils import limit_content_length
 import json
 
@@ -53,7 +53,7 @@ class CreateView(CreateAPIView):
 
         try:
             self.validator.validate(request.data.get('data'))
-        except GnosisValidationError:
+        except GnosisValidationError as ve:
             return Response(status=status.HTTP_400_BAD_REQUEST, data={})
 
         # TODO write data

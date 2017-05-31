@@ -1,9 +1,10 @@
-from jsonschema import validate
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
 from jsonschema.exceptions import ValidationError
 from jsonschema import Draft4Validator, validators, validate
 import datetime
 import json
-
+import pkg_resources
 
 class GnosisValidationError(ValidationError):
     def __init__(self, *args, **kwargs):
@@ -14,7 +15,7 @@ class Validator(object):
     """JSON Schema Validator class"""
 
     def __init__(self, base_path='schemas'):
-        self.base_path = base_path
+        self.base_path = pkg_resources.resource_filename('gnosisdb', base_path)
         self.schema = None
         self.schemas = None
         self.custom_validator = None
@@ -111,7 +112,7 @@ class Validator(object):
                 self.custom_validator(self.schema).validate(data)
                 return True
             except ValidationError as ve:
-                raise GnosisValidationError(ve)
+                raise GnosisValidationError(ve.message)
         else:
             validate(data, self.schema)
             return True

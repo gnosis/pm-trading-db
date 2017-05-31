@@ -1,35 +1,47 @@
-"""
-Flask-GnosisDB
--------------
+import os
+from setuptools import find_packages, setup
+# from pip.req import parse_requirements
 
-This is the description for that library
-"""
-from setuptools import setup
+# allow setup.py to be run from any path
+os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
+
+# requirements
+#install_reqs = parse_requirements('requirements.txt', session='hack')
+#reqs = [str(ir.req) for ir in install_reqs]
+
+requirements = [
+    'pymongo',
+    'jsonschema',
+    'bitcoin==1.1.42',
+    'djangorestframework',
+    'ethereum==1.6.0',
+    'ethereum-abi-utils==0.4.0',
+    'ethereum-utils==0.2.0'
+]
 
 setup(
-    name='Flask-GnosisDB',
-    version='1.0',
-    url='https://github.com/gnosis/gnosisdb/',
-    license='BSD',
-    author='Giacomo Licari, Denis Granha, Stefan George',
-    author_email='giacomo.licari@gnosis.pm, denis@gnosis.pm, stefan@gnosis.pm',
-    description='A GnosisDB extension for Flask',
-    long_description=__doc__,
-    py_modules=['flask_gnosisdb'],
-    # if you would be using a package instead use packages instead
-    # of py_modules:
-    # packages=['flask_mongo'],
-    zip_safe=False,
+    name='django_gnosisdb',
+    version='0.1',
+    packages=find_packages(exclude=["*.tests", "*.tests.*", "tests.*", "tests"]),
     include_package_data=True,
-    platforms='any',
-    install_requires=['flask', 'pymongo'],
+    install_requires=requirements,
+    license='BSD License',  # example license
+    description='The Gnosisdb django app',
+    url='https://github.com/gnosis/gnosisdb',
+    author='Gnosis Inc.',
+    author_email='giacomo.licari@gnosis.pm, denis@gnosis.pm, stefan@gnosis.pm',
     classifiers=[
-        'Environment :: Database Environment',
+        'Environment :: Web Environment',
+        'Framework :: Django',
+        'Framework :: Django :: X.Y',  # replace "X.Y" as appropriate
         'Intended Audience :: Developers',
-        'License :: OSI Approved :: BSD License',
+        'License :: OSI Approved :: BSD License',  # example license
         'Operating System :: OS Independent',
         'Programming Language :: Python',
+        # Replace these appropriately if you are stuck on Python 2.
+        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3',
+        'Topic :: Internet :: WWW/HTTP',
         'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
-        'Topic :: Software Development :: Libraries :: Python Modules'
-    ]
+    ],
 )

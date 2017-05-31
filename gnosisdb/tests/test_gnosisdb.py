@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals, absolute_import
+from __future__ import unicode_literals
 from django.test import TestCase
 from django.core.urlresolvers import reverse
 from bitcoin import ecdsa_raw_sign
 from ethereum.utils import sha3
 from json import dumps
-from GnosisDB import GnosisDB
+from gnosisdb.main import GnosisDB
 
 class TestGnosisDB(TestCase):
 

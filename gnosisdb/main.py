@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
 from validators.schema_validator import Validator
 from adapters import adapter
 from django.conf import settings
@@ -37,7 +39,7 @@ class GnosisDB(object):
 
     def __load_config(self):
         """Loads the base config and merges it with the Flask app configuration"""
-        filez = self.__load_file('settings.base')
+        filez = self.__load_file('gnosisdb.settings.base')
         variables = [x for x in dir(filez) if x.isupper() and 'GNOSISDB' in x]
         default_config = {}
         # set default config values

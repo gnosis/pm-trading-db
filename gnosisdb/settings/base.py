@@ -1,4 +1,4 @@
-from adapters.mongo_adapter import MongoAdapter
+from gnosisdb.adapters.mongo_adapter import MongoAdapter
 
 GNOSISDB_DATABASE = {
     'ADAPTER': MongoAdapter,
@@ -15,6 +15,6 @@ GNOSISDB_MAX_DOCUMENT_SIZE = 4096
 
 GNOSISDB_VALIDATOR = None
 
-API_PREFIX = ''
+API_PREFIX = 'gnosisdb'
 
 
