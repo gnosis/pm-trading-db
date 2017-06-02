@@ -1,7 +1,5 @@
 version: '2'
 services:
-  db:
-    image: postgres
   web:
     build:
       context: .
@@ -12,7 +10,12 @@ services:
     ports:
       - "8080"
       - "27017"
+      - "5432"
   mongo:
     image: mongo:3.0.2
     ports:
       - "27017:27017"
+  db:
+    image: postgres
+    ports:
+      - "5432:5432"
