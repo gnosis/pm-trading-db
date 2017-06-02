@@ -9,7 +9,7 @@ import views
 
 urlpatterns = [
     url(r'^' + base.API_PREFIX + '/$', views.CreateView.as_view(), name='create'),
-    # url(r'^logs/', include('django_ether_logs.urls')),
+    url(r'^admin/', include(admin.site.urls))
 ]
 
 admin.autodiscover()
