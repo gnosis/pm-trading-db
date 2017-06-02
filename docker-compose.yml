@@ -1,11 +1,14 @@
 version: '2'
 services:
+  db:
+    image: postgres
   web:
     build:
       context: .
       dockerfile: Dockerfile
     links:
       - mongo
+      - db
     ports:
       - "8080"
       - "27017"

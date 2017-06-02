@@ -38,7 +38,7 @@ class GnosisDB(object):
         self.validator.load_schemas(schemas)
 
     def __load_config(self):
-        """Loads the base config and merges it with the Flask app configuration"""
+        """Loads the base config and merges it with the Django app configuration"""
         filez = self.__load_file('gnosisdb.settings.base')
         variables = [x for x in dir(filez) if x.isupper() and 'GNOSISDB' in x]
         default_config = {}

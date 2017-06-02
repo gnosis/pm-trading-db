@@ -5,13 +5,15 @@ from django.conf import settings
 SECRET_KEY = 'testtest'
 DEBUG = True
 
-INSTALLED_APPS=(
+INSTALLED_APPS = (
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.admin',
+    'solo',
     'gnosisdb',
     'gnosisdb.tests',
+    'django_ether_logs'
 )
 
 LOGGING={
@@ -40,6 +42,14 @@ DATABASES = {
 }
 
 ROOT_URLCONF = 'urls'
+
+# DJANGO ETHEREUM WATCHER CONFIGURATION
+# ------------------------------------------------------------------------------
+# from events.models import Alert as DAppAlertModel
+ALERT_MODEL_APP = 'events'
+ALERT_MODEL = 'Alert'
+CALLBACK_PER_BLOCK = None
+CALLBACK_PER_EXEC = None
 
 def runtests(*test_args):
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'gnosisdb.tests.runner')

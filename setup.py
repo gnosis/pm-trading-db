@@ -6,14 +6,15 @@ from setuptools import find_packages, setup
 os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
 # requirements
-#install_reqs = parse_requirements('requirements.txt', session='hack')
-#reqs = [str(ir.req) for ir in install_reqs]
+# install_reqs = parse_requirements('requirements.txt', session='hack')
+# reqs = [str(ir.req) for ir in install_reqs]
 
 requirements = [
     'pymongo',
     'jsonschema',
     'bitcoin==1.1.42',
     'djangorestframework',
+    'django-ether-logs',
     'ethereum==1.6.0',
     'ethereum-abi-utils==0.4.0',
     'ethereum-utils==0.2.0'
