@@ -14,11 +14,24 @@ INSTALLED_APPS = (
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.admin',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
     'solo',
     'gnosisdb',
     'gnosisdb.tests',
     'django_ether_logs'
 )
+
+MIDDLEWARE_CLASSES = [
+    'django.middleware.security.SecurityMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+]
 
 LOGGING={
     'version': 1,
@@ -33,6 +46,9 @@ LOGGING={
         'level': 'INFO'
     }
 }
+
+# See: https://docs.djangoproject.com/en/dev/ref/settings/#static-url
+STATIC_URL = '/static/'
 
 DATABASES = {
     'default': {
