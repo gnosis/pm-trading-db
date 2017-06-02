@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
-from .base import *
+from gnosisdb.settings.base import *
 import sys
+
 
 SECRET_KEY = 'testtest'
 DEBUG = True
+
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
 INSTALLED_APPS = (
     'django.contrib.auth',
@@ -34,7 +37,7 @@ LOGGING={
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'gnosisdb',                      # Or path to database file if using sqlite3.
+        'NAME': 'postgres',                      # Or path to database file if using sqlite3.
         'USER': 'postgres',                      # Not used with sqlite3.
         'PASSWORD': '',                  # Not used with sqlite3.
         'HOST': 'db',                      # Set to empty string for localhost. Not used with sqlite3.
