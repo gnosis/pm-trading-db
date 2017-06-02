@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+
 from gnosisdb.adapters.mongo_adapter import MongoAdapter
 
 GNOSISDB_DATABASE = {

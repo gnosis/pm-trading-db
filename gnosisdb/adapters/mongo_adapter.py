@@ -1,4 +1,5 @@
-from adapter import Adapter
+from __future__ import absolute_import
+from gnosisdb.adapters.adapter import Adapter
 from pymongo import MongoClient
 
 
