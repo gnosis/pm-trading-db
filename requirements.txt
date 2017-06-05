@@ -11,3 +11,4 @@ ethereum-utils==0.2.0
 factory-boy==2.5.2
 psycopg2
 celery==3.1.25
+faker==0.7.15
