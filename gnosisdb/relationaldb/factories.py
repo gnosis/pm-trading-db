@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
 import factory
 from faker import Factory as FakerFactory
 from factory.fuzzy import FuzzyDateTime

@@ -1,5 +1,5 @@
 from django.test import TestCase
-from factories import CentralizedOracleFactory
+from gnosisdb.relationaldb.factories import CentralizedOracleFactory
 
 
 class TestFactories(TestCase):
