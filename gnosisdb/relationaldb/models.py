@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 from django.db import models
 from django.core.validators import validate_comma_separated_integer_list
 
+
 # Abstract Contract Structure
 class Contract(models.Model):
     address = models.CharField(max_length=20, primary_key=True)
@@ -14,12 +15,15 @@ class Contract(models.Model):
     class Meta:
         abstract = True
 
+
 # Tokens
 class OutcomeToken(Contract):
     pass
 
+
 class CollateralToken(Contract):
     pass
+
 
 # Events
 class Event(Contract):
@@ -29,12 +33,15 @@ class Event(Contract):
     winning_outcome = models.BigIntegerField()
     outcome_tokens = models.ManyToManyField('OutcomeToken')
 
+
 class ScalarEvent(Event):
     lower_bound = models.BigIntegerField()
     upper_bound = models.BigIntegerField()
 
+
 class CategoricalEvent(Event):
     pass
+
 
 # Event Descriptions
 class EventDescription(models.Model):
@@ -45,22 +52,27 @@ class EventDescription(models.Model):
     class Meta:
         abstract = True
 
+
 class ScalarEventDescription(EventDescription):
     lower_bound = models.BigIntegerField()
     upper_bound = models.BigIntegerField()
 
+
 class CategoricalEventDescription(EventDescription):
     pass
+
 
 # Oracles
 class Oracle(Contract):
     is_outcome_set = models.BooleanField()
     outcome = models.BigIntegerField()
 
+
 class CentralizedOracle(Oracle):
     owner = models.CharField(max_length=20)
     ipfs_hash = models.TextField()
     event_description = models.TextField()
+
 
 class UltimateOracle(Oracle):
     forwarded_oracle = models.ForeignKey('Oracle', related_name='ultimate_oracle_forwarded_oracle')
@@ -74,6 +86,7 @@ class UltimateOracle(Oracle):
     front_runner = models.BigIntegerField()
     front_runner_set_at_timestamp = models.BigIntegerField()
     total_amount = models.BigIntegerField()
+
 
 # Market
 class Market(Contract):
