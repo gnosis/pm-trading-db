@@ -21,7 +21,8 @@ INSTALLED_APPS = (
     'gnosisdb',
     'gnosisdb.tests',
     'django_ether_logs',
-    'djcelery'
+    'djcelery',
+    'relationaldb'
 )
 
 MIDDLEWARE_CLASSES = [
