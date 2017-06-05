@@ -1,7 +1,9 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
 import factory
 from faker import Factory as FakerFactory
 from factory.fuzzy import FuzzyDateTime
-from . import models
+from gnosisdb.relationaldb import models
 import random
 import hashlib
 from datetime import datetime
