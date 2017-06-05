@@ -61,7 +61,6 @@ class GnosisDB(object):
         # load configuration
         # self.app.config.update(default_config)
 
-
     def __check_user_config(self):
         """Verifies if the user provided a compliant configuration
             Raises:

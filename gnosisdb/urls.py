@@ -8,7 +8,7 @@ import views
 
 
 urlpatterns = [
-    url(r'^' + base.API_PREFIX + '/$', views.CreateView.as_view(), name='create'),
+    # url(r'^' + base.API_PREFIX + '/$', views.CreateView.as_view(), name='create'),
     url(r'^admin/', include(admin.site.urls))
 ]
 

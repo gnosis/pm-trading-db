@@ -85,20 +85,31 @@ STATIC_URL = '/static/'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'postgres',                      # Or path to database file if using sqlite3.
-        'USER': 'postgres',                      # Not used with sqlite3.
-        'PASSWORD': '',                  # Not used with sqlite3.
-        'HOST': 'db',                      # Set to empty string for localhost. Not used with sqlite3.
-        'PORT': '',                      # Set to empty string for default. Not used with sqlite3.
+        'PASSWORD': '',
+        'NAME': 'postgres',
+        'USER': 'postgres',
+        'HOST': 'db',
+        'PORT': 5432,
     }
 }
 
-ROOT_URLCONF = 'urls'
+ROOT_URLCONF = 'gnosisdb.urls'
 
 # DJANGO ETHEREUM WATCHER CONFIGURATION
 # ------------------------------------------------------------------------------
-# from events.models import Alert as DAppAlertModel
-ALERT_MODEL_APP = 'events'
+ALERT_MODEL_APP = 'django_ether_logs'
 ALERT_MODEL = 'Alert'
 CALLBACK_PER_BLOCK = None
 CALLBACK_PER_EXEC = None
+# TODO set the following config values in django_ether_logs module
+# Celery
+INSTALLED_APPS += ('kombu.transport.django',)
+BROKER_URL = 'django://'
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_IGNORE_RESULT = True
+CELERY_RESULT_BACKEND = 'djcelery.backends.cache:CacheBackend'
+ETHEREUM_NODE_HOST='kovan.infura.io'
+ETHEREUM_NODE_PORT = 443
+ETHEREUM_NODE_SSL = 1
