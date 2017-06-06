@@ -7,8 +7,9 @@ services:
     env_file:
       - .env
     links:
-      - mongo
       - db
+    working_dir: /gnosisdb/gnosisdb
+    command: python manage.py runserver 0.0.0.0:8000
     ports:
       - "8000:8000"
       - "8080"
@@ -36,10 +37,6 @@ services:
       - rabbit
     depends_on:
       - rabbit
-  mongo:
-    image: mongo:3.0.2
-    ports:
-      - "27017:27017"
   db:
     image: postgres
     ports:

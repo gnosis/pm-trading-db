@@ -37,6 +37,22 @@ class OracleFactory(ContractFactory):
     outcome = factory.Sequence(lambda n: n)
 
 
+class EventDescriptionFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = models.EventDescription
+
+    title = factory.Sequence(lambda _: faker.words(5))
+    description = factory.Sequence(lambda _: faker.words(5))
+    resolution_date = FuzzyDateTime(datetime.now(pytz.utc))
+
+
+class CategoricalEventFactory(EventDescriptionFactory):
+    class Meta:
+        model = models.CategoricalEventDescription
+
+    outcomes = [factory.Sequence(lambda _: faker.words(2)), factory.Sequence(lambda _: faker.words(2))]
+
+
 class CentralizedOracleFactory(OracleFactory):
 
     class Meta:
@@ -44,4 +60,4 @@ class CentralizedOracleFactory(OracleFactory):
 
     owner = factory.Sequence(lambda n: '{:020d}'.format(n))
     ipfs_hash = factory.Sequence(lambda n: '{:040d}'.format(n))
-    event_description = "event description"
+    event_description = factory.SubFactory(CategoricalEventFactory)

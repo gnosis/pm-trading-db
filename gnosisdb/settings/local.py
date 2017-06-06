@@ -21,11 +21,11 @@ INSTALLED_APPS = (
     'solo',
     'gnosisdb',
     'gnosisdb.tests',
-    'django_ether_logs',
     'djcelery',
-    'gnosisdb.relationaldb',
+    'relationaldb',
     'rest_framework',
-    'gnosisdb.restapi',
+    'restapi',
+    'eth'
 )
 
 MIDDLEWARE_CLASSES = [
@@ -107,11 +107,10 @@ REST_FRAMEWORK = {
 
 # DJANGO ETHEREUM WATCHER CONFIGURATION
 # ------------------------------------------------------------------------------
-ALERT_MODEL_APP = 'django_ether_logs'
+ALERT_MODEL_APP = 'eth'
 ALERT_MODEL = 'Alert'
 CALLBACK_PER_BLOCK = None
 CALLBACK_PER_EXEC = None
-# TODO set the following config values in django_ether_logs module
 # Celery
 INSTALLED_APPS += ('kombu.transport.django',)
 ETHEREUM_NODE_HOST='kovan.infura.io'
@@ -133,7 +132,6 @@ BROKER_POOL_LIMIT = 1
 BROKER_CONNECTION_TIMEOUT = 10
 
 # Celery configuration
-CELERY_ACCEPT_CONTENT = ['json']
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_RESULT_BACKEND = 'djcelery.backends.cache:CacheBackend'
 # configure queues, currently we have only one
@@ -148,7 +146,7 @@ CELERY_DISABLE_RATE_LIMITS = False
 # By default we will ignore result
 # If you want to see results and try out tasks interactively, change it to False
 # Or change this setting on tasks level
-CELERY_IGNORE_RESULT = True
+CELERY_IGNORE_RESULT = False
 CELERY_SEND_TASK_ERROR_EMAILS = False
 CELERY_TASK_RESULT_EXPIRES = 600
 # Don't use pickle as serializer, json is much safer
