@@ -22,10 +22,14 @@ services:
       - RABBITMQ_DEFAULT_PASS=gnosisdb
     ports:
       - "5672:5672"
+      - "15672:15672"
   worker:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: DockerfileCelery
+    command: sh run_celery.sh
+    env_file:
+      - .env
     volumes:
       - .:/app
     links:
