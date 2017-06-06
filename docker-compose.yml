@@ -14,6 +14,24 @@ services:
       - "8080"
       - "27017"
       - "5432"
+  rabbit:
+    hostname: rabbit
+    image: rabbitmq:latest
+    environment:
+      - RABBITMQ_DEFAULT_USER=gnosisdb
+      - RABBITMQ_DEFAULT_PASS=gnosisdb
+    ports:
+      - "5672:5672"
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/app
+    links:
+      - rabbit
+    depends_on:
+      - rabbit
   mongo:
     image: mongo:3.0.2
     ports:

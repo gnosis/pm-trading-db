@@ -2,7 +2,7 @@ FROM ubuntu:14.04
 RUN apt-get update && apt-get install -y -q curl python-dev \
     libreadline-dev libbz2-dev libssl-dev libsqlite3-dev libxslt1-dev git wget \
     libxml2-dev libxslt1-dev git python-pip build-essential automake libtool \
-    libffi-dev libgmp-dev pkg-config libpq-dev python-dev
+    libffi-dev libgmp-dev pkg-config libpq-dev python-dev postgresql-client
 COPY . /gnosisdb/
 RUN wget https://pypi.python.org/packages/9d/ba/80910bbed2b4e646a6adab4474d2e506744c260c7002a0e6b41ef8750d8d/pkgconfig-1.2.2.tar.gz#md5=81a8f6ef3371831d081e03db39e09683 && tar -xvf pkgconfig-1.2.2.tar.gz && cd pkgconfig-1.2.2 && python setup.py install
 RUN pip install -qr /gnosisdb/requirements.txt
@@ -29,3 +29,6 @@ RUN pip install --user /gnosisdb/lib/django-ether-logs-0.1.tar.gz
 ### End MongoDB ###
 
 WORKDIR /gnosisdb
+
+ENTRYPOINT celery -A django_ether_logs.apps beat -S djcelery.schedulers.DatabaseScheduler --loglevel debug --workdir="$PWD"
+ENTRYPOINT celery -A django_ether_logs.apps worker --loglevel debug --workdir="$PWD" -c 1
