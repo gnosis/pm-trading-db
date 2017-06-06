@@ -1,5 +1,5 @@
 from django_filters import rest_framework as filters
-from gnosisdb.relationaldb.models import CentralizedOracle, UltimateOracle
+from gnosisdb.relationaldb.models import CentralizedOracle, UltimateOracle, Event, Market
 
 
 class CentralizedOracleFilter(filters.FilterSet):
@@ -44,3 +44,46 @@ class UltimateOracleFilter(filters.FilterSet):
         fields = ('creator', 'creation_date', 'is_outcome_set', 'forwarded_oracle_creator',
                   'forwarded_oracle_creation_date', 'forwarded_oracle_is_outcome_set', 'forwarded_oracle_factory',
                   'ordering')
+
+class EventFilter(filters.FilterSet):
+    creator = filters.AllValuesMultipleFilter()
+    creation_date = filters.DateTimeFromToRangeFilter()
+    is_winning_outcome_set = filters.BooleanFilter()
+    oracle_factory = filters.AllValuesMultipleFilter(name='oracle__factory_address')
+    oracle_creator = filters.AllValuesMultipleFilter(name='oracle__creator')
+    oracle_creation_date = filters.DateTimeFromToRangeFilter(name='oracle__creation_date')
+    oracle_is_outcome_set = filters.BooleanFilter(name='oracle__is_outcome_set')
+
+    ordering = filters.OrderingFilter(
+        fields=(
+            ('creation_date', 'creation_date_order'),
+            ('oracle__creation_date', 'oracle_creation_date_order')
+        )
+    )
+
+    class Meta:
+        model = Event
+        fields = ('creator', 'creation_date', 'is_winning_outcome_set', 'oracle_factory', 'oracle_creator',
+                  'oracle_creation_date', 'oracle_is_outcome_set')
+
+
+class MarketFilter(filters.FilterSet):
+    creator = filters.AllValuesMultipleFilter()
+    creation_date = filters.DateTimeFromToRangeFilter()
+    market_maker = filters.AllValuesMultipleFilter()
+    event_oracle_factory = filters.AllValuesMultipleFilter(name='event__oracle__factory_address')
+    event_oracle_creator = filters.AllValuesMultipleFilter(name='event__oracle__creator')
+    event_oracle_creation_date = filters.DateTimeFromToRangeFilter(name='event__oracle__creation_date')
+    event_oracle_is_outcome_set = filters.BooleanFilter(name='event__oracle__is_outcome_set')
+
+    ordering = filters.OrderingFilter(
+        fields=(
+            ('creation_date', 'creation_date_order'),
+            ('event__oracle__creation_date', 'event_oracle_creation_date_order')
+        )
+    )
+
+    class Meta:
+        model = Market
+        fields = ('creator', 'creation_date', 'market_maker', 'event_oracle_factory', 'event_oracle_creator',
+                  'event_oracle_creation_date', 'event_oracle_is_outcome_set')
