@@ -105,12 +105,46 @@ CALLBACK_PER_EXEC = None
 # TODO set the following config values in django_ether_logs module
 # Celery
 INSTALLED_APPS += ('kombu.transport.django',)
-BROKER_URL = 'amqp://gnosisdb:gnosisdb@rabbit:5672' # 'django://'
-CELERY_ACCEPT_CONTENT = ['json']
-CELERY_TASK_SERIALIZER = 'json'
-CELERY_RESULT_SERIALIZER = 'json'
-CELERY_IGNORE_RESULT = True
-CELERY_RESULT_BACKEND = 'djcelery.backends.cache:CacheBackend'
 ETHEREUM_NODE_HOST='kovan.infura.io'
 ETHEREUM_NODE_PORT = 443
 ETHEREUM_NODE_SSL = 1
+
+RABBIT_HOSTNAME = 'rabbit'
+RABBIT_USER = 'gnosisdb'
+RABBIT_PASSWORD = 'gnosisdb'
+RABBIT_PORT = '5672'
+BROKER_URL = 'amqp://{user}:{password}@{hostname}:{port}'.format(
+    user=RABBIT_USER,
+    password=RABBIT_PASSWORD,
+    hostname=RABBIT_HOSTNAME,
+    port=RABBIT_PORT
+)
+
+BROKER_POOL_LIMIT = 1
+BROKER_CONNECTION_TIMEOUT = 10
+
+# Celery configuration
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_RESULT_BACKEND = 'djcelery.backends.cache:CacheBackend'
+# configure queues, currently we have only one
+CELERY_DEFAULT_QUEUE = 'default'
+
+# Sensible settings for celery
+CELERY_ALWAYS_EAGER = False
+CELERY_ACKS_LATE = True
+CELERY_TASK_PUBLISH_RETRY = True
+CELERY_DISABLE_RATE_LIMITS = False
+
+# By default we will ignore result
+# If you want to see results and try out tasks interactively, change it to False
+# Or change this setting on tasks level
+CELERY_IGNORE_RESULT = True
+CELERY_SEND_TASK_ERROR_EMAILS = False
+CELERY_TASK_RESULT_EXPIRES = 600
+# Don't use pickle as serializer, json is much safer
+CELERY_TASK_SERIALIZER = "json"
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERYD_HIJACK_ROOT_LOGGER = False
+CELERYD_PREFETCH_MULTIPLIER = 1
+CELERYD_MAX_TASKS_PER_CHILD = 1000
