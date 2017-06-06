@@ -1,7 +1,7 @@
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import serializers
 from gnosisdb.relationaldb.models import ScalarEventDescription, CategoricalEventDescription, Oracle
-from gnosisdb.relationaldb.models import CentralizedOracle, UltimateOracle
+from gnosisdb.relationaldb.models import CentralizedOracle, UltimateOracle, Event, Market
 
 
 class ContractSerializer(serializers.BaseSerializer):
@@ -40,6 +40,7 @@ class EventDescriptionSerializer(serializers.BaseSerializer):
 
 
 class OracleSerializer(serializers.ModelSerializer):
+    # TODO Dynamic way to display extra fields according to oracle type
     contract = ContractSerializer(source='*', many=False, read_only=True)
     is_outcome_set = serializers.BooleanField()
     outcome = serializers.DecimalField(max_digits=80, decimal_places=0)
@@ -83,3 +84,39 @@ class UltimateOracleSerializer(serializers.ModelSerializer):
         fields = ('contract', 'is_outcome_set', 'outcome', 'collateral_token', 'spread_multiplier', 'challenge_period',
                   'challenge_amount', 'front_runner_period', 'forwarded_outcome', 'outcome_set_at_timestamp',
                   'front_runner', 'front_runner_set_at_timestamp', 'total_amount', 'forwarded_oracle')
+
+
+class OutcomeTokenSerializer(serializers.BaseSerializer):
+    def to_representation(self, instance):
+        return instance.address
+
+
+class EventSerializer(serializers.ModelSerializer):
+    contract = ContractSerializer(source='*', many=False, read_only=True)
+    collateral_token = serializers.CharField(source='collateral_token.address')
+    oracle = OracleSerializer(many=False, read_only=True)
+    is_winning_outcome_set = serializers.BooleanField()
+    winning_outcome = serializers.DecimalField(max_digits=80, decimal_places=0)
+    outcome_tokens = OutcomeTokenSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Event
+        fields = ('contract', 'collateral_token', 'oracle', 'is_winning_outcome_set', 'winning_outcome',
+                  'outcome_tokens')
+
+
+class IntegerCSVSerializer(serializers.BaseSerializer):
+    def to_representation(self, instance):
+        return map(int, instance.split(','))
+
+
+class MarketSerializer(serializers.ModelSerializer):
+    contract = ContractSerializer(source='*', many=False, read_only=True)
+    event = EventSerializer(many=False, read_only=True)
+    market_maker = serializers.CharField()
+    funding = serializers.DecimalField(max_digits=80, decimal_places=0)
+    net_outcome_tokens_sold = IntegerCSVSerializer(many=False, read_only=True)
+
+    class Meta:
+        model = Market
+        fields = ('contract', 'event', 'market_maker', 'funding', 'net_outcome_tokens_sold')
