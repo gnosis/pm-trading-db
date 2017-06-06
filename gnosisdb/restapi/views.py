@@ -2,11 +2,13 @@ from django.shortcuts import get_object_or_404
 from rest_framework import generics
 from gnosisdb.relationaldb.models import UltimateOracle, CentralizedOracle
 from .serializers import UltimateOracleSerializer, CentralizedOracleSerializer
+from .filters import CentralizedOracleFilter, UltimateOracleFilter
 
 
 class CentralizedOracleListView(generics.ListAPIView):
     queryset = CentralizedOracle.objects.all()
     serializer_class = CentralizedOracleSerializer
+    filter_class = CentralizedOracleFilter
 
 
 class CentralizedOracleFetchView(generics.RetrieveAPIView):
@@ -20,6 +22,7 @@ class CentralizedOracleFetchView(generics.RetrieveAPIView):
 class UltimateOracleListView(generics.ListAPIView):
     queryset = UltimateOracle.objects.all()
     serializer_class = UltimateOracleSerializer
+    filter_class = UltimateOracleFilter
 
 
 class UltimateOracleFetchView(generics.RetrieveAPIView):

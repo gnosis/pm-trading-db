@@ -17,6 +17,7 @@ INSTALLED_APPS = (
     'django.contrib.admin',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_filters',
     'solo',
     'gnosisdb',
     'gnosisdb.tests',
@@ -97,6 +98,12 @@ DATABASES = {
 }
 
 ROOT_URLCONF = 'gnosisdb.urls'
+
+# Filtering
+REST_FRAMEWORK = {
+    'DEFAULT_FILTER_BACKENDS': ('django_filters.rest_framework.DjangoFilterBackend',)
+}
+
 
 # DJANGO ETHEREUM WATCHER CONFIGURATION
 # ------------------------------------------------------------------------------
