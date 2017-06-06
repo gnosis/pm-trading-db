@@ -69,11 +69,8 @@ class Bot(Singleton):
             for tx in block[u'transactions']:
                 receipt = self.web3.eth.getTransactionReceipt(tx)
                 if receipt.get('logs'):
-                    # TODO really needed?
-                    # modify log entry to match model params
-                    receipt[u'logs'][u'from'] = receipt[u'from']
                     logs.extend(receipt[u'logs'])
-            return logs
+            return logs, block
         else:
             raise UnknownBlock
 
@@ -95,7 +92,7 @@ class Bot(Singleton):
             self.load_abis(contracts)
 
             # decode logs
-            decoded = self.decoder.decode_logs(logs)
+            decoded, block_info = self.decoder.decode_logs(logs)
 
             # If decoded, filter correct logs
             filtered = self.filter_logs(decoded, contracts) if callable(self.filter_logs) else decoded
