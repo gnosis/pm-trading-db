@@ -17,12 +17,15 @@ INSTALLED_APPS = (
     'django.contrib.admin',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_filters',
     'solo',
     'gnosisdb',
     'gnosisdb.tests',
     'django_ether_logs',
     'djcelery',
-    'gnosisdb.relationaldb'
+    'gnosisdb.relationaldb',
+    'rest_framework',
+    'gnosisdb.restapi',
 )
 
 MIDDLEWARE_CLASSES = [
@@ -86,15 +89,21 @@ STATIC_URL = '/static/'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'PASSWORD': '',
-        'NAME': 'postgres',
-        'USER': 'postgres',
-        'HOST': 'db',
-        'PORT': 5432,
+        'NAME': 'postgres',                      # Or path to database file if using sqlite3.
+        'USER': 'postgres',                      # Not used with sqlite3.
+        'PASSWORD': '',                  # Not used with sqlite3.
+        'HOST': 'db',                      # Set to empty string for localhost. Not used with sqlite3.
+        'PORT': '5432',                      # Set to empty string for default. Not used with sqlite3.
     }
 }
 
 ROOT_URLCONF = 'gnosisdb.urls'
+
+# Filtering
+REST_FRAMEWORK = {
+    'DEFAULT_FILTER_BACKENDS': ('django_filters.rest_framework.DjangoFilterBackend',)
+}
+
 
 # DJANGO ETHEREUM WATCHER CONFIGURATION
 # ------------------------------------------------------------------------------
