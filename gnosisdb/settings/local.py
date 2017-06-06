@@ -22,7 +22,7 @@ INSTALLED_APPS = (
     'gnosisdb.tests',
     'django_ether_logs',
     'djcelery',
-    'relationaldb'
+    'gnosisdb.relationaldb'
 )
 
 MIDDLEWARE_CLASSES = [
@@ -105,7 +105,7 @@ CALLBACK_PER_EXEC = None
 # TODO set the following config values in django_ether_logs module
 # Celery
 INSTALLED_APPS += ('kombu.transport.django',)
-BROKER_URL = 'django://'
+BROKER_URL = 'amqp://gnosisdb:gnosisdb@rabbit:5672' # 'django://'
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'

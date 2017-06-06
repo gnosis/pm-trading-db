@@ -29,3 +29,6 @@ RUN pip install --user /gnosisdb/lib/django-ether-logs-0.1.tar.gz
 ### End MongoDB ###
 
 WORKDIR /gnosisdb
+
+ENTRYPOINT celery -A django_ether_logs.apps beat -S djcelery.schedulers.DatabaseScheduler --loglevel debug --workdir="$PWD"
+ENTRYPOINT celery -A django_ether_logs.apps worker --loglevel debug --workdir="$PWD" -c 1
