@@ -6,15 +6,10 @@ from web3 import Web3, RPCProvider
 from django.conf import settings
 from django.apps import apps
 from celery.utils.log import get_task_logger
+from eth.models import Alert, Daemon
 
 
 logger = get_task_logger(__name__)
-
-alert_model_app_name = getattr(settings, 'ALERT_MODEL_APP', 'django_ether_logs')
-AlertModelAppConfig = apps.get_app_config(alert_model_app_name)
-
-alert_model_name = getattr(settings, 'ALERT_MODEL', 'Alert')
-AlertModel = AlertModelAppConfig.get_model(alert_model_name)
 
 
 class UnknownBlock(Exception):
@@ -53,7 +48,8 @@ class Bot(Singleton):
             return []
 
     def load_abis(self, contracts):
-        alerts = AlertModel.objects.filter(contract__in=contracts)
+        # todo discuss: How do we load abi's of non factory contracts?
+        alerts = Alert.objects.filter(contract__in=contracts)
         added = 0
         for alert in alerts:
             try:

@@ -1,5 +1,18 @@
 version: '2'
 services:
+  rabbit:
+    hostname: rabbit
+    image: rabbitmq:latest
+    environment:
+      - RABBITMQ_DEFAULT_USER=gnosisdb
+      - RABBITMQ_DEFAULT_PASS=gnosisdb
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+  db:
+    image: postgres
+    ports:
+      - "5432:5432"
   web:
     build:
       context: .
@@ -15,15 +28,6 @@ services:
       - "8080"
       - "27017"
       - "5432"
-  rabbit:
-    hostname: rabbit
-    image: rabbitmq:latest
-    environment:
-      - RABBITMQ_DEFAULT_USER=gnosisdb
-      - RABBITMQ_DEFAULT_PASS=gnosisdb
-    ports:
-      - "5672:5672"
-      - "15672:15672"
   worker:
     build:
       context: .
@@ -37,7 +41,3 @@ services:
       - rabbit
     depends_on:
       - rabbit
-  db:
-    image: postgres
-    ports:
-      - "5432:5432"
