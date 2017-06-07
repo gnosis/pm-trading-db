@@ -8,6 +8,7 @@ django-authtools==1.5.0
 django-model-utils==2.6.1
 django-filter==1.0.4
 django-solo==1.1.2
+eth-testrpc==1.2.0
 ethereum==1.6.0
 ethereum-abi-utils==0.4.0
 ethereum-utils==0.2.0

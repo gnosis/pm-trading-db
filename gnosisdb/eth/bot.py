@@ -47,8 +47,8 @@ class Bot(Singleton):
         else:
             return []
 
+    # todo deprecated, remove
     def load_abis(self, contracts):
-        # todo discuss: How do we load abi's of non factory contracts?
         alerts = Alert.objects.filter(contract__in=contracts)
         added = 0
         for alert in alerts:
@@ -75,26 +75,40 @@ class Bot(Singleton):
         # get blocks and decode logs
         for block in self.update_block():
             logger.info("block {}".format(block))
-            # first get un-decoded logs
-            logs = self.get_logs(block)
+            # first get un-decoded logs and the block info
+            logs, block_info = self.get_logs(block)
 
-            # get contract addresses
-            contracts = []
+            # 1st Decode factory logs
+
+            # Get ABI's and contract addresses from settings
+            factory_abis = [loads(x['abi']) for x in settings.GNOSISDB_FACTORIES]
+            factory_addresses = [x[u'address'] for x in settings.GNOSISDB_FACTORIES]
+            self.decoder.add_abi(factory_abis)
+
+            # Filter by address and later try to decode
+            factory_logs = []
+            other_logs = []
+
             for log in logs:
-                contracts.append(log[u'address'])
-            contracts = set(contracts)
+                if log[u'address'] in factory_addresses:
+                    factory_logs.extend(log)
+                else:
+                    other_logs.extend(log)
 
-            # load abi's from alerts with contract addresses
-            self.load_abis(contracts)
+            decoded = self.decoder.decode_logs(factory_logs)
 
-            # decode logs
-            decoded, block_info = self.decoder.decode_logs(logs)
+            # save factory logs (decoded ones) on database
+            if decoded and len(decoded):
+                # TODO, other module/function
+                pass
 
-            # If decoded, filter correct logs
-            filtered = self.filter_logs(decoded, contracts) if callable(self.filter_logs) else decoded
+            # 2nd Decode other logs (not triggered by factory contracts)
+            # Get ABI's from settings
+            other_abis = [loads(x['abi']) for x in settings.GNOSISDB_ABIS]
+            self.decoder.add_abi(other_abis)
 
-            if callable(self.callback_per_block):
-                self.callback_per_block(filtered)
-
-        if callable(self.callback_per_exec):
-            self.callback_per_exec()
+            # save factory logs (decoded ones) on database
+            decoded = self.decoder.decode_logs(other_logs)
+            if decoded and len(decoded):
+                # TODO, other module/function
+                pass
