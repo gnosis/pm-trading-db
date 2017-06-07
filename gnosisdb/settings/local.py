@@ -102,6 +102,10 @@ ROOT_URLCONF = 'gnosisdb.urls'
 # Filtering
 REST_FRAMEWORK = {
     'DEFAULT_FILTER_BACKENDS': ('django_filters.rest_framework.DjangoFilterBackend',),
+    'DEFAULT_RENDERER_CLASSES': (
+        'djangorestframework_camel_case.render.CamelCaseJSONRenderer',
+        'rest_framework.renderers.BrowsableAPIRenderer',
+    ),
 }
 
 
