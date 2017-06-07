@@ -1,5 +1,11 @@
 from django_filters import rest_framework as filters
+from rest_framework.pagination import LimitOffsetPagination
 from gnosisdb.relationaldb.models import CentralizedOracle, UltimateOracle, Event, Market
+
+
+class DefaultPagination(LimitOffsetPagination):
+    max_limit = 50
+    default_limit = 25
 
 
 class CentralizedOracleFilter(filters.FilterSet):

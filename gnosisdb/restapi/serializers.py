@@ -60,7 +60,7 @@ class CentralizedOracleSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CentralizedOracle
-        fields = ('creator', 'contract', 'is_outcome_set', 'outcome', 'owner', 'ipfs_hash', 'event_description')
+        fields = ('contract', 'is_outcome_set', 'outcome', 'owner', 'ipfs_hash', 'event_description')
 
 
 class UltimateOracleSerializer(serializers.ModelSerializer):
