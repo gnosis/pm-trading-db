@@ -1,14 +1,10 @@
 FROM ubuntu:14.04
-COPY . /gnosisdb/
 RUN apt-get update && apt-get install -y -q curl python-dev \
     libreadline-dev libbz2-dev libssl-dev libxslt1-dev git wget \
     libxml2-dev python-pip build-essential automake libtool \
     libffi-dev libgmp-dev pkg-config libpq-dev postgresql-client
 
-RUN pip install -qr /gnosisdb/requirements.txt
-RUN pip install --user /gnosisdb/lib/django-ether-logs-0.1.tar.gz
-
+COPY . /gnosisdb/
 WORKDIR /gnosisdb
 
-# ENTRYPOINT celery -A django_ether_logs.apps beat -S djcelery.schedulers.DatabaseScheduler --loglevel debug --workdir="$PWD"
-# ENTRYPOINT celery -A django_ether_logs.apps worker -Q default -n default@%h --loglevel debug --workdir="$PWD" -c 1
+RUN pip install -qr /gnosisdb/requirements.txt
