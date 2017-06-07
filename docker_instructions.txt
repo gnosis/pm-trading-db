@@ -14,5 +14,5 @@ sudo docker-compose build
 sudo docker-compose up
 
 # Run container in bash mode
-sudo docker run -i -t gnosisdb /bin/bash
+sudo docker-compose run web bash
 

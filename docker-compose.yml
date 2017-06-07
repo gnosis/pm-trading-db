@@ -1,19 +1,5 @@
 version: '2'
 services:
-  web:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    env_file:
-      - .env
-    links:
-      - mongo
-      - db
-    ports:
-      - "8000:8000"
-      - "8080"
-      - "27017"
-      - "5432"
   rabbit:
     hostname: rabbit
     image: rabbitmq:latest
@@ -22,21 +8,36 @@ services:
       - RABBITMQ_DEFAULT_PASS=gnosisdb
     ports:
       - "5672:5672"
-  worker:
+      - "15672:15672"
+  db:
+    image: postgres
+    ports:
+      - "5432:5432"
+  web:
     build:
       context: .
       dockerfile: Dockerfile
+    env_file:
+      - .env
+    links:
+      - db
+    working_dir: /gnosisdb/gnosisdb
+    command: python manage.py runserver 0.0.0.0:8000
+    ports:
+      - "8000:8000"
+      - "8080"
+      - "27017"
+      - "5432"
+  worker:
+    build:
+      context: .
+      dockerfile: DockerfileCelery
+    command: sh run_celery.sh
+    env_file:
+      - .env
     volumes:
       - .:/app
     links:
       - rabbit
     depends_on:
       - rabbit
-  mongo:
-    image: mongo:3.0.2
-    ports:
-      - "27017:27017"
-  db:
-    image: postgres
-    ports:
-      - "5432:5432"
