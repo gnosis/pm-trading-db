@@ -11,4 +11,5 @@ urlpatterns = [
     url(r'^events/(?P<addr>[a-fA-F0-9]+)/$', views.EventFetchView.as_view()),
     url(r'^markets/$', views.MarketListView.as_view()),
     url(r'^markets/(?P<addr>[a-fA-F0-9]+)/$', views.MarketFetchView.as_view()),
+    url(r'^factories/$', views.factories_view),
 ]

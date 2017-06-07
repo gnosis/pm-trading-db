@@ -1,5 +1,7 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import generics
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
 from gnosisdb.relationaldb.models import UltimateOracle, CentralizedOracle, Event, Market
 from .serializers import UltimateOracleSerializer, CentralizedOracleSerializer, EventSerializer, MarketSerializer
 from .filters import CentralizedOracleFilter, UltimateOracleFilter, EventFilter, MarketFilter
@@ -59,3 +61,9 @@ class MarketFetchView(generics.RetrieveAPIView):
 
     def get_object(self):
         return get_object_or_404(Market, address=self.kwargs['addr'])
+
+
+@api_view(['GET'])
+def factories_view(request):
+    # TODO Populate monitored factory addresses from django settings
+    return Response()
