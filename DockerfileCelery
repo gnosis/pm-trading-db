@@ -4,7 +4,8 @@ RUN apt-get update && apt-get install -y -q curl python-dev \
     libxml2-dev python-pip build-essential automake libtool \
     libffi-dev libgmp-dev pkg-config libpq-dev postgresql-client
 
+ADD requirements.txt /tmp/requirements.txt
+RUN pip install -qr /tmp/requirements.txt
+
 COPY . /gnosisdb/
 WORKDIR /gnosisdb
-
-RUN pip install -qr /gnosisdb/requirements.txt
