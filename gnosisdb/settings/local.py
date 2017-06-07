@@ -22,9 +22,9 @@ INSTALLED_APPS = (
     'gnosisdb',
     'gnosisdb.tests',
     'djcelery',
-    'relationaldb',
+    'gnosisdb.relationaldb',
     'rest_framework',
-    'restapi',
+    'gnosisdb.restapi',
     'eth'
 )
 

@@ -2,6 +2,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework import generics
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from rest_framework.pagination import PageNumberPagination
 from gnosisdb.relationaldb.models import UltimateOracle, CentralizedOracle, Event, Market
 from .serializers import UltimateOracleSerializer, CentralizedOracleSerializer, EventSerializer, MarketSerializer
 from .filters import CentralizedOracleFilter, UltimateOracleFilter, EventFilter, MarketFilter
@@ -11,6 +12,7 @@ class CentralizedOracleListView(generics.ListAPIView):
     queryset = CentralizedOracle.objects.all()
     serializer_class = CentralizedOracleSerializer
     filter_class = CentralizedOracleFilter
+    #pagination_class = PageNumberPagination
 
 
 class CentralizedOracleFetchView(generics.RetrieveAPIView):
