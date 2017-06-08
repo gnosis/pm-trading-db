@@ -107,13 +107,6 @@ REST_FRAMEWORK = {
     ),
 }
 
-
-# DJANGO ETHEREUM WATCHER CONFIGURATION
-# ------------------------------------------------------------------------------
-ALERT_MODEL_APP = 'eth'
-ALERT_MODEL = 'Alert'
-CALLBACK_PER_BLOCK = None
-CALLBACK_PER_EXEC = None
 # Celery
 INSTALLED_APPS += ('kombu.transport.django',)
 ETHEREUM_NODE_HOST='kovan.infura.io'

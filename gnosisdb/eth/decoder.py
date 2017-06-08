@@ -7,18 +7,21 @@ class Decoder(Singleton):
 
     methods = {}
 
-    def add_abi(self, abis):
+    def add_abi(self, abi):
         added = 0
-        for abi in abis:
-            for item in abi:
-                if item.get(u'name'):
+        for item in abi:
+            if item.get(u'name'):
+                method_header = None
+                if item.get(u'inputs'):
                     # Generate methodID and link it with the abi
                     method_header = "{}({})".format(item[u'name'],
                                                     ','.join(map(lambda input: input[u'type'], item[u'inputs'])))
+                else:
+                    method_header = "{}()".format(item[u'name'])
 
-                    method_id = sha3(method_header).encode('hex')
-                    self.methods[method_id] = item
-                    added += 1
+                method_id = sha3(method_header).encode('hex')
+                self.methods[method_id] = item
+                added += 1
         return added
 
     def remove_abi(self, abis):

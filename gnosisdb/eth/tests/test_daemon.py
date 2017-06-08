@@ -5,7 +5,6 @@ from eth.factories import DaemonFactory
 from eth.bot import Bot
 from web3 import TestRPCProvider
 from json import loads, dumps
-from django.core import mail
 
 abi = loads(
     '[{"inputs": [{"type": "address", "name": ""}], "constant": true, "name": "isInstantiation", "payable": false, '
@@ -155,44 +154,43 @@ bin_hex = "6060604052611963806100126000396000f3606060405260e060020a60003504632f4
 
 
 class TestDaemon(TestCase):
-    pass
-    # def setUp(self):
-    #     self.daemon = DaemonFactory()
-    #     self.bot = Bot()
-    #     self.bot.decoder.methods = {}
-    #     self.maxDiff = None
-    #     self.rpc = TestRPCProvider()
-    #
-    # def tearDown(self):
-    #     self.rpc.server.shutdown()
-    #     self.rpc = None
-    #
-    # def test_next_block(self):
-    #     self.assertEquals(self.bot.next_block(), 0)
-    #     self.assertFalse(self.bot.update_block())
-    #     self.assertEquals(self.bot.next_block(), 0)
-    #     factory = self.bot.web3.eth.contract(abi, bytecode=bin_hex)
-    #     tx_hash = factory.deploy()
-    #     self.bot.web3.eth.getTransactionReceipt(tx_hash)
-    #     tx_hash2 = factory.deploy()
-    #     self.bot.web3.eth.getTransactionReceipt(tx_hash2)
-    #     self.assertTrue(self.bot.update_block())
-    #     self.assertEquals(self.bot.next_block(), 1)
-    #     self.assertFalse(self.bot.update_block())
-    #     self.assertEquals(self.bot.next_block(), 1)
-    #
-    # def test_load_abis(self):
-    #     self.assertIsNotNone(self.bot.decoder)
-    #     self.assertEquals(len(self.bot.decoder.methods), 0)
-    #     self.assertEquals(self.bot.load_abis([]), 0)
-    #     self.assertEquals(len(self.bot.decoder.methods), 0)
-    #     # No ABIs
-    #     self.assertEquals(self.bot.load_abis(abi), 5)
-    #     self.assertEquals(len(self.bot.decoder.methods), 5)
-    #     self.assertEquals(self.bot.load_abis(["wrong"]), 0)
-    #
-    #     self.assertEquals(self.bot.load_abis(abi), 5)
-    #     self.assertEquals(self.bot.load_abis(["wrong"]), 0)
+    def setUp(self):
+        self.daemon = DaemonFactory()
+        self.bot = Bot()
+        self.bot.decoder.methods = {}
+        self.maxDiff = None
+        self.rpc = TestRPCProvider()
+
+    def tearDown(self):
+        self.rpc.server.shutdown()
+        self.rpc = None
+
+    def test_next_block(self):
+        self.assertEquals(self.bot.next_block(), 0)
+        self.assertFalse(self.bot.update_block())
+        self.assertEquals(self.bot.next_block(), 0)
+        factory = self.bot.web3.eth.contract(abi, bytecode=bin_hex)
+        tx_hash = factory.deploy()
+        self.bot.web3.eth.getTransactionReceipt(tx_hash)
+        tx_hash2 = factory.deploy()
+        self.bot.web3.eth.getTransactionReceipt(tx_hash2)
+        self.assertTrue(self.bot.update_block())
+        self.assertEquals(self.bot.next_block(), 1)
+        self.assertFalse(self.bot.update_block())
+        self.assertEquals(self.bot.next_block(), 1)
+
+    def test_load_abis(self):
+        self.assertIsNotNone(self.bot.decoder)
+        self.assertEquals(len(self.bot.decoder.methods), 0)
+        self.assertEquals(self.bot.load_abis([]), 0)
+        self.assertEquals(len(self.bot.decoder.methods), 0)
+        # No ABIs
+        self.assertEquals(self.bot.decoder.add_abi(abi), 6)
+        self.assertEquals(len(self.bot.decoder.methods), 6)
+        self.assertEquals(self.bot.decoder.add_abi([{'nothing': 'wrong'}]), 0)
+
+        self.assertEquals(self.bot.decoder.add_abi(abi), 6)
+        self.assertEquals(self.bot.decoder.add_abi([{'nothing': 'wrong'}]), 0)
 
     # def test_get_logs(self):
     #     # no logs before transactions
