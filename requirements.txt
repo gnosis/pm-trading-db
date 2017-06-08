@@ -15,5 +15,6 @@ factory-boy==2.5.2
 psycopg2==2.7.1
 celery==3.1.25
 faker==0.7.15
+requests[security]==2.2.1
 web3[tester]==3.7.1
 djangorestframework-camel-case
