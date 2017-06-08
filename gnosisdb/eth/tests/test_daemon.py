@@ -192,70 +192,70 @@ class TestDaemon(TestCase):
         self.assertEquals(self.bot.decoder.add_abi(abi), 6)
         self.assertEquals(self.bot.decoder.add_abi([{'nothing': 'wrong'}]), 0)
 
-    # def test_get_logs(self):
-    #     # no logs before transactions
-    #     logs = self.bot.get_logs(0)
-    #     self.assertListEqual([], logs)
-    #
-    #     # create Wallet Factory contract
-    #     factory = self.bot.web3.eth.contract(abi, bytecode=bin_hex)
-    #     self.assertIsNotNone(factory)
-    #     tx_hash = factory.deploy()
-    #     self.assertIsNotNone(tx_hash)
-    #     receipt = self.bot.web3.eth.getTransactionReceipt(tx_hash)
-    #     self.assertIsNotNone(receipt)
-    #     self.assertIsNotNone(receipt.get('contractAddress'))
-    #     factory_address = receipt[u'contractAddress']
-    #
-    #     logs = self.bot.get_logs(0)
-    #     self.assertListEqual([], logs)
-    #
-    #     # send deploy function, will trigger two events
-    #     self.bot.decoder.add_abi(abi)
-    #     factory_instance = self.bot.web3.eth.contract(abi, factory_address)
-    #     owners = self.bot.web3.eth.accounts[0:2]
-    #     required_confirmations = 1
-    #     daily_limit = 0
-    #     tx_hash = factory_instance.transact().create(owners, required_confirmations, daily_limit)
-    #     receipt = self.bot.web3.eth.getTransactionReceipt(tx_hash)
-    #     self.assertIsNotNone(receipt)
-    #     self.assertTrue(self.bot.update_block())
-    #     self.assertFalse(self.bot.update_block())
-    #     logs = self.bot.get_logs(1)
-    #     self.assertEqual(2, len(logs))
-    #     decoded = self.bot.decoder.decode_logs(logs)
-    #     self.assertEqual(2, len(decoded))
-    #     self.assertDictEqual(
-    #         {
-    #             u'address': factory_address,
-    #             u'name': u'OwnersInit',
-    #             u'params': [
-    #                 {
-    #                     u'name': u'owners',
-    #                     u'value': self.bot.web3.eth.accounts[0:2]
-    #                 }
-    #             ]
-    #         },
-    #         decoded[0]
-    #     )
-    #     self.assertDictEqual(
-    #         {
-    #             u'address': factory_address,
-    #             u'name': u'ContractInstantiation',
-    #             u'params': [
-    #                 {
-    #                     u'name': 'sender',
-    #                     u'value': self.bot.web3.eth.coinbase
-    #                 },
-    #                 {
-    #                     u'name': 'instantiation',
-    #                     u'value': decoded[1][u'params'][1][u'value']
-    #                 }
-    #             ]
-    #         },
-    #         decoded[1]
-    #     )
-    #
+    def test_get_logs(self):
+        # no logs before transactions
+        logs = self.bot.get_logs(0)
+        self.assertListEqual([], logs)
+
+        # create Wallet Factory contract
+        factory = self.bot.web3.eth.contract(abi, bytecode=bin_hex)
+        self.assertIsNotNone(factory)
+        tx_hash = factory.deploy()
+        self.assertIsNotNone(tx_hash)
+        receipt = self.bot.web3.eth.getTransactionReceipt(tx_hash)
+        self.assertIsNotNone(receipt)
+        self.assertIsNotNone(receipt.get('contractAddress'))
+        factory_address = receipt[u'contractAddress']
+
+        logs = self.bot.get_logs(0)
+        self.assertListEqual([], logs)
+
+        # send deploy function, will trigger two events
+        self.bot.decoder.add_abi(abi)
+        factory_instance = self.bot.web3.eth.contract(abi, factory_address)
+        owners = self.bot.web3.eth.accounts[0:2]
+        required_confirmations = 1
+        daily_limit = 0
+        tx_hash = factory_instance.transact().create(owners, required_confirmations, daily_limit)
+        receipt = self.bot.web3.eth.getTransactionReceipt(tx_hash)
+        self.assertIsNotNone(receipt)
+        self.assertTrue(self.bot.update_block())
+        self.assertFalse(self.bot.update_block())
+        logs = self.bot.get_logs(1)
+        self.assertEqual(2, len(logs))
+        decoded = self.bot.decoder.decode_logs(logs)
+        self.assertEqual(2, len(decoded))
+        self.assertDictEqual(
+            {
+                u'address': factory_address,
+                u'name': u'OwnersInit',
+                u'params': [
+                    {
+                        u'name': u'owners',
+                        u'value': self.bot.web3.eth.accounts[0:2]
+                    }
+                ]
+            },
+            decoded[0]
+        )
+        self.assertDictEqual(
+            {
+                u'address': factory_address,
+                u'name': u'ContractInstantiation',
+                u'params': [
+                    {
+                        u'name': 'sender',
+                        u'value': self.bot.web3.eth.coinbase
+                    },
+                    {
+                        u'name': 'instantiation',
+                        u'value': decoded[1][u'params'][1][u'value']
+                    }
+                ]
+            },
+            decoded[1]
+        )
+
     # def test_filter_logs(self):
     #     # filter empty logs
     #     contracts = ['0xA0dbdaDcbCC540be9bF4e9A812035EB1289DaD73']
