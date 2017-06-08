@@ -9,14 +9,16 @@ class Decoder(Singleton):
 
     def add_abi(self, abis):
         added = 0
-        for item in abis:
-            if item.get(u'name'):
-                # Generate methodID and link it with the abi
-                method_header = "{}({})".format(item[u'name'],
-                                                ','.join(map(lambda input: input[u'type'], item[u'inputs'])))
-                method_id = sha3(method_header).encode('hex')
-                self.methods[method_id] = item
-                added += 1
+        for abi in abis:
+            for item in abi:
+                if item.get(u'name'):
+                    # Generate methodID and link it with the abi
+                    method_header = "{}({})".format(item[u'name'],
+                                                    ','.join(map(lambda input: input[u'type'], item[u'inputs'])))
+
+                    method_id = sha3(method_header).encode('hex')
+                    self.methods[method_id] = item
+                    added += 1
         return added
 
     def remove_abi(self, abis):

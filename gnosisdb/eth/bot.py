@@ -61,6 +61,7 @@ class Bot(Singleton):
     def get_logs(self, block_number):
         block = self.web3.eth.getBlock(block_number)
         logs = []
+
         if block and block.get(u'hash'):
             for tx in block[u'transactions']:
                 receipt = self.web3.eth.getTransactionReceipt(tx)
@@ -83,6 +84,7 @@ class Bot(Singleton):
             # Get ABI's and contract addresses from settings
             factory_abis = [loads(x['abi']) for x in settings.GNOSISDB_FACTORIES]
             factory_addresses = [x[u'address'] for x in settings.GNOSISDB_FACTORIES]
+
             self.decoder.add_abi(factory_abis)
 
             # Filter by address and later try to decode
@@ -91,9 +93,9 @@ class Bot(Singleton):
 
             for log in logs:
                 if log[u'address'] in factory_addresses:
-                    factory_logs.extend(log)
+                    factory_logs.append(log)
                 else:
-                    other_logs.extend(log)
+                    other_logs.append(log)
 
             decoded = self.decoder.decode_logs(factory_logs)
 
