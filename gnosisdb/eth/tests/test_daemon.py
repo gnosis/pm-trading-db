@@ -163,6 +163,7 @@ class TestDaemon(TestCase):
 
     def tearDown(self):
         self.rpc.server.shutdown()
+        self.rpc.server.server_close()
         self.rpc = None
 
     def test_next_block(self):
@@ -194,7 +195,7 @@ class TestDaemon(TestCase):
 
     def test_get_logs(self):
         # no logs before transactions
-        logs = self.bot.get_logs(0)
+        logs, block_info = self.bot.get_logs(0)
         self.assertListEqual([], logs)
 
         # create Wallet Factory contract
@@ -207,7 +208,7 @@ class TestDaemon(TestCase):
         self.assertIsNotNone(receipt.get('contractAddress'))
         factory_address = receipt[u'contractAddress']
 
-        logs = self.bot.get_logs(0)
+        logs, block_info = self.bot.get_logs(0)
         self.assertListEqual([], logs)
 
         # send deploy function, will trigger two events
@@ -221,7 +222,7 @@ class TestDaemon(TestCase):
         self.assertIsNotNone(receipt)
         self.assertTrue(self.bot.update_block())
         self.assertFalse(self.bot.update_block())
-        logs = self.bot.get_logs(1)
+        logs, block_info = self.bot.get_logs(1)
         self.assertEqual(2, len(logs))
         decoded = self.bot.decoder.decode_logs(logs)
         self.assertEqual(2, len(decoded))
