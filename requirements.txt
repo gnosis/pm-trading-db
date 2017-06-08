@@ -8,13 +8,12 @@ django-authtools==1.5.0
 django-model-utils==2.6.1
 django-filter==1.0.4
 django-solo==1.1.2
-eth-testrpc==1.2.0
-ethereum==1.6.0
+ethereum>=1.6.1
 ethereum-abi-utils==0.4.0
 ethereum-utils==0.2.0
 factory-boy==2.5.2
 psycopg2==2.7.1
 celery==3.1.25
 faker==0.7.15
-web3==3.7.1
+web3[tester]==3.7.1
 djangorestframework-camel-case
