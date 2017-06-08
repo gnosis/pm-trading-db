@@ -168,22 +168,22 @@ class TestDaemon(TestCase):
 
     def test_next_block(self):
         self.assertEquals(self.bot.next_block(), 0)
-        self.assertFalse(self.bot.update_block())
+        self.assertFalse(self.bot.update_and_next_block())
         self.assertEquals(self.bot.next_block(), 0)
         factory = self.bot.web3.eth.contract(abi, bytecode=bin_hex)
         tx_hash = factory.deploy()
         self.bot.web3.eth.getTransactionReceipt(tx_hash)
         tx_hash2 = factory.deploy()
         self.bot.web3.eth.getTransactionReceipt(tx_hash2)
-        self.assertTrue(self.bot.update_block())
+        self.assertTrue(self.bot.update_and_next_block())
         self.assertEquals(self.bot.next_block(), 1)
-        self.assertFalse(self.bot.update_block())
+        self.assertFalse(self.bot.update_and_next_block())
         self.assertEquals(self.bot.next_block(), 1)
 
     def test_load_abis(self):
         self.assertIsNotNone(self.bot.decoder)
         self.assertEquals(len(self.bot.decoder.methods), 0)
-        self.assertEquals(self.bot.load_abis([]), 0)
+        self.assertEquals(self.bot.decoder.add_abi([]), 0)
         self.assertEquals(len(self.bot.decoder.methods), 0)
         # No ABIs
         self.assertEquals(self.bot.decoder.add_abi(abi), 6)
@@ -220,8 +220,8 @@ class TestDaemon(TestCase):
         tx_hash = factory_instance.transact().create(owners, required_confirmations, daily_limit)
         receipt = self.bot.web3.eth.getTransactionReceipt(tx_hash)
         self.assertIsNotNone(receipt)
-        self.assertTrue(self.bot.update_block())
-        self.assertFalse(self.bot.update_block())
+        self.assertTrue(self.bot.update_and_next_block())
+        self.assertFalse(self.bot.update_and_next_block())
         logs, block_info = self.bot.get_logs(1)
         self.assertEqual(2, len(logs))
         decoded = self.bot.decoder.decode_logs(logs)

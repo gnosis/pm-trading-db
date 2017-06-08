@@ -35,7 +35,7 @@ class Bot(Singleton):
     def next_block(self):
         return Daemon.get_solo().block_number
 
-    def update_block(self):
+    def update_and_next_block(self):
         daemon = Daemon.get_solo()
         current = self.web3.eth.blockNumber
         if daemon.block_number < current:
@@ -46,17 +46,6 @@ class Bot(Singleton):
             return blocks_to_update
         else:
             return []
-
-    # todo deprecated, remove
-    def load_abis(self, contracts):
-        alerts = Alert.objects.filter(contract__in=contracts)
-        added = 0
-        for alert in alerts:
-            try:
-                added += self.decoder.add_abi(loads(alert.abi))
-            except ValueError:
-                pass
-        return added
 
     def get_logs(self, block_number):
         block = self.web3.eth.getBlock(block_number)
@@ -74,7 +63,7 @@ class Bot(Singleton):
     def execute(self):
         # update block number
         # get blocks and decode logs
-        for block in self.update_block():
+        for block in self.update_and_next_block():
             logger.info("block {}".format(block))
             # first get un-decoded logs and the block info
             logs, block_info = self.get_logs(block)
