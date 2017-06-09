@@ -36,7 +36,7 @@ class UltimateOracleFilter(filters.FilterSet):
     forwarded_oracle_creator = filters.AllValuesMultipleFilter(name='forwarded_oracle__creator')
     forwarded_oracle_creation_date = filters.DateTimeFromToRangeFilter(name='forwarded_oracle__creation_date')
     forwarded_oracle_is_outcome_set = filters.BooleanFilter(name='forwarded_oracle__is_outcome_set')
-    forwarded_oracle_factory = filters.AllValuesMultipleFilter(name='forwarded_oracle__factory_address')
+    forwarded_oracle_factory = filters.AllValuesMultipleFilter(name='forwarded_oracle__factory')
 
     ordering = filters.OrderingFilter(
         fields=(
@@ -55,7 +55,7 @@ class EventFilter(filters.FilterSet):
     creator = filters.AllValuesMultipleFilter()
     creation_date = filters.DateTimeFromToRangeFilter()
     is_winning_outcome_set = filters.BooleanFilter()
-    oracle_factory = filters.AllValuesMultipleFilter(name='oracle__factory_address')
+    oracle_factory = filters.AllValuesMultipleFilter(name='oracle__factory')
     oracle_creator = filters.AllValuesMultipleFilter(name='oracle__creator')
     oracle_creation_date = filters.DateTimeFromToRangeFilter(name='oracle__creation_date')
     oracle_is_outcome_set = filters.BooleanFilter(name='oracle__is_outcome_set')
@@ -77,7 +77,7 @@ class MarketFilter(filters.FilterSet):
     creator = filters.AllValuesMultipleFilter()
     creation_date = filters.DateTimeFromToRangeFilter()
     market_maker = filters.AllValuesMultipleFilter()
-    event_oracle_factory = filters.AllValuesMultipleFilter(name='event__oracle__factory_address')
+    event_oracle_factory = filters.AllValuesMultipleFilter(name='event__oracle__factory')
     event_oracle_creator = filters.AllValuesMultipleFilter(name='event__oracle__creator')
     event_oracle_creation_date = filters.DateTimeFromToRangeFilter(name='event__oracle__creation_date')
     event_oracle_is_outcome_set = filters.BooleanFilter(name='event__oracle__is_outcome_set')

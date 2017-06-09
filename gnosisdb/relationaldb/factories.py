@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
-import factory
+import factory as factory_boy
 from faker import Factory as FakerFactory, Faker
 from factory.fuzzy import FuzzyDateTime
 from gnosisdb.relationaldb import models
@@ -17,22 +17,16 @@ def randomSHA256():
     return hashlib.sha256(str(random.random())).hexdigest()
 
 
-class ContractFactory(factory.DjangoModelFactory):
+class ContractFactory(factory_boy.DjangoModelFactory):
 
     class Meta:
         model = models.Contract
 
-    address = factory.Sequence(lambda n: '{:020d}'.format(n))
-    factory_address = factory.Sequence(lambda n: '{:020d}'.format(n))
-    creator = factory.Sequence(lambda n: '{:020d}'.format(n))
+    address = factory_boy.Sequence(lambda n: '{:020d}'.format(n))
+    factory = factory_boy.Sequence(lambda n: '{:020d}'.format(n))
+    creator = factory_boy.Sequence(lambda n: '{:020d}'.format(n))
     creation_date = FuzzyDateTime(datetime.now(pytz.utc))
-    creation_block = factory.Sequence(lambda n: n)
-
-
-class CollateralTokenFactory(ContractFactory):
-
-    class Meta:
-        model = models.CollateralToken
+    creation_block = factory_boy.Sequence(lambda n: n)
 
 
 class OracleFactory(ContractFactory):
@@ -41,13 +35,7 @@ class OracleFactory(ContractFactory):
         model = models.Oracle
 
     is_outcome_set = False
-    outcome = factory.Sequence(lambda n: n)
-
-
-class OutcomeTokenFactory(ContractFactory):
-
-    class Meta:
-        model = models.OutcomeToken
+    outcome = factory_boy.Sequence(lambda n: n)
 
 
 class EventFactory(ContractFactory):
@@ -55,36 +43,35 @@ class EventFactory(ContractFactory):
     class Meta:
         model = models.Event
 
-    collateral_token = factory.SubFactory(CollateralTokenFactory)
-    oracle = factory.SubFactory(OracleFactory)
+    collateral_token = factory_boy.Sequence(lambda n: '{:020d}'.format(n))
+    oracle = factory_boy.SubFactory(OracleFactory)
     is_winning_outcome_set = False
     winning_outcome = 1
 
-    @factory.post_generation
-    def outcome_tokens(self, create, extracted, **kwargs):
-        """Manages many x many relationship"""
-        if not create:
-            return
 
-        if extracted:
-            for outcometoken in extracted:
-                self.outcome_tokens.add(outcometoken)
+class OutcomeTokenFactory(ContractFactory):
+
+    class Meta:
+        model = models.OutcomeToken
+
+    event = factory_boy.SubFactory(EventFactory)
 
 
-class EventDescriptionFactory(factory.DjangoModelFactory):
+class EventDescriptionFactory(factory_boy.DjangoModelFactory):
     class Meta:
         model = models.EventDescription
 
-    title = factory.Sequence(lambda _: faker.words(5))
-    description = factory.Sequence(lambda _: faker.words(5))
+    title = factory_boy.Sequence(lambda _: faker.words(5))
+    description = factory_boy.Sequence(lambda _: faker.words(5))
     resolution_date = FuzzyDateTime(datetime.now(pytz.utc))
+    ipfs_hash = factory_boy.Sequence(lambda n: '{:046d}'.format(n))
 
 
 class CategoricalEventFactory(EventDescriptionFactory):
     class Meta:
         model = models.CategoricalEventDescription
 
-    outcomes = [factory.Sequence(lambda _: faker.words(2)), factory.Sequence(lambda _: faker.words(2))]
+    outcomes = [factory_boy.Sequence(lambda _: faker.words(2)), factory_boy.Sequence(lambda _: faker.words(2))]
 
 
 class CentralizedOracleFactory(OracleFactory):
@@ -92,9 +79,8 @@ class CentralizedOracleFactory(OracleFactory):
     class Meta:
         model = models.CentralizedOracle
 
-    owner = factory.Sequence(lambda n: '{:020d}'.format(n))
-    ipfs_hash = factory.Sequence(lambda n: '{:040d}'.format(n))
-    event_description = factory.SubFactory(CategoricalEventFactory)
+    owner = factory_boy.Sequence(lambda n: '{:020d}'.format(n))
+    event_description = factory_boy.SubFactory(CategoricalEventFactory)
 
 
 class UltimateOracleFactory(OracleFactory):
@@ -102,17 +88,17 @@ class UltimateOracleFactory(OracleFactory):
     class Meta:
         model = models.UltimateOracle
 
-    forwarded_oracle = factory.SubFactory(OracleFactory)
-    collateral_token = factory.SubFactory(CollateralTokenFactory)
-    spread_multiplier = factory.Sequence(lambda n: n)
-    challenge_period = factory.Sequence(lambda n: n)
-    challenge_amount = factory.Sequence(lambda n: n)
-    front_runner_period = factory.Sequence(lambda n: n)
-    forwarded_outcome = factory.Sequence(lambda n: n)
-    outcome_set_at_timestamp = factory.Sequence(lambda n: n)
-    front_runner = factory.Sequence(lambda n: n)
-    front_runner_set_at_timestamp = factory.Sequence(lambda n: n)
-    total_amount = factory.Sequence(lambda n: n)
+    forwarded_oracle = factory_boy.SubFactory(OracleFactory)
+    collateral_token = factory_boy.Sequence(lambda n: '{:020d}'.format(n))
+    spread_multiplier = factory_boy.Sequence(lambda n: n)
+    challenge_period = factory_boy.Sequence(lambda n: n)
+    challenge_amount = factory_boy.Sequence(lambda n: n)
+    front_runner_period = factory_boy.Sequence(lambda n: n)
+    forwarded_outcome = factory_boy.Sequence(lambda n: n)
+    outcome_set_at_timestamp = factory_boy.Sequence(lambda n: n)
+    front_runner = factory_boy.Sequence(lambda n: n)
+    front_runner_set_at_timestamp = factory_boy.Sequence(lambda n: n)
+    total_amount = factory_boy.Sequence(lambda n: n)
 
 
 class MarketFactory(ContractFactory):
@@ -120,10 +106,11 @@ class MarketFactory(ContractFactory):
     class Meta:
         model = models.Market
 
-    event = factory.SubFactory(EventFactory)
+    event = factory_boy.SubFactory(EventFactory)
     market_maker = faker.name()
-    fee = factory.Sequence(lambda n: n)
-    funding = factory.Sequence(lambda n: n)
-    net_outcome_tokens_sold = factory.Sequence(lambda n: n)
-    outcome_probabilities = factory.Sequence(lambda n: n)
+    fee = factory_boy.Sequence(lambda n: n)
+    funding = factory_boy.Sequence(lambda n: n)
+    net_outcome_tokens_sold = factory_boy.Sequence(lambda n: n)
+    # outcome_probabilities = factory.Sequence(lambda n: n)
+    stage = factory_boy.Sequence(lambda n: n)
 

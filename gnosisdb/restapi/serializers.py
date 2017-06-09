@@ -8,7 +8,7 @@ class ContractSerializer(serializers.BaseSerializer):
     def to_representation(self, instance):
         return {
             'address': instance.address,
-            'factory_address': instance.factory_address,
+            #'factory_address': instance.factory_address,
             'creator': instance.creator,
             'creation_date': instance.creation_date,
             'creation_block': instance.creation_block
@@ -20,7 +20,8 @@ class EventDescriptionSerializer(serializers.BaseSerializer):
         result = {
             'title': instance.title,
             'description': instance.description,
-            'resolution_date': instance.resolution_date
+            'resolution_date': instance.resolution_date,
+            'ipfs_hash': instance.ipfs_hash
         }
 
         try:
@@ -43,7 +44,7 @@ class OracleSerializer(serializers.ModelSerializer):
     # TODO Dynamic way to display extra fields according to oracle type
     contract = ContractSerializer(source='*', many=False, read_only=True)
     is_outcome_set = serializers.BooleanField()
-    outcome = serializers.DecimalField(max_digits=80, decimal_places=0)
+    outcome = serializers.IntegerField()
 
     class Meta:
         model = Oracle
@@ -53,31 +54,30 @@ class OracleSerializer(serializers.ModelSerializer):
 class CentralizedOracleSerializer(serializers.ModelSerializer):
     contract = ContractSerializer(source='*', many=False, read_only=True)
     is_outcome_set = serializers.BooleanField()
-    outcome = serializers.DecimalField(max_digits=80, decimal_places=0)
+    outcome = serializers.IntegerField()
     owner = serializers.CharField(max_length=20)
-    ipfs_hash = serializers.CharField()
     event_description = EventDescriptionSerializer(many=False, read_only=True)
 
     class Meta:
         model = CentralizedOracle
-        fields = ('contract', 'is_outcome_set', 'outcome', 'owner', 'ipfs_hash', 'event_description')
+        fields = ('contract', 'is_outcome_set', 'outcome', 'owner', 'event_description')
 
 
 class UltimateOracleSerializer(serializers.ModelSerializer):
     contract = ContractSerializer(source='*', many=False, read_only=True)
     is_outcome_set = serializers.BooleanField()
-    outcome = serializers.DecimalField(max_digits=80, decimal_places=0)
+    outcome = serializers.IntegerField()
     forwarded_oracle = OracleSerializer(many=False, read_only=True)
-    collateral_token = serializers.CharField(source='collateral_token.address')
-    spread_multiplier = serializers.DecimalField(max_digits=80, decimal_places=0)
-    challenge_period = serializers.DecimalField(max_digits=80, decimal_places=0)
-    challenge_amount = serializers.DecimalField(max_digits=80, decimal_places=0)
-    front_runner_period = serializers.DecimalField(max_digits=80, decimal_places=0)
-    forwarded_outcome = serializers.DecimalField(max_digits=80, decimal_places=0)
-    outcome_set_at_timestamp = serializers.DecimalField(max_digits=80, decimal_places=0)
-    front_runner = serializers.DecimalField(max_digits=80, decimal_places=0)
-    front_runner_set_at_timestamp = serializers.DecimalField(max_digits=80, decimal_places=0)
-    total_amount = serializers.DecimalField(max_digits=80, decimal_places=0)
+    collateral_token = serializers.CharField()
+    spread_multiplier = serializers.IntegerField()
+    challenge_period = serializers.IntegerField()
+    challenge_amount = serializers.IntegerField()
+    front_runner_period = serializers.IntegerField()
+    forwarded_outcome = serializers.IntegerField()
+    outcome_set_at_timestamp = serializers.IntegerField()
+    front_runner = serializers.IntegerField()
+    front_runner_set_at_timestamp = serializers.IntegerField()
+    total_amount = serializers.IntegerField()
 
     class Meta:
         model = UltimateOracle
@@ -93,16 +93,15 @@ class OutcomeTokenSerializer(serializers.BaseSerializer):
 
 class EventSerializer(serializers.ModelSerializer):
     contract = ContractSerializer(source='*', many=False, read_only=True)
-    collateral_token = serializers.CharField(source='collateral_token.address')
+    collateral_token = serializers.CharField()
     oracle = OracleSerializer(many=False, read_only=True)
     is_winning_outcome_set = serializers.BooleanField()
     winning_outcome = serializers.DecimalField(max_digits=80, decimal_places=0)
-    outcome_tokens = OutcomeTokenSerializer(many=True, read_only=True)
+    # outcome_tokens = OutcomeTokenSerializer(many=True, read_only=True)
 
     class Meta:
         model = Event
-        fields = ('contract', 'collateral_token', 'oracle', 'is_winning_outcome_set', 'winning_outcome',
-                  'outcome_tokens')
+        fields = ('contract', 'collateral_token', 'oracle', 'is_winning_outcome_set', 'winning_outcome')
 
 
 class IntegerCSVSerializer(serializers.BaseSerializer):
@@ -114,9 +113,11 @@ class MarketSerializer(serializers.ModelSerializer):
     contract = ContractSerializer(source='*', many=False, read_only=True)
     event = EventSerializer(many=False, read_only=True)
     market_maker = serializers.CharField()
+    fee = serializers.IntegerField()
     funding = serializers.DecimalField(max_digits=80, decimal_places=0)
     net_outcome_tokens_sold = IntegerCSVSerializer(many=False, read_only=True)
+    stage = serializers.IntegerField()
 
     class Meta:
         model = Market
-        fields = ('contract', 'event', 'market_maker', 'funding', 'net_outcome_tokens_sold')
+        fields = ('contract', 'event', 'market_maker', 'fee', 'funding', 'net_outcome_tokens_sold', 'stage')
