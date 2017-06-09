@@ -6,7 +6,7 @@ logger = get_task_logger(__name__)
 
 
 @shared_task
-def run_bot():
+def event_listener():
     try:
         bot = Bot()
         bot.execute()
