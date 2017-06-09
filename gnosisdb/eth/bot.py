@@ -1,10 +1,9 @@
 from utils import Singleton
-from models import Daemon
+from relationaldb.models import CentralizedOracle
 from decoder import Decoder
 from json import loads
 from web3 import Web3, RPCProvider
 from django.conf import settings
-from django.apps import apps
 from celery.utils.log import get_task_logger
 from eth.models import Alert, Daemon
 
@@ -60,6 +59,26 @@ class Bot(Singleton):
         else:
             raise UnknownBlock
 
+    def save_log(self, logs, block_info):
+        for log in logs:
+            pass
+            # factory_address = log[u'address']
+            # block_number = block_info[u'number']
+            # created_at = block_info[u'timestamp']
+            #
+            # log_name = log[u'name']
+            # if log_name == u'CentralizedOracleCreation':
+            #     owner = log[u'inputs'][0]
+            #     address = log[u'inputs'][1]
+            #     ipfs_hash = log[u'inputs'][2]
+            #     CentralizedOracle.objects.create(owner=owner, address=address, ipfs_hash=ipfs_hash, )
+            # elif log_name == u'CategoricalEventCreation':
+            #     pass
+            # elif log_name == u'ScalarEventCreation':
+            #     pass
+            # elif log_name == u'MarketCreation':
+            #     pass
+
     def execute(self):
         # update block number
         # get blocks and decode logs
@@ -90,8 +109,7 @@ class Bot(Singleton):
 
             # save factory logs (decoded ones) on database
             if decoded and len(decoded):
-                # TODO, other module/function
-                pass
+                self.save_log(decoded, block_info)
 
             # 2nd Decode other logs (not triggered by factory contracts)
             # Get ABI's from settings
@@ -101,5 +119,4 @@ class Bot(Singleton):
             # save factory logs (decoded ones) on database
             decoded = self.decoder.decode_logs(other_logs)
             if decoded and len(decoded):
-                # TODO, other module/function
-                pass
+                self.save_log(decoded, block_info)
