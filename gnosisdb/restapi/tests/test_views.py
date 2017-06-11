@@ -3,11 +3,11 @@ from __future__ import unicode_literals, absolute_import
 from django.core.urlresolvers import reverse
 from rest_framework.test import APITestCase
 from rest_framework import status
-from gnosisdb.relationaldb.factories import (
+from relationaldb.factories import (
     CentralizedOracleFactory, UltimateOracleFactory,
     EventFactory, OutcomeTokenFactory, MarketFactory
 )
-from gnosisdb.relationaldb.models import CentralizedOracle, UltimateOracle, Market
+from relationaldb.models import CentralizedOracle, UltimateOracle, Market
 
 import json
 

@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 import factory as factory_boy
 from faker import Factory as FakerFactory, Faker
 from factory.fuzzy import FuzzyDateTime
-from gnosisdb.relationaldb import models
+from relationaldb import models
 import random
 import hashlib
 from datetime import datetime

@@ -1,7 +1,7 @@
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import serializers
-from gnosisdb.relationaldb.models import ScalarEventDescription, CategoricalEventDescription, Oracle
-from gnosisdb.relationaldb.models import CentralizedOracle, UltimateOracle, Event, Market
+from relationaldb.models import ScalarEventDescription, CategoricalEventDescription, Oracle
+from relationaldb.models import CentralizedOracle, UltimateOracle, Event, Market
 
 
 class ContractSerializer(serializers.BaseSerializer):
