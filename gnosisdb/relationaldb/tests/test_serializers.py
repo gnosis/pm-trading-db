@@ -9,7 +9,7 @@ class TestSerializers(TestCase):
 
         block = {
             'number': oracle.creation_block,
-            'creationDate': oracle.creation_date
+            'timestamp': oracle.creation_date
         }
 
         oracle_event = {
