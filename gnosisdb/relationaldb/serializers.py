@@ -1,16 +1,17 @@
 from rest_framework import serializers
 from relationaldb import models
-
+from restapi.serializers import IPFSEventDescriptionDeserializer
 
 # Declare basic fields, join params on root object and
 class ContractSerializer(serializers.BaseSerializer):
     class Meta:
-        fields = ('factory', 'address', 'creator', 'creation_date', 'creation_block', )
+        fields = ('factory', 'creator', 'creation_date', 'creation_block', )
 
-    address = serializers.CharField()
+    # address = serializers.CharField()
     factory = serializers.CharField(max_length=22)  # included prefix
     creation_date = serializers.DateTimeField()
     creation_block = serializers.IntegerField()
+    creator = serializers.CharField(max_length=22)
 
     def __init__(self, *args, **kwargs):
         self.block = kwargs.pop('block')
@@ -28,34 +29,23 @@ class ContractSerializer(serializers.BaseSerializer):
 
         self.initial_data = new_data
 
-    """def to_internal_value(self, data):
-        factory = data.get('address')
-        if not factory:
-            raise serializers.ValidationError('Invalid event, factory address needed')
-        internal_value = {
-            'factory': factory,
-            'creation_date': self.block.get('timestamp'),
-            'creation_block': self.block.get('number')
-        }
-        for param in data.get('params'):
-            internal_value[param[u'name']] = param[u'value']
-        return internal_value"""
-
 
 class CentralizedOracleSerializer(ContractSerializer, serializers.ModelSerializer):
     
     class Meta:
         model = models.CentralizedOracle
-        fields = ContractSerializer.Meta.fields + ('owner', )
+        fields = ContractSerializer.Meta.fields + ('ipfsHash', 'centralizedOracle')
 
-    address = serializers.CharField(max_length=22)
-    creator = serializers.CharField(max_length=22)
-    owner = serializers.CharField(max_length=22)
+    # owner = serializers.CharField(max_length=22)
+    centralizedOracle = serializers.CharField(max_length=22, source='address')
+    ipfsHash = IPFSEventDescriptionDeserializer(source='event_description')
 
-    def to_internal_value(self, data):
-        data['owner'] = data['creator']
-        data['address'] = data.pop('centralizedOracle')
-        return data
+    # def to_internal_value(self, data):
+    #     data['owner'] = data['creator']
+    #     data['address'] = data.pop('centralizedOracle')
+    #     data['is_outcome_set'] = False
+    #     data['event_description'] = data.pop('ipfsHash')
+    #     return data
 
     # ipfs_hash
 

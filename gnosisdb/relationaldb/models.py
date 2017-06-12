@@ -60,7 +60,7 @@ class CategoricalEventDescription(EventDescription):
 # Oracles
 class Oracle(Contract):
     is_outcome_set = models.BooleanField()
-    outcome = models.BigIntegerField()
+    outcome = models.BigIntegerField(null=True)
 
 
 class CentralizedOracle(Oracle):

@@ -23,10 +23,10 @@ class TestSerializers(TestCase):
                     'name': 'centralizedOracle',
                     'value': oracle.address
                 },
-                # {
-                #     'name': 'ipfsHash',
-                #     'value': oracle.event_description
-                # }
+                {
+                    'name': 'ipfsHash',
+                    'value': oracle.event_description.ipfs_hash
+                }
             ]
         }
 

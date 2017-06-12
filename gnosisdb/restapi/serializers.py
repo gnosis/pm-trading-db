@@ -65,6 +65,7 @@ class IPFSEventDescriptionDeserializer(serializers.ModelSerializer):
 
     def validate_ipfs_hash(self, value):
         ipfs = Ipfs()
+        json_obj = None
         try:
             json_obj = ipfs.get(value)
         except ErrorResponse:
@@ -82,21 +83,19 @@ class IPFSEventDescriptionDeserializer(serializers.ModelSerializer):
             raise serializers.ValidationError('Scalar Event Description must have both unit and decimals fields.')
         elif 'unit' in json_obj and 'decimals' in json_obj and 'outcomes' in json_obj:
             raise serializers.ValidationError('Event description must be scalar or categorical, not both.')
-        return value
-
+        return json_obj
 
     def create(self, validated_data):
-        data = Ipfs().get(validated_data['ipfs_hash'])
-        if 'unit' in data and 'decimals' in data:
+        if 'unit' in validated_data and 'decimals' in validated_data:
             fields = self.scalar_fields
             Serializer = ScalarEventDescriptionSerializer
-        elif 'outcomes' in data:
+        elif 'outcomes' in validated_data:
             fields = self.categorical_fields
             Serializer = CategoricalEventDescriptionSerializer
         else:
             # Should not be reachable if validate_ipfs_hash() is correct.
             raise serializers.ValidationError('Incomplete event description.')
-        extracted = dict((key, data[key]) for key in fields)
+        extracted = dict((key, validated_data[key]) for key in fields)
         extracted['ipfs_hash'] = validated_data['ipfs_hash']
         instance = Serializer(data=extracted)
         instance.is_valid(raise_exception=True)
