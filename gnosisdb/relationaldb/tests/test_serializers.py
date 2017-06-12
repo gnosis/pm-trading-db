@@ -171,10 +171,59 @@ class TestSerializers(TestCase):
         self.assertIsNotNone(instance.pk)
 
     def test_create_ultimate_oracle_no_forwarded(self):
-        pass
+        forwarded_oracle = CentralizedOracleFactory()
+        ultimate_oracle = UltimateOracleFactory()
+
+        block = {
+            'number': ultimate_oracle.creation_block,
+            'timestamp': ultimate_oracle.creation_date
+        }
+
+        oracle_event = {
+            'address': ultimate_oracle.factory[0:6] + 'another',
+            'params': [
+                {
+                    'name': 'creator',
+                    'value': ultimate_oracle.creator
+                },
+                {
+                    'name': 'ultimateOracle',
+                    'value': ultimate_oracle.address[0:6] + 'another',
+                },
+                {
+                    'name': 'oracle',
+                    'value': ultimate_oracle.forwarded_oracle.address[0:8] + 'wrong oracle'
+                },
+                {
+                    'name': 'collateralToken',
+                    'value': ultimate_oracle.collateral_token
+                },
+                {
+                    'name': 'spreadMultiplier',
+                    'value': ultimate_oracle.spread_multiplier
+                },
+                {
+                    'name': 'challengePeriod',
+                    'value': ultimate_oracle.challenge_period
+                },
+                {
+                    'name': 'challengeAmount',
+                    'value': ultimate_oracle.challenge_amount
+                },
+                {
+                    'name': 'frontRunnerPeriod',
+                    'value': ultimate_oracle.front_runner_period
+                }
+            ]
+        }
+
+        s = UltimateOracleSerializer(data=oracle_event, block=block)
+        self.assertTrue(s.is_valid(), s.errors)
+        instance = s.save()
+        self.assertIsNotNone(instance)
+        self.assertIsNotNone(instance.pk)
+        self.assertIsNone(instance.forwarded_oracle)
     
-    def test_create_ultimate_oracle_no_collateral(self):
-        pass
 
     def test_create_scalar_event(self):
         event_factory = EventFactory()
