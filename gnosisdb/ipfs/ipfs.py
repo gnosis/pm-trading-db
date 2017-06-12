@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
+from django.conf import settings
 from gnosisdb.utils import singleton
 import ipfsapi
 
@@ -7,7 +8,7 @@ import ipfsapi
 class Ipfs(object):
 
     def __init__(self):
-        self.api = ipfsapi.connect('https://ipfs.infura.io', 5001)
+        self.api = ipfsapi.connect(settings.IPFS_HOST, settings.IPFS_PORT)
 
     def get(self, ipfs_hash):
         """Returns ipfs_hash's json related object
@@ -23,7 +24,7 @@ class Ipfs(object):
         :return: the ipfs_hash
         """
         ipfs_hash = None
-        
+
         if (isinstance(python_object, dict)):
             ipfs_hash = self.api.add_json(python_object)
 

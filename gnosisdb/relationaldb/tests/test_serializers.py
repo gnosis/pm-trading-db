@@ -4,7 +4,8 @@ from relationaldb.serializers import CentralizedOracleSerializer
 
 
 class TestSerializers(TestCase):
-    def test_centralized_oracle(self):
+
+    def test_deserialize_centralized_oracle(self):
         oracle = CentralizedOracleFactory()
 
         block = {
@@ -26,6 +27,35 @@ class TestSerializers(TestCase):
                 {
                     'name': 'ipfsHash',
                     'value': oracle.event_description.ipfs_hash
+                }
+            ]
+        }
+
+        s = CentralizedOracleSerializer(data=oracle_event, block=block)
+        self.assertTrue(s.is_valid(), s.errors)
+
+    def test_create_centralized_oracle(self):
+        oracle = CentralizedOracleFactory()
+
+        block = {
+            'number': oracle.creation_block,
+            'timestamp': oracle.creation_date
+        }
+
+        oracle_event = {
+            'address': oracle.factory[1:-7] + 'GIACOMO',
+            'params': [
+                {
+                    'name': 'creator',
+                    'value': oracle.creator
+                },
+                {
+                    'name': 'centralizedOracle',
+                    'value': oracle.address[1:-7] + 'GIACOMO',
+                },
+                {
+                    'name': 'ipfsHash',
+                    'value': oracle.event_description.ipfs_hash[1:-7] + ''
                 }
             ]
         }

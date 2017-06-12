@@ -45,7 +45,7 @@ class EventDescription(models.Model):
     title = models.TextField()
     description = models.TextField()
     resolution_date = models.DateTimeField()
-    ipfs_hash = models.CharField(max_length=46)
+    ipfs_hash = models.CharField(max_length=46, unique=True)
 
 
 class ScalarEventDescription(EventDescription):
@@ -59,13 +59,13 @@ class CategoricalEventDescription(EventDescription):
 
 # Oracles
 class Oracle(Contract):
-    is_outcome_set = models.BooleanField()
+    is_outcome_set = models.BooleanField(default=False)
     outcome = models.BigIntegerField(null=True)
 
 
 class CentralizedOracle(Oracle):
     owner = models.CharField(max_length=20) # owner can be updated
-    event_description = models.ForeignKey('EventDescription')
+    event_description = models.ForeignKey('EventDescription', unique=False, null=True)
 
 
 class UltimateOracle(Oracle):
