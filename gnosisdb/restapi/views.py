@@ -2,8 +2,9 @@ from django.shortcuts import get_object_or_404
 from rest_framework import generics
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from relationaldb.models import UltimateOracle, CentralizedOracle, Event, Market
+from relationaldb.models import UltimateOracle, CentralizedOracle, Event, Market, EventDescription
 from .serializers import UltimateOracleSerializer, CentralizedOracleSerializer, EventSerializer, MarketSerializer
+from .serializers import IPFSEventDescriptionDeserializer
 from .filters import CentralizedOracleFilter, UltimateOracleFilter, EventFilter, MarketFilter, DefaultPagination
 
 
@@ -65,6 +66,11 @@ class MarketFetchView(generics.RetrieveAPIView):
 
     def get_object(self):
         return get_object_or_404(Market, address=self.kwargs['addr'])
+
+
+class EventDescriptionCreateView(generics.CreateAPIView):
+    queryset = EventDescription.objects.all()
+    serializer_class = IPFSEventDescriptionDeserializer
 
 
 @api_view(['GET'])

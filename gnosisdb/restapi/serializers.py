@@ -1,7 +1,9 @@
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import serializers
-from relationaldb.models import ScalarEventDescription, CategoricalEventDescription, Oracle
+from relationaldb.models import EventDescription, ScalarEventDescription, CategoricalEventDescription, Oracle
 from relationaldb.models import CentralizedOracle, UltimateOracle, Event, Market
+from ipfsapi.exceptions import ErrorResponse
+from gnosisdb.ipfs.ipfs import Ipfs
 
 
 class ContractSerializer(serializers.BaseSerializer):
@@ -15,7 +17,11 @@ class ContractSerializer(serializers.BaseSerializer):
         }
 
 
-class EventDescriptionSerializer(serializers.BaseSerializer):
+class EventDescriptionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EventDescription
+        exclude = ('id',)
+
     def to_representation(self, instance):
         result = {
             'title': instance.title,
@@ -38,6 +44,35 @@ class EventDescriptionSerializer(serializers.BaseSerializer):
             pass
 
         return result
+
+
+class IPFSEventDescriptionDeserializer(serializers.ModelSerializer):
+    class Meta:
+        model = EventDescription
+        fields = ('ipfs_hash',)
+
+    def validate_ipfs_hash(self, value):
+        ipfs = Ipfs()
+        try:
+            json_obj = ipfs.get(value)
+        except ErrorResponse:
+            raise serializers.ValidationError('IPFS Reference does not exist.')
+        if 'title' not in json_obj:
+            raise serializers.ValidationError('IPFS Object does not contain an event title.')
+        elif 'description' not in json_obj:
+            raise serializers.ValidationError('IPFS Object does not contain an event description.')
+        elif 'resolution_date' not in json_obj:
+            raise serializers.ValidationError('IPFS Object does not contain an event resolution date.')
+        return value
+
+
+    def create(self, validated_data):
+        data = Ipfs().get(validated_data['ipfs_hash'])
+        extracted = dict((key, data[key]) for key in ('title', 'description', 'resolution_date'))
+        extracted['ipfs_hash'] = validated_data['ipfs_hash']
+        instance = EventDescriptionSerializer(data=extracted)
+        instance.is_valid(raise_exception=True)
+        return instance.save()
 
 
 class OracleSerializer(serializers.ModelSerializer):
