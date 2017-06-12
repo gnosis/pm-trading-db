@@ -223,10 +223,9 @@ class TestSerializers(TestCase):
         self.assertIsNotNone(instance)
         self.assertIsNotNone(instance.pk)
         self.assertIsNone(instance.forwarded_oracle)
-    
 
     def test_create_scalar_event(self):
-        event_factory = EventFactory()
+        event = EventFactory()
         oracle = OracleFactory()
 
         block = {
@@ -243,7 +242,7 @@ class TestSerializers(TestCase):
                 },
                 {
                     'name': 'collateralToken',
-                    'value': event_factory.collateral_token
+                    'value': event.collateral_token
                 },
                 {
                     'name': 'oracle',
@@ -260,6 +259,10 @@ class TestSerializers(TestCase):
                 {
                     'name': 'lowerBound',
                     'value': 0
+                },
+                {
+                    'name': 'scalarEvent',
+                    'value': event.address[1:-7] + 'GIACOMO'
                 }
             ]
         }

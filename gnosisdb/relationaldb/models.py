@@ -23,7 +23,6 @@ class Event(Contract):
     oracle = models.ForeignKey('Oracle')
     is_winning_outcome_set = models.BooleanField(default=False)
     winning_outcome = models.BigIntegerField(null=True)
-    # outcome_tokens = models.ManyToManyField('OutcomeToken')
 
 
 class ScalarEvent(Event):

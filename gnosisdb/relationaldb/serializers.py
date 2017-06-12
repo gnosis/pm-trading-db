@@ -123,15 +123,24 @@ class EventSerializer(ContractSerializer, serializers.ModelSerializer):
 
     collateralToken = serializers.CharField(max_length=20, source='collateral_token')
     creator = serializers.CharField(max_length=20)
-    oracle = OracleField
-    # outcomeCount = serializers.IntegerField(source='outcome_count')
+    oracle = OracleField()
 
 
 class ScalarEventSerializer(EventSerializer, serializers.ModelSerializer):
 
     class Meta:
         model = models.ScalarEvent
-        fields = EventSerializer.Meta.fields + ('lowerBound', 'upperBound',)
+        fields = EventSerializer.Meta.fields + ('lowerBound', 'upperBound', 'scalarEvent')
 
     lowerBound = serializers.IntegerField(source='lower_bound')
     upperBound = serializers.IntegerField(source='upper_bound')
+    scalarEvent = serializers.CharField(source='address')
+
+
+# class CategoricalEventSerializer(EventSerializer, serializers.ModelSerializer):
+#
+#     class Meta:
+#         model = models.CategoricalEvent
+#         fields = EventSerializer.Meta.fields + ('outcomes', )
+#
+#     outcomes = serializers.ListField()
