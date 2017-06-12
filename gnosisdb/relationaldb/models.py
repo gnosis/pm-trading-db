@@ -69,7 +69,7 @@ class CentralizedOracle(Oracle):
 
 
 class UltimateOracle(Oracle):
-    forwarded_oracle = models.ForeignKey('Oracle', related_name='ultimate_oracle_forwarded_oracle')
+    forwarded_oracle = models.ForeignKey('Oracle', related_name='ultimate_oracle_forwarded_oracle', null=True)
     collateral_token = models.CharField(max_length=20)
     spread_multiplier = models.PositiveIntegerField()
     challenge_period = models.BigIntegerField()

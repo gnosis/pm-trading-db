@@ -1,8 +1,8 @@
 from rest_framework import serializers
 from rest_framework.fields import CharField
 from relationaldb import models
-from restapi.serializers import IPFSEventDescriptionDeserializer
 from ipfs.ipfs import Ipfs
+
 
 # Declare basic fields, join params on root object and
 class ContractSerializer(serializers.BaseSerializer):
@@ -10,10 +10,10 @@ class ContractSerializer(serializers.BaseSerializer):
         fields = ('factory', 'creator', 'creation_date', 'creation_block', )
 
     # address = serializers.CharField()
-    factory = serializers.CharField(max_length=22)  # included prefix
+    factory = serializers.CharField(max_length=20)  # included prefix
     creation_date = serializers.DateTimeField()
     creation_block = serializers.IntegerField()
-    creator = serializers.CharField(max_length=22)
+    creator = serializers.CharField(max_length=20)
 
     def __init__(self, *args, **kwargs):
         self.block = kwargs.pop('block')
@@ -70,6 +70,25 @@ class IpfsHashField(CharField):
             return event_description
 
 
+class OracleField(CharField):
+    def __init__(self, **kwargs):
+        super(OracleField, self).__init__(**kwargs)
+
+    def to_internal_value(self, data):
+        address_len = len(data)
+        if address_len > 20:
+            raise serializers.ValidationError('Maximum address length of 20 chars')
+        elif address_len < 20:
+            raise serializers.ValidationError('Address must have 20 chars')
+        else:
+            # Check oracle exists or save Null
+            try:
+                oracle = models.Oracle.objects.get(address=data)
+                return oracle
+            except models.Oracle.DoesNotExist:
+                return None
+
+
 class CentralizedOracleSerializer(ContractSerializer, serializers.ModelSerializer):
     
     class Meta:
@@ -77,14 +96,21 @@ class CentralizedOracleSerializer(ContractSerializer, serializers.ModelSerialize
         fields = ContractSerializer.Meta.fields + ('ipfsHash', 'centralizedOracle')
 
     # owner = serializers.CharField(max_length=22)
-    centralizedOracle = serializers.CharField(max_length=22, source='address')
+    centralizedOracle = serializers.CharField(max_length=20, source='address')
     ipfsHash = IpfsHashField(source='event_description')
 
 
+class UltimateOracleSerializer(ContractSerializer, serializers.ModelSerializer):
 
-    """def to_internal_value(self, data):
-        data['owner'] = data['creator']
-        data['address'] = data.pop('centralizedOracle')
-        data['is_outcome_set'] = False
-        data['event_description'] = data.pop('ipfsHash')
-        return data"""
+    class Meta:
+        model = models.UltimateOracle
+        fields = ContractSerializer.Meta.fields + ('ultimateOracle', 'oracle', 'collateralToken',
+                                                   'spreadMultiplier', 'challengePeriod', 'challengeAmount',
+                                                   'frontRunnerPeriod')
+        ultimateOracle = serializers.CharField(max_length=20, source='address')
+        oracle = OracleField(source='forwarded_oracle')
+        collateralToken = serializers.CharField(max_length=20, source='collateral_token')
+        spreadMultiplier = serializers.IntegerField(source='spread_multiplier')
+        challengePeriod = serializers.IntegerField(source='challenge_period')
+        challengeAmount = serializers.IntegerField(source='challenge_amount')
+        frontRunnerPeriod = serializers.IntegerField(source='front_runner_period')

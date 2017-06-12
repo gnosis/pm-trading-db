@@ -1,5 +1,5 @@
 from unittest import TestCase
-from relationaldb.factories import CentralizedOracleFactory
+from relationaldb.factories import CentralizedOracleFactory, UltimateOracleFactory
 from relationaldb.serializers import CentralizedOracleSerializer
 
 
@@ -64,3 +64,12 @@ class TestSerializers(TestCase):
         self.assertTrue(s.is_valid(), s.errors)
         instance = s.save()
         self.assertIsNotNone(instance)
+
+    def test_deserialize_ultimate_oracle(self):
+        oracle = UltimateOracleFactory()
+
+    def test_create_ultimate_oracle_no_forwarded(self):
+        pass
+
+    def test_create_ultimate_oracle_no_collateral(self):
+        pass
