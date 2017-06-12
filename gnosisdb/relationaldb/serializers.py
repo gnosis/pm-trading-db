@@ -114,3 +114,25 @@ class UltimateOracleSerializer(ContractSerializer, serializers.ModelSerializer):
         challengePeriod = serializers.IntegerField(source='challenge_period')
         challengeAmount = serializers.IntegerField(source='challenge_amount')
         frontRunnerPeriod = serializers.IntegerField(source='front_runner_period')
+
+
+class EventSerializer(ContractSerializer, serializers.ModelSerializer):
+
+    class Meta:
+        models = models.Event
+        fields = ContractSerializer.Meta.fields + ('collateralToken', 'creator', 'oracle',)
+
+    collateralToken = serializers.CharField(max_length=20, source='collateral_token')
+    creator = serializers.CharField(max_length=20)
+    oracle = OracleField
+    # outcomeCount = serializers.IntegerField(source='outcome_count')
+
+
+class ScalarEventSerializer(EventSerializer, serializers.ModelSerializer):
+
+    class Meta:
+        model = models.ScalarEvent
+        fields = EventSerializer.Meta.fields + ('lowerBound', 'upperBound',)
+
+    lowerBound = serializers.IntegerField(source='lower_bound')
+    upperBound = serializers.IntegerField(source='upper_bound')

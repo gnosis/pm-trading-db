@@ -21,8 +21,8 @@ class Contract(models.Model):
 class Event(Contract):
     collateral_token = models.CharField(max_length=20)
     oracle = models.ForeignKey('Oracle')
-    is_winning_outcome_set = models.BooleanField()
-    winning_outcome = models.BigIntegerField()
+    is_winning_outcome_set = models.BooleanField(default=False)
+    winning_outcome = models.BigIntegerField(null=True)
     # outcome_tokens = models.ManyToManyField('OutcomeToken')
 
 
