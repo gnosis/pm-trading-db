@@ -8,7 +8,7 @@ class ContractSerializer(serializers.BaseSerializer):
     def to_representation(self, instance):
         return {
             'address': instance.address,
-            #'factory_address': instance.factory_address,
+            # 'factory_address': instance.factory_address,
             'creator': instance.creator,
             'creation_date': instance.creation_date,
             'creation_block': instance.creation_block
