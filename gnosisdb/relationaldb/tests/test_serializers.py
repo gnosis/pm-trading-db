@@ -1,6 +1,8 @@
 from unittest import TestCase
 from relationaldb.factories import OracleFactory, CentralizedOracleFactory, UltimateOracleFactory, EventFactory
-from relationaldb.serializers import CentralizedOracleSerializer, EventSerializer, ScalarEventSerializer
+from relationaldb.serializers import (
+    CentralizedOracleSerializer, EventSerializer, ScalarEventSerializer, UltimateOracleSerializer
+)
 
 
 class TestSerializers(TestCase):
@@ -66,15 +68,115 @@ class TestSerializers(TestCase):
         self.assertIsNotNone(instance)
 
     def test_deserialize_ultimate_oracle(self):
-        oracle = UltimateOracleFactory()
+        forwarded_oracle = CentralizedOracleFactory()
+        ultimate_oracle = UltimateOracleFactory()
+
+        block = {
+            'number': ultimate_oracle.creation_block,
+            'timestamp': ultimate_oracle.creation_date
+        }
+
+        oracle_event = {
+            'address': ultimate_oracle.factory,
+            'params': [
+                {
+                    'name': 'creator',
+                    'value': ultimate_oracle.creator
+                },
+                {
+                    'name': 'ultimateOracle',
+                    'value': ultimate_oracle.address
+                },
+                {
+                    'name': 'oracle',
+                    'value': forwarded_oracle.address
+                },
+                {
+                    'name': 'collateralToken',
+                    'value': ultimate_oracle.collateral_token
+                },
+                {
+                    'name': 'spreadMultiplier',
+                    'value': ultimate_oracle.spread_multiplier
+                },
+                {
+                    'name': 'challengePeriod',
+                    'value': ultimate_oracle.challenge_period
+                },
+                {
+                    'name': 'challengeAmount',
+                    'value': ultimate_oracle.challenge_amount
+                },
+                {
+                    'name': 'frontRunnerPeriod',
+                    'value': ultimate_oracle.front_runner_period
+                }
+            ]
+        }
+
+        s = UltimateOracleSerializer(data=oracle_event, block=block)
+        self.assertTrue(s.is_valid(), s.errors)
+
+    def test_create_ultimate_oracle(self):
+        forwarded_oracle = CentralizedOracleFactory()
+        ultimate_oracle = UltimateOracleFactory()
+
+        block = {
+            'number': ultimate_oracle.creation_block,
+            'timestamp': ultimate_oracle.creation_date
+        }
+
+        oracle_event = {
+            'address': ultimate_oracle.factory[0:7] + 'another',
+            'params': [
+                {
+                    'name': 'creator',
+                    'value': ultimate_oracle.creator
+                },
+                {
+                    'name': 'ultimateOracle',
+                    'value': ultimate_oracle.address[0:7] + 'another',
+                },
+                {
+                    'name': 'oracle',
+                    'value': forwarded_oracle.address
+                },
+                {
+                    'name': 'collateralToken',
+                    'value': ultimate_oracle.collateral_token
+                },
+                {
+                    'name': 'spreadMultiplier',
+                    'value': ultimate_oracle.spread_multiplier
+                },
+                {
+                    'name': 'challengePeriod',
+                    'value': ultimate_oracle.challenge_period
+                },
+                {
+                    'name': 'challengeAmount',
+                    'value': ultimate_oracle.challenge_amount
+                },
+                {
+                    'name': 'frontRunnerPeriod',
+                    'value': ultimate_oracle.front_runner_period
+                }
+            ]
+        }
+
+        s = UltimateOracleSerializer(data=oracle_event, block=block)
+        self.assertTrue(s.is_valid(), s.errors)
+        instance = s.save()
+        self.assertIsNotNone(instance)
+        self.assertIsNotNone(instance.pk)
 
     def test_create_ultimate_oracle_no_forwarded(self):
         pass
-
+    
     def test_create_ultimate_oracle_no_collateral(self):
         pass
 
-    def test_event_serializer(self):
+    def test_create_scalar_event(self):
         event_factory = EventFactory()
         oracle = OracleFactory()
 

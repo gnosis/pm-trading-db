@@ -75,11 +75,11 @@ class UltimateOracle(Oracle):
     challenge_period = models.BigIntegerField()
     challenge_amount = models.BigIntegerField()
     front_runner_period = models.BigIntegerField()
-    forwarded_outcome = models.BigIntegerField()
-    outcome_set_at_timestamp = models.BigIntegerField()
-    front_runner = models.BigIntegerField()
-    front_runner_set_at_timestamp = models.BigIntegerField()
-    total_amount = models.BigIntegerField()
+    forwarded_outcome = models.BigIntegerField(null=True)
+    outcome_set_at_timestamp = models.BigIntegerField(null=True)
+    front_runner = models.BigIntegerField(null=True)
+    front_runner_set_at_timestamp = models.BigIntegerField(null=True)
+    total_amount = models.BigIntegerField(null=True)
 
 
 # Market

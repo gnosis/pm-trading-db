@@ -95,7 +95,6 @@ class CentralizedOracleSerializer(ContractSerializer, serializers.ModelSerialize
         model = models.CentralizedOracle
         fields = ContractSerializer.Meta.fields + ('ipfsHash', 'centralizedOracle')
 
-    # owner = serializers.CharField(max_length=22)
     centralizedOracle = serializers.CharField(max_length=20, source='address')
     ipfsHash = IpfsHashField(source='event_description')
 
@@ -107,13 +106,13 @@ class UltimateOracleSerializer(ContractSerializer, serializers.ModelSerializer):
         fields = ContractSerializer.Meta.fields + ('ultimateOracle', 'oracle', 'collateralToken',
                                                    'spreadMultiplier', 'challengePeriod', 'challengeAmount',
                                                    'frontRunnerPeriod')
-        ultimateOracle = serializers.CharField(max_length=20, source='address')
-        oracle = OracleField(source='forwarded_oracle')
-        collateralToken = serializers.CharField(max_length=20, source='collateral_token')
-        spreadMultiplier = serializers.IntegerField(source='spread_multiplier')
-        challengePeriod = serializers.IntegerField(source='challenge_period')
-        challengeAmount = serializers.IntegerField(source='challenge_amount')
-        frontRunnerPeriod = serializers.IntegerField(source='front_runner_period')
+    ultimateOracle = serializers.CharField(max_length=20, source='address')
+    oracle = OracleField(source='forwarded_oracle')
+    collateralToken = serializers.CharField(max_length=20, source='collateral_token')
+    spreadMultiplier = serializers.IntegerField(source='spread_multiplier')
+    challengePeriod = serializers.IntegerField(source='challenge_period')
+    challengeAmount = serializers.IntegerField(source='challenge_amount')
+    frontRunnerPeriod = serializers.IntegerField(source='front_runner_period')
 
 
 class EventSerializer(ContractSerializer, serializers.ModelSerializer):
