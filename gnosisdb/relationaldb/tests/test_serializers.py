@@ -4,8 +4,13 @@ from relationaldb.serializers import (
     CentralizedOracleSerializer, EventSerializer, ScalarEventSerializer, UltimateOracleSerializer
 )
 
+from ipfs.ipfs import Ipfs
+
 
 class TestSerializers(TestCase):
+
+    def setUp(self):
+        self.ipfs = Ipfs()
 
     def test_deserialize_centralized_oracle(self):
         oracle = CentralizedOracleFactory()
@@ -38,6 +43,7 @@ class TestSerializers(TestCase):
 
     def test_create_centralized_oracle(self):
         oracle = CentralizedOracleFactory()
+        event_description_json = None
 
         block = {
             'number': oracle.creation_block,
@@ -61,6 +67,19 @@ class TestSerializers(TestCase):
                 }
             ]
         }
+
+        s = CentralizedOracleSerializer(data=oracle_event, block=block)
+        # ipfs_hash not saved to IPFS
+        self.assertFalse(s.is_valid(), s.errors)
+        # oracle.event_description
+        event_description_json = {
+            'title': oracle.event_description.title,
+            'description': oracle.event_description.description,
+            'resolution_date': oracle.event_description.resolution_date.isoformat()
+        }
+        # save event_description to IPFS
+        ipfs_hash = self.ipfs.post(event_description_json)
+        oracle_event.get('params')[2]['value'] = ipfs_hash
 
         s = CentralizedOracleSerializer(data=oracle_event, block=block)
         self.assertTrue(s.is_valid(), s.errors)
@@ -224,7 +243,6 @@ class TestSerializers(TestCase):
         self.assertIsNotNone(instance.pk)
         self.assertIsNone(instance.forwarded_oracle)
     
-
     def test_create_scalar_event(self):
         event_factory = EventFactory()
         oracle = OracleFactory()
