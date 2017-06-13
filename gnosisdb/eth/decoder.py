@@ -72,7 +72,20 @@ class Decoder(Singleton):
                         data_i += 1
 
                     if u'[]' in param[u'type']:
-                        decoded_p[u'value'] = list([self.remove_prefix(account) for account in decoded_p[u'value']])
+                        if u'int' in param[u'type']:
+                            decoded_p[u'value'] = list([long(account) for account in decoded_p[u'value']])
+                        elif u'address' in param[u'type']:
+                            decoded_p[u'value'] = list([self.remove_prefix(account) for account in decoded_p[u'value']])
+                        else:
+                            decoded_p[u'value'] = list(decoded_p[u'value'])
+                    elif u'int' in param[u'type']:
+                        decoded_p[u'value'] = long(decoded_p[u'value'])
+                    elif u'address' == param[u'type']:
+                        address = self.remove_prefix(decoded_p[u'value'])
+                        if len(address) == 20:
+                            decoded_p[u'value'] = address
+                        elif len(address) == 64:
+                            decoded_p[u'value'] = decoded_p[u'value'][24::]
 
                     decoded_params.append(decoded_p)
                 decoded.append({

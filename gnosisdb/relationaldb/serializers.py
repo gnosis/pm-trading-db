@@ -103,7 +103,6 @@ class EventField(CharField):
             raise serializers.ValidationError('eventContract address must exist')
 
 
-
 class CentralizedOracleSerializer(ContractSerializer, serializers.ModelSerializer):
     
     class Meta:
