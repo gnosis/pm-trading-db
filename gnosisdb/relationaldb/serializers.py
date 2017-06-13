@@ -90,6 +90,20 @@ class OracleField(CharField):
                 return None
 
 
+class EventField(CharField):
+    def __init__(self, **kwargs):
+        super(EventField, self).__init__(**kwargs)
+
+    def to_internal_value(self, data):
+        event = None
+        try:
+            event = models.Event.objects.get(address=data)
+            return event
+        except models.Event.DoesNotExist:
+            raise serializers.ValidationError('eventContract address must exist')
+
+
+
 class CentralizedOracleSerializer(ContractSerializer, serializers.ModelSerializer):
     
     class Meta:
@@ -138,10 +152,23 @@ class ScalarEventSerializer(EventSerializer, serializers.ModelSerializer):
     scalarEvent = serializers.CharField(source='address', max_length=20)
 
 
-# class CategoricalEventSerializer(EventSerializer, serializers.ModelSerializer):
-#
-#     class Meta:
-#         model = models.CategoricalEvent
-#         fields = EventSerializer.Meta.fields
-#
-#     address = serializers.CharField(source='address', max_length=20)
+class CategoricalEventSerializer(EventSerializer, serializers.ModelSerializer):
+    class Meta:
+        model = models.CategoricalEvent
+        fields = EventSerializer.Meta.fields + ('categoricalEvent',)
+
+    categoricalEvent = serializers.CharField(source='address', max_length=20)
+
+
+class MarketSerializer(ContractSerializer, serializers.ModelSerializer):
+
+    class Meta:
+        model = models.Market
+        fields = ContractSerializer.Meta.fields + ('eventContract', 'marketMaker', 'fee',)
+
+    eventContract = EventField(source='event')
+    marketMaker = serializers.CharField(max_length=20, source='market_maker')
+    fee = serializers.IntegerField()
+
+
+
