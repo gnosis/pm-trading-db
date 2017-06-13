@@ -228,12 +228,12 @@ class TestDaemon(TestCase):
         self.assertEqual(2, len(decoded))
         self.assertDictEqual(
             {
-                u'address': factory_address,
+                u'address': self.bot.decoder.remove_prefix(factory_address),
                 u'name': u'OwnersInit',
                 u'params': [
                     {
                         u'name': u'owners',
-                        u'value': self.bot.web3.eth.accounts[0:2]
+                        u'value': [self.bot.decoder.remove_prefix(account) for account in self.bot.web3.eth.accounts[0:2]]
                     }
                 ]
             },
@@ -241,16 +241,16 @@ class TestDaemon(TestCase):
         )
         self.assertDictEqual(
             {
-                u'address': factory_address,
+                u'address': self.bot.decoder.remove_prefix(factory_address),
                 u'name': u'ContractInstantiation',
                 u'params': [
                     {
                         u'name': 'sender',
-                        u'value': self.bot.web3.eth.coinbase
+                        u'value': self.bot.decoder.remove_prefix(self.bot.web3.eth.coinbase)
                     },
                     {
                         u'name': 'instantiation',
-                        u'value': decoded[1][u'params'][1][u'value']
+                        u'value': self.bot.decoder.remove_prefix(decoded[1][u'params'][1][u'value'])
                     }
                 ]
             },
