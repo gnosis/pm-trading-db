@@ -1,4 +1,4 @@
-from settings.local import *
+from gnosisdb.settings.local import *
 
 ETHEREUM_NODE_HOST='localhost'
 ETHEREUM_NODE_PORT = 8545

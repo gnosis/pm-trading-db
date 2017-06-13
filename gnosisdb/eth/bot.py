@@ -87,7 +87,8 @@ class Bot(Singleton):
                     if decoded:
                         # save decoded events if valid
                         for log_json in decoded:
-                            s = factory['factorySerializer'](data=log_json, block=block_info)
+                            s_class = __import__(factory['factorySerializer'])
+                            s = s_class(data=log_json, block=block_info)
                             if s.is_valid():
                                 s.save()
                 else:
