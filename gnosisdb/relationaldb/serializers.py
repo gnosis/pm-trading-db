@@ -64,11 +64,13 @@ class IpfsHashField(CharField):
 
             if 'outcomes' in event_description_json:
                 # categorical
-                event_description = models.CategoricalEventDescription.objects.create(event_description_json)
+                event_description = models.CategoricalEventDescription.objects.create(**event_description_json)
 
             elif 'decimals' in event_description_json:
-                #scalar
-                event_description = models.ScalarEventDescription.objects.create(event_description_json)
+                # scalar
+                event_description = models.ScalarEventDescription.objects.create(**event_description_json)
+            else:
+                raise serializers.ValidationError('Event must be categorical or scalar')
 
             return event_description
 
