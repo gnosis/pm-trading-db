@@ -2,6 +2,7 @@ from rest_framework import serializers
 from rest_framework.fields import CharField
 from relationaldb import models
 from ipfs.ipfs import Ipfs
+from ipfsapi.exceptions import ErrorResponse
 
 
 # Declare basic fields, join params on root object and
@@ -170,4 +171,62 @@ class MarketSerializer(ContractSerializer, serializers.ModelSerializer):
     fee = serializers.IntegerField()
 
 
+class ScalarEventDescriptionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.ScalarEventDescription
+        exclude = ('id',)
 
+
+class CategoricalEventDescriptionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.CategoricalEventDescription
+        exclude = ('id',)
+
+
+class IPFSEventDescriptionDeserializer(serializers.ModelSerializer):
+    basic_fields = ('ipfs_hash', 'title', 'description', 'resolution_date',)
+    scalar_fields = basic_fields + ('unit', 'decimals',)
+    categorical_fields = basic_fields + ('outcomes',)
+
+    class Meta:
+        model = models.EventDescription
+        fields = ('ipfs_hash',)
+
+    def validate(self, data):
+        json_obj = None
+        try:
+            json_obj = Ipfs().get(data['ipfs_hash'])
+            json_obj['ipfs_hash'] = data['ipfs_hash']
+        except ErrorResponse:
+            raise serializers.ValidationError('IPFS Reference does not exist.')
+
+        if 'title' not in json_obj:
+            raise serializers.ValidationError('IPFS Object does not contain an event title.')
+        elif 'description' not in json_obj:
+            raise serializers.ValidationError('IPFS Object does not contain an event description.')
+        elif 'resolution_date' not in json_obj:
+            raise serializers.ValidationError('IPFS Object does not contain an event resolution date.')
+        elif ('unit' not in json_obj or 'decimals' not in json_obj) and ('outcomes' not in json_obj):
+            raise serializers.ValidationError('Event Description must be scalar, with both unit and decimals fields, '
+                                              'or categorical, with an outcomes field.')
+        elif ('unit' in json_obj and 'decimals' not in json_obj) or ('unit' not in json_obj and 'decimals' in json_obj):
+            raise serializers.ValidationError('Scalar Event Description must have both unit and decimals fields.')
+        elif 'unit' in json_obj and 'decimals' in json_obj and 'outcomes' in json_obj:
+            raise serializers.ValidationError('Event description must be scalar or categorical, not both.')
+        return json_obj
+
+    def create(self, validated_data):
+        if 'unit' in validated_data and 'decimals' in validated_data:
+            fields = self.scalar_fields
+            Serializer = ScalarEventDescriptionSerializer
+        elif 'outcomes' in validated_data:
+            fields = self.categorical_fields
+            Serializer = CategoricalEventDescriptionSerializer
+        else:
+            # Should not be reachable if validate_ipfs_hash() is correct.
+            raise serializers.ValidationError('Incomplete event description.')
+        extracted = dict((key, validated_data[key]) for key in fields)
+        instance = Serializer(data=extracted)
+        instance.is_valid(raise_exception=True)
+        result = instance.save()
+        return result
