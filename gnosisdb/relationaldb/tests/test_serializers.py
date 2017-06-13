@@ -1,11 +1,11 @@
 from unittest import TestCase
 from relationaldb.factories import (
     OracleFactory, CentralizedOracleFactory, UltimateOracleFactory, EventFactory,
-    MarketFactory
+    MarketFactory, EventDescriptionFactory
 )
 from relationaldb.serializers import (
     CentralizedOracleSerializer, EventSerializer, ScalarEventSerializer, UltimateOracleSerializer,
-    CategoricalEventSerializer, MarketSerializer
+    CategoricalEventSerializer, MarketSerializer, IPFSEventDescriptionDeserializer
 )
 
 from ipfs.ipfs import Ipfs
@@ -399,3 +399,29 @@ class TestSerializers(TestCase):
         instance = s.save()
         self.assertIsNotNone(instance)
 
+    def test_create_categorical_event_description(self):
+        event_description_factory = EventDescriptionFactory()
+        categorical_event_description_json = {
+            'title': ' '.join(event_description_factory.title),
+            'description': ' '.join(event_description_factory.description),
+            'resolution_date': event_description_factory.resolution_date.isoformat(),
+            'outcomes': ['A', 'B', 'C']
+        }
+        ipfs_hash = self.ipfs.post(categorical_event_description_json)
+        serializer = IPFSEventDescriptionDeserializer(data={'ipfs_hash': ipfs_hash})
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+        self.assertIsNotNone(serializer.save())
+
+    def test_create_scalar_event_description(self):
+        event_description_factory = EventDescriptionFactory()
+        scalar_event_description_json = {
+            'title': ' '.join(event_description_factory.title),
+            'description': ' '.join(event_description_factory.description),
+            'resolution_date': event_description_factory.resolution_date.isoformat(),
+            'unit': 'X',
+            'decimals': '4',
+        }
+        ipfs_hash = self.ipfs.post(scalar_event_description_json)
+        serializer = IPFSEventDescriptionDeserializer(data={'ipfs_hash': ipfs_hash})
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+        self.assertIsNotNone(serializer.save())

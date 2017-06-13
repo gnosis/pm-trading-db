@@ -109,24 +109,5 @@ class TestViews(APITestCase):
         self.assertEquals(market_search_response.status_code, status.HTTP_200_OK)
         self.assertEquals(json.loads(market_search_response.content).get('contract').get('address'), markets[0].address)
 
-    def test_ipfs(self):
-        ipfs = Ipfs()
-        event_description_factory = EventDescriptionFactory()
-        event_description = {
-            'title': event_description_factory.title,
-            'description': event_description_factory.description,
-            'resolution_date': event_description_factory.resolution_date.isoformat(),
-            'unit': 'X',
-            'decimals': 1
-        }
-
-        ipfs_hash = ipfs.post(event_description)
-        event_description['ipfs_hash'] = ipfs_hash
-
-        ipfs_response = self.client.post(reverse('api:ipfs-desc'), data=json.dumps({'ipfs_hash': ipfs_hash}), content_type='application/json')
-        # self.assertEquals(ipfs_response.status_code, status.HTTP_201_CREATED)
-
     def test_factories(self):
         pass
-
-

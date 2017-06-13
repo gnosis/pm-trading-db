@@ -2,7 +2,7 @@
 from __future__ import unicode_literals
 from django.test import TestCase
 from ipfs.ipfs import Ipfs
-from exceptions import AttributeError
+from ipfsapi.exceptions import ErrorResponse
 
 
 class TestIpfs(TestCase):
@@ -16,5 +16,5 @@ class TestIpfs(TestCase):
         ipfs_json_data = ipfs.get(ipfs_hash)
         self.assertEquals(json_data.get("name"), ipfs_json_data.get("name"))
 
-        with self.assertRaises(AttributeError):
+        with self.assertRaises(ErrorResponse):
             ipfs.get("invalidhash")
