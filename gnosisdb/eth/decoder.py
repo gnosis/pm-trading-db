@@ -34,6 +34,13 @@ class Decoder(Singleton):
                 if self.methods.get(method_id):
                     del self.methods[method_id]
 
+    @staticmethod
+    def remove_prefix(data):
+        if data[0:2] == '0x':
+            return data[2::]
+        else:
+            return data
+
     def decode_logs(self, logs):
         decoded = []
         for log in logs:
@@ -58,20 +65,20 @@ class Decoder(Singleton):
                     }
 
                     if param[u'indexed']:
-                        decoded_p[u'value'] = log[u'topics'][topics_i]
+                        decoded_p[u'value'] = self.remove_prefix(log[u'topics'][topics_i])
                         topics_i += 1
                     else:
-                        decoded_p[u'value'] = decoded_data[data_i]
+                        decoded_p[u'value'] = self.remove_prefix(decoded_data[data_i])
                         data_i += 1
 
                     if u'[]' in param[u'type']:
-                        decoded_p[u'value'] = list(decoded_p[u'value'])
+                        decoded_p[u'value'] = list([self.remove_prefix(account) for account in decoded_p[u'value']])
 
                     decoded_params.append(decoded_p)
                 decoded.append({
                     u'params': decoded_params,
                     u'name': method[u'name'],
-                    u'address': log[u'address']
+                    u'address': self.remove_prefix(log[u'address'])
                 })
 
         return decoded

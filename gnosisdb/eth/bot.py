@@ -59,64 +59,40 @@ class Bot(Singleton):
         else:
             raise UnknownBlock
 
-    def save_log(self, logs, block_info):
-        for log in logs:
-            pass
-            # factory_address = log[u'address']
-            # block_number = block_info[u'number']
-            # created_at = block_info[u'timestamp']
-            #
-            # log_name = log[u'name']
-            # if log_name == u'CentralizedOracleCreation':
-            #     owner = log[u'inputs'][0]
-            #     address = log[u'inputs'][1]
-            #     ipfs_hash = log[u'inputs'][2]
-            #     CentralizedOracle.objects.create(owner=owner, address=address, ipfs_hash=ipfs_hash, )
-            # elif log_name == u'CategoricalEventCreation':
-            #     pass
-            # elif log_name == u'ScalarEventCreation':
-            #     pass
-            # elif log_name == u'MarketCreation':
-            #     pass
-
     def execute(self):
         # update block number
         # get blocks and decode logs
         for block in self.update_and_next_block():
             logger.info("block {}".format(block))
+
             # first get un-decoded logs and the block info
             logs, block_info = self.get_logs(block)
 
-            # 1st Decode factory logs
+            ###########################
+            # 1st Decode factory logs #
+            ###########################
 
-            # Get ABI's and contract addresses from settings
-            factory_abis = [loads(x['abi']) for x in settings.GNOSISDB_FACTORIES]
-            factory_addresses = [x[u'address'] for x in settings.GNOSISDB_FACTORIES]
-
-            self.decoder.add_abi(factory_abis)
-
-            # Filter by address and later try to decode
-            factory_logs = []
+            # Decode factory logs
             other_logs = []
-
             for log in logs:
-                if log[u'address'] in factory_addresses:
-                    factory_logs.append(log)
+                # Get ABI's and contract addresses from settings
+                factory = settings.GNOSISDB_CONTRACTS.get(log[u'address'])
+                if factory:
+                    # add factory abi to decoder
+                    self.decoder.add_abi(loads(factory['factoryEventABI']))
+
+                    # try to decode log
+                    decoded = self.decoder.decode_logs([log])
+
+                    if decoded:
+                        # save decoded events if valid
+                        for log_json in decoded:
+                            s_class = __import__(factory['factorySerializer'])
+                            s = s_class(data=log_json, block=block_info)
+                            if s.is_valid():
+                                s.save()
                 else:
                     other_logs.append(log)
 
-            decoded = self.decoder.decode_logs(factory_logs)
-
-            # save factory logs (decoded ones) on database
-            if decoded and len(decoded):
-                self.save_log(decoded, block_info)
-
-            # 2nd Decode other logs (not triggered by factory contracts)
-            # Get ABI's from settings
-            other_abis = [loads(x['abi']) for x in settings.GNOSISDB_ABIS]
-            self.decoder.add_abi(other_abis)
-
-            # save factory logs (decoded ones) on database
-            decoded = self.decoder.decode_logs(other_logs)
-            if decoded and len(decoded):
-                self.save_log(decoded, block_info)
+            # 2nd Decode Instance logs
+            # todo

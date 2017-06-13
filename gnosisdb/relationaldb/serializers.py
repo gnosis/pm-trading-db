@@ -38,6 +38,7 @@ class IpfsHashField(CharField):
         super(IpfsHashField, self).__init__(**kwargs)
 
     def get_event_description(self, ipfs_hash):
+        """Returns the IPFS event_description object"""
         ipfs = Ipfs()
         return ipfs.get(ipfs_hash)
 
@@ -54,7 +55,7 @@ class IpfsHashField(CharField):
             try:
                 event_description_json = self.get_event_description(data)
             except Exception as e:
-                return event_description # None
+                raise serializers.ValidationError('IPFS hash must exist')
 
             # add ipfs_hash to description_json
             event_description_json.update({'ipfs_hash': data})
@@ -63,7 +64,7 @@ class IpfsHashField(CharField):
                 # categorical
                 event_description = models.CategoricalEventDescription.objects.create(event_description_json)
 
-            elif 'decimals' in event_description:
+            elif 'decimals' in event_description_json:
                 #scalar
                 event_description = models.ScalarEventDescription.objects.create(event_description_json)
 
@@ -87,6 +88,20 @@ class OracleField(CharField):
                 return oracle
             except models.Oracle.DoesNotExist:
                 return None
+
+
+class EventField(CharField):
+    def __init__(self, **kwargs):
+        super(EventField, self).__init__(**kwargs)
+
+    def to_internal_value(self, data):
+        event = None
+        try:
+            event = models.Event.objects.get(address=data)
+            return event
+        except models.Event.DoesNotExist:
+            raise serializers.ValidationError('eventContract address must exist')
+
 
 
 class CentralizedOracleSerializer(ContractSerializer, serializers.ModelSerializer):
@@ -123,15 +138,37 @@ class EventSerializer(ContractSerializer, serializers.ModelSerializer):
 
     collateralToken = serializers.CharField(max_length=20, source='collateral_token')
     creator = serializers.CharField(max_length=20)
-    oracle = OracleField
-    # outcomeCount = serializers.IntegerField(source='outcome_count')
+    oracle = OracleField()
 
 
 class ScalarEventSerializer(EventSerializer, serializers.ModelSerializer):
 
     class Meta:
         model = models.ScalarEvent
-        fields = EventSerializer.Meta.fields + ('lowerBound', 'upperBound',)
+        fields = EventSerializer.Meta.fields + ('lowerBound', 'upperBound', 'scalarEvent')
 
     lowerBound = serializers.IntegerField(source='lower_bound')
     upperBound = serializers.IntegerField(source='upper_bound')
+    scalarEvent = serializers.CharField(source='address', max_length=20)
+
+
+class CategoricalEventSerializer(EventSerializer, serializers.ModelSerializer):
+    class Meta:
+        model = models.CategoricalEvent
+        fields = EventSerializer.Meta.fields + ('categoricalEvent',)
+
+    categoricalEvent = serializers.CharField(source='address', max_length=20)
+
+
+class MarketSerializer(ContractSerializer, serializers.ModelSerializer):
+
+    class Meta:
+        model = models.Market
+        fields = ContractSerializer.Meta.fields + ('eventContract', 'marketMaker', 'fee',)
+
+    eventContract = EventField(source='event')
+    marketMaker = serializers.CharField(max_length=20, source='market_maker')
+    fee = serializers.IntegerField()
+
+
+
