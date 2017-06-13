@@ -113,15 +113,13 @@ class Bot(Singleton):
 
             # Decode factory logs
             other_logs = []
-            logger.info('block has {} logs'.format(len(logs)))
+            # logger.info('block has {} logs'.format(len(logs)))
             for log in logs:
                 # Get ABI's and contract addresses from settings
                 factory = settings.GNOSISDB_CONTRACTS.get(self.decoder.remove_prefix(log[u'address']))
-                logger.info('factory {}'.format(factory))
                 if factory:
                     # add factory abi to decoder
                     self.decoder.add_abi(loads(factory['factoryEventABI']))
-                    logger.info('Added ABI')
 
                     # try to decode log
                     decoded = self.decoder.decode_logs([log])
@@ -129,12 +127,17 @@ class Bot(Singleton):
                         # save decoded events if valid
                         for log_json in decoded:
                             try:
-                                logger.info(dumps(log_json))
+                                logger.info('LOG JSON: {}'.format(dumps(log_json)))
+                                logger.info('BLOCK JSON: {}'.format(dumps(block_info)))
                                 s_class = self.__load_file(factory['factoryEventSerializer'])
-                                logger.info('serializer class'.format(s_class))
+                                # logger.info('serializer class {}'.format(s_class))
                                 s = s_class(data=log_json, block=block_info)
+                                # logger.info('serializer instance {}'.format(s))
+                                logger.info('serializer is_valid? {}'.format(s.is_valid()))
                                 if s.is_valid():
                                     s.save()
+                                else:
+                                    logger.info('errors {}'.format(s.errors))
                             except Exception as e:
                                 logger.info(e)
                 else:

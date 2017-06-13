@@ -81,6 +81,7 @@ class TestSerializers(TestCase):
             'description': oracle.event_description.description,
             'resolution_date': oracle.event_description.resolution_date.isoformat()
         }
+
         # save event_description to IPFS
         ipfs_hash = self.ipfs.post(event_description_json)
         oracle_event.get('params')[2]['value'] = ipfs_hash
@@ -365,12 +366,12 @@ class TestSerializers(TestCase):
                     'value': oracle.address[1:-7] + 'GIACOMO',
                 },
                 {
-                    'name': 'eventContract',
-                    'value': event_factory.address
-                },
-                {
                     'name': 'marketMaker',
                     'value': market_factory.market_maker
+                },
+                {
+                    'name': 'fee',
+                    'value': market_factory.fee
                 }
             ]
         }
@@ -379,9 +380,19 @@ class TestSerializers(TestCase):
         self.assertFalse(s.is_valid(), s.errors)
 
         market_dict.get('params').append({
+            'name': 'eventContract',
+            'value': event_factory.address[1:-9] + 'xGIACOMOx'
+        })
+
+        market_dict.get('params').append({
             'name': 'fee',
             'value': market_factory.fee
         })
+
+        s = MarketSerializer(data=market_dict, block=block)
+        self.assertFalse(s.is_valid(), s.errors)
+
+        market_dict.get('params')[-2]['value'] = event_factory.address
 
         s = MarketSerializer(data=market_dict, block=block)
         self.assertTrue(s.is_valid(), s.errors)

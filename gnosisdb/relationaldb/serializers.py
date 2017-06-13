@@ -2,6 +2,7 @@ from rest_framework import serializers
 from rest_framework.fields import CharField
 from relationaldb import models
 from ipfs.ipfs import Ipfs
+from datetime import datetime
 
 
 # Declare basic fields, join params on root object and
@@ -10,10 +11,10 @@ class ContractSerializer(serializers.BaseSerializer):
         fields = ('factory', 'creator', 'creation_date', 'creation_block', )
 
     # address = serializers.CharField()
-    factory = serializers.CharField(max_length=20)  # included prefix
-    creation_date = serializers.DateTimeField()
+    factory = serializers.CharField(max_length=40)  # included prefix
+    creation_date = serializers.DateTimeField(format="%Y-%m-%dT%H:%M:%S")
     creation_block = serializers.IntegerField()
-    creator = serializers.CharField(max_length=20)
+    creator = serializers.CharField(max_length=40)
 
     def __init__(self, *args, **kwargs):
         self.block = kwargs.pop('block')
@@ -22,7 +23,7 @@ class ContractSerializer(serializers.BaseSerializer):
         # Event params moved to root object
         new_data = {
             'factory': data[u'address'],
-            'creation_date': self.block.get('timestamp'),
+            'creation_date': datetime.fromtimestamp(self.block.get('timestamp')),
             'creation_block': self.block.get('number')
         }
 
@@ -109,7 +110,7 @@ class CentralizedOracleSerializer(ContractSerializer, serializers.ModelSerialize
         model = models.CentralizedOracle
         fields = ContractSerializer.Meta.fields + ('ipfsHash', 'centralizedOracle')
 
-    centralizedOracle = serializers.CharField(max_length=20, source='address')
+    centralizedOracle = serializers.CharField(max_length=40, source='address')
     ipfsHash = IpfsHashField(source='event_description')
 
 
@@ -136,7 +137,7 @@ class EventSerializer(ContractSerializer, serializers.ModelSerializer):
         fields = ContractSerializer.Meta.fields + ('collateralToken', 'creator', 'oracle',)
 
     collateralToken = serializers.CharField(max_length=20, source='collateral_token')
-    creator = serializers.CharField(max_length=20)
+    creator = serializers.CharField(max_length=40)
     oracle = OracleField()
 
 

@@ -7,9 +7,9 @@ from django.contrib.postgres.fields import ArrayField
 
 # Abstract Contract Structure
 class Contract(models.Model):
-    address = models.CharField(max_length=20, primary_key=True)
-    factory = models.CharField(max_length=20) # factory contract creating the contract
-    creator = models.CharField(max_length=20)
+    address = models.CharField(max_length=40, primary_key=True)
+    factory = models.CharField(max_length=40) # factory contract creating the contract
+    creator = models.CharField(max_length=40)
     creation_date = models.DateTimeField()
     creation_block = models.PositiveIntegerField()
 
@@ -59,11 +59,11 @@ class CategoricalEventDescription(EventDescription):
 # Oracles
 class Oracle(Contract):
     is_outcome_set = models.BooleanField(default=False)
-    outcome = models.BigIntegerField(null=True)
+    outcome = models.BigIntegerField(blank=True, null=True)
 
 
 class CentralizedOracle(Oracle):
-    owner = models.CharField(max_length=20) # owner can be updated
+    owner = models.CharField(max_length=40) # owner can be updated
     event_description = models.ForeignKey('EventDescription', unique=False, null=True)
 
 
