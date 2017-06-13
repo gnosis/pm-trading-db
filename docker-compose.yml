@@ -1,5 +1,14 @@
 version: '2'
 services:
+  ipfs:
+    hostname: ipfs
+    image: jbenet/go-ipfs:latest
+    ports:
+      - "8080:8080"
+      - "4001:4001"
+      - "127.0.0.1:5001:5001"
+    volumes:
+      - ./.ipfs/:/data/ipfs/
   rabbit:
     hostname: rabbit
     image: rabbitmq:latest
@@ -21,11 +30,13 @@ services:
       - .env
     links:
       - db
+      - ipfs
+    depends_on:
+      - ipfs
     working_dir: /gnosisdb/gnosisdb
     command: python manage.py runserver 0.0.0.0:8000
     ports:
       - "8000:8000"
-      - "8080"
       - "27017"
       - "5432"
   worker:
