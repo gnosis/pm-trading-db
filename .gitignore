@@ -64,3 +64,5 @@ typings/
 
 .python-version
 *.egg-info
+
+.ipfs

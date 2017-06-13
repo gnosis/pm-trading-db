@@ -64,12 +64,12 @@ class IPFSEventDescriptionDeserializer(serializers.ModelSerializer):
         fields = ('ipfs_hash',)
 
     def validate_ipfs_hash(self, value):
-        ipfs = Ipfs()
         json_obj = None
         try:
-            json_obj = ipfs.get(value)
+            json_obj = Ipfs().get(value)
         except ErrorResponse:
             raise serializers.ValidationError('IPFS Reference does not exist.')
+
         if 'title' not in json_obj:
             raise serializers.ValidationError('IPFS Object does not contain an event title.')
         elif 'description' not in json_obj:
