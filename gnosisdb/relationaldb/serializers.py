@@ -38,6 +38,7 @@ class IpfsHashField(CharField):
         super(IpfsHashField, self).__init__(**kwargs)
 
     def get_event_description(self, ipfs_hash):
+        """Returns the IPFS event_description object"""
         ipfs = Ipfs()
         return ipfs.get(ipfs_hash)
 
@@ -54,7 +55,7 @@ class IpfsHashField(CharField):
             try:
                 event_description_json = self.get_event_description(data)
             except Exception as e:
-                return event_description # None
+                raise serializers.ValidationError('IPFS hash must exist')
 
             # add ipfs_hash to description_json
             event_description_json.update({'ipfs_hash': data})
@@ -63,7 +64,7 @@ class IpfsHashField(CharField):
                 # categorical
                 event_description = models.CategoricalEventDescription.objects.create(event_description_json)
 
-            elif 'decimals' in event_description:
+            elif 'decimals' in event_description_json:
                 #scalar
                 event_description = models.ScalarEventDescription.objects.create(event_description_json)
 
@@ -134,13 +135,13 @@ class ScalarEventSerializer(EventSerializer, serializers.ModelSerializer):
 
     lowerBound = serializers.IntegerField(source='lower_bound')
     upperBound = serializers.IntegerField(source='upper_bound')
-    scalarEvent = serializers.CharField(source='address')
+    scalarEvent = serializers.CharField(source='address', max_length=20)
 
 
 # class CategoricalEventSerializer(EventSerializer, serializers.ModelSerializer):
 #
 #     class Meta:
 #         model = models.CategoricalEvent
-#         fields = EventSerializer.Meta.fields + ('outcomes', )
+#         fields = EventSerializer.Meta.fields
 #
-#     outcomes = serializers.ListField()
+#     address = serializers.CharField(source='address', max_length=20)

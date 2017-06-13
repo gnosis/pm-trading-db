@@ -3,6 +3,7 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 from settings.base import *
 import sys
+from relationaldb.serializers import CentralizedOracleSerializer
 
 
 SECRET_KEY = 'testtest'
@@ -158,13 +159,13 @@ IPFS_PORT = 5001
 
 
 # GnosisDB Contract Addresses
-# {
+# GNOSISDB_CONTRACTS = {
 #     '0x121241': {
 #         'name': '', # optional
 #         'factoryEventABI': {},
 #         'instanceABI': [],
-#         'factoryEventProcessor': 'function' # new CentralizedOracleCreation
-#         'instanceAddressesGetter': 'function' #
-#         'instanceEventProcessor': 'function' # set outcome, redeem winnings, etc
+#         'factoryEventSerializer': CentralizedOracleSerializer, # new CentralizedOracleCreation
+#         'instanceAddressesGetter': None, # todo discuss: better than accessing this, get factory by searching Contract.get(address=)
+#         'instanceEventSerializer': None # todo implement instance serializers and models
 #     }
 # }
