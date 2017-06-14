@@ -16,7 +16,7 @@ class UnknownBlock(Exception):
 
 class Bot(Singleton):
 
-    def __init__(self, rpc = None):
+    def __init__(self, rpc = None, contract_map = settings.GNOSISDB_CONTRACTS):
         super(Bot, self).__init__()
         self.decoder = Decoder()
         self.web3 = Web3(
@@ -26,6 +26,7 @@ class Bot(Singleton):
                 ssl=settings.ETHEREUM_NODE_SSL
             )
         )
+        self.contract_map = contract_map
         self.callback_per_block = getattr(settings, 'CALLBACK_PER_BLOCK', None)
         self.callback_per_exec = getattr(settings, 'CALLBACK_PER_EXEC', None)
         self.filter_logs = getattr(settings, 'LOG_FILTER_FUNCTION', None)
@@ -116,7 +117,7 @@ class Bot(Singleton):
             # logger.info('block has {} logs'.format(len(logs)))
             for log in logs:
                 # Get ABI's and contract addresses from settings
-                factory = settings.GNOSISDB_CONTRACTS.get(self.decoder.remove_prefix(log[u'address']))
+                factory = self.contract_map.get(self.decoder.remove_prefix(log[u'address']))
                 if factory:
                     # add factory abi to decoder
                     self.decoder.add_abi(loads(factory['factoryEventABI']))
