@@ -23,7 +23,8 @@ INSTALLED_APPS = (
     'relationaldb',
     'rest_framework',
     'restapi',
-    'eth'
+    'eth',
+    'settings_utils'
 )
 
 MIDDLEWARE_CLASSES = [

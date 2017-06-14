@@ -1,6 +1,6 @@
 from django.utils.module_loading import import_string
 from gnosisdb.settings_utils.address_getter import AbstractAddressesGetter
-from gnosisdb.utils import addresses_getter
+from gnosisdb.settings_utils.address_getter import addresses_getter
 import unittest
 import inspect
 
