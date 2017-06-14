@@ -19,7 +19,7 @@ class Contract(models.Model):
 
 # Events
 class Event(Contract):
-    collateral_token = models.CharField(max_length=20)
+    collateral_token = models.CharField(max_length=40)
     oracle = models.ForeignKey('Oracle')
     is_winning_outcome_set = models.BooleanField(default=False)
     winning_outcome = models.BigIntegerField(null=True)
@@ -46,6 +46,9 @@ class EventDescription(models.Model):
     resolution_date = models.DateTimeField()
     ipfs_hash = models.CharField(max_length=46, unique=True)
 
+    # class Meta:
+    #     abstract = True
+
 
 class ScalarEventDescription(EventDescription):
     unit = models.TextField()
@@ -69,7 +72,7 @@ class CentralizedOracle(Oracle):
 
 class UltimateOracle(Oracle):
     forwarded_oracle = models.ForeignKey('Oracle', related_name='ultimate_oracle_forwarded_oracle', null=True)
-    collateral_token = models.CharField(max_length=20)
+    collateral_token = models.CharField(max_length=40)
     spread_multiplier = models.PositiveIntegerField()
     challenge_period = models.BigIntegerField()
     challenge_amount = models.BigIntegerField()
@@ -84,7 +87,7 @@ class UltimateOracle(Oracle):
 # Market
 class Market(Contract):
     event = models.ForeignKey('Event')
-    market_maker = models.CharField(max_length=20)
+    market_maker = models.CharField(max_length=40)
     fee = models.PositiveIntegerField()
     funding = models.BigIntegerField(null=True)
     net_outcome_tokens_sold = models.TextField(validators=[validate_comma_separated_integer_list], null=True)

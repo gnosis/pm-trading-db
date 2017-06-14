@@ -55,7 +55,7 @@ class TestSerializers(TestCase):
         }
 
         oracle_event = {
-            'address': oracle.factory[1:-7] + 'GIACOMO',
+            'address': oracle.factory[0:-7] + 'GIACOMO',
             'params': [
                 {
                     'name': 'creator',

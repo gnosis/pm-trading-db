@@ -27,9 +27,10 @@ class EventReceiver(AbstractEventReceiver):
     }
 
     def save(self, decoded_event, block_info):
-        serializer = self.events.get(decoded_event.get('name'))
-        if serializer.is_valid():
-            serializer.save()
+        if self.events.get(decoded_event.get('name')):
+            serializer = self.events.get(decoded_event.get('name'))(data=decoded_event, block=block_info)
+            if serializer.is_valid():
+                serializer.save()
 
 
 class UltimateOracleReceiver(AbstractEventReceiver):
