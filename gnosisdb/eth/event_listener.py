@@ -3,9 +3,9 @@ from decoder import Decoder
 from json import loads, dumps
 from web3 import Web3, RPCProvider
 from django.conf import settings
+from django.utils.module_loading import import_string
 from celery.utils.log import get_task_logger
 from eth.models import Daemon
-import sys
 from settings_utils.address_getter import addresses_getter
 
 logger = get_task_logger(__name__)
@@ -103,5 +103,8 @@ class EventListener(Singleton):
                                     logger.info('BLOCK JSON: {}'.format(dumps(block_info)))
 
                                     # load event receiver and save
+                                    event_receiver = import_string(contract['EVENT_DATA_RECEIVER'])
+                                    event_receiver.save(decoded_event=log_json, block_info=block_info)
+                                    
                                 except Exception as e:
                                     logger.info(e)
