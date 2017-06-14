@@ -155,11 +155,11 @@ bin_hex = "6060604052611963806100126000396000f3606060405260e060020a60003504632f4
 
 class TestDaemon(TestCase):
     def setUp(self):
+        self.rpc = TestRPCProvider()
         self.daemon = DaemonFactory()
-        self.bot = Bot()
+        self.bot = Bot(self.rpc)
         self.bot.decoder.methods = {}
         self.maxDiff = None
-        self.rpc = TestRPCProvider()
 
     def tearDown(self):
         self.rpc.server.shutdown()
