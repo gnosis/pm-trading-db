@@ -14,10 +14,10 @@ class UnknownBlock(Exception):
     pass
 
 
-class Bot(Singleton):
+class EventListener(Singleton):
 
     def __init__(self, rpc = None):
-        super(Bot, self).__init__()
+        super(EventListener, self).__init__()
         self.decoder = Decoder()
         self.web3 = Web3(
             rpc if rpc is not None else RPCProvider(

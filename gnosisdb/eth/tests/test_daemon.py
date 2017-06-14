@@ -2,7 +2,7 @@
 from __future__ import unicode_literals
 from django.test import TestCase
 from eth.factories import DaemonFactory
-from eth.bot import Bot
+from eth.event_listener import EventListener
 from web3 import TestRPCProvider
 from json import loads, dumps
 
@@ -157,7 +157,7 @@ class TestDaemon(TestCase):
     def setUp(self):
         self.rpc = TestRPCProvider()
         self.daemon = DaemonFactory()
-        self.bot = Bot(self.rpc)
+        self.bot = EventListener(self.rpc)
         self.bot.decoder.methods = {}
         self.maxDiff = None
 
