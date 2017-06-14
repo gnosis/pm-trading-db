@@ -6,15 +6,15 @@ version: '2'
 #      config:
 #      - subnet: 172.25.0.0/24
 services:
-#  ipfs:
-#    hostname: ipfs
-#    image: jbenet/go-ipfs:latest
-#    ports:
-#      - "8080:8080"
-#      - "4001:4001"
-#      - "172.25.0.101:5001:5001"
-#    volumes:
-#      - ./.ipfs/:/data/ipfs/
+  ipfs:
+    hostname: ipfs
+    image: jbenet/go-ipfs:latest
+    ports:
+      - "8080:8080"
+      - "4001:4001"
+      - "192.168.1.165:5001:5001" # for testing purposes: change this to your wlan ip address
+    volumes:
+      - ./.ipfs/:/data/ipfs/
 #    networks:
 #      testnet:
 #        ipv4_address: 172.25.0.101
@@ -39,9 +39,9 @@ services:
       - .env
     links:
       - db
-#      - ipfs
-#    depends_on:
-#      - ipfs
+      - ipfs
+    depends_on:
+      - ipfs
     working_dir: /gnosisdb/gnosisdb
     command: python manage.py runserver 0.0.0.0:8000
     ports:

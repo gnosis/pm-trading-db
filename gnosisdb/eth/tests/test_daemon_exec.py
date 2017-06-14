@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 from django.test import TestCase
 from web3 import Web3
 from eth.factories import DaemonFactory
-from eth.bot import Bot
+from eth.event_listener import EventListener
 from web3 import TestRPCProvider
 from json import loads, dumps
 from relationaldb import models
@@ -99,7 +99,7 @@ class TestDaemonExec(TestCase):
                 'instanceEventSerializer': None
             },
         }
-        bot_under_test = Bot(self.rpc, contract_map)
+        listener_under_test = EventListener(self.rpc, contract_map)
         self.assertEqual(len(models.CentralizedOracle.objects.all()), 0)
 
         # Create event description
@@ -116,5 +116,5 @@ class TestDaemonExec(TestCase):
         tx_hash = oracle_factory.transact().createCentralizedOracle(ipfs_hash)
         self.assertIsNotNone(tx_hash)
 
-        bot_under_test.execute()
+        listener_under_test.execute()
         self.assertEqual(len(models.CentralizedOracle.objects.all()), 1)

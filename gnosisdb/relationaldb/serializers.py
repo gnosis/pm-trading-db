@@ -81,10 +81,10 @@ class OracleField(CharField):
 
     def to_internal_value(self, data):
         address_len = len(data)
-        if address_len > 20:
-            raise serializers.ValidationError('Maximum address length of 20 chars')
-        elif address_len < 20:
-            raise serializers.ValidationError('Address must have 20 chars')
+        if address_len > 40:
+            raise serializers.ValidationError('Maximum address length of 40 chars')
+        elif address_len < 40:
+            raise serializers.ValidationError('Address must have 40 chars')
         else:
             # Check oracle exists or save Null
             try:
@@ -124,9 +124,9 @@ class UltimateOracleSerializer(ContractSerializer, serializers.ModelSerializer):
         fields = ContractSerializer.Meta.fields + ('ultimateOracle', 'oracle', 'collateralToken',
                                                    'spreadMultiplier', 'challengePeriod', 'challengeAmount',
                                                    'frontRunnerPeriod')
-    ultimateOracle = serializers.CharField(max_length=20, source='address')
+    ultimateOracle = serializers.CharField(max_length=40, source='address')
     oracle = OracleField(source='forwarded_oracle')
-    collateralToken = serializers.CharField(max_length=20, source='collateral_token')
+    collateralToken = serializers.CharField(max_length=40, source='collateral_token')
     spreadMultiplier = serializers.IntegerField(source='spread_multiplier')
     challengePeriod = serializers.IntegerField(source='challenge_period')
     challengeAmount = serializers.IntegerField(source='challenge_amount')
@@ -139,7 +139,7 @@ class EventSerializer(ContractSerializer, serializers.ModelSerializer):
         models = models.Event
         fields = ContractSerializer.Meta.fields + ('collateralToken', 'creator', 'oracle',)
 
-    collateralToken = serializers.CharField(max_length=20, source='collateral_token')
+    collateralToken = serializers.CharField(max_length=40, source='collateral_token')
     creator = serializers.CharField(max_length=40)
     oracle = OracleField()
 
@@ -152,7 +152,7 @@ class ScalarEventSerializer(EventSerializer, serializers.ModelSerializer):
 
     lowerBound = serializers.IntegerField(source='lower_bound')
     upperBound = serializers.IntegerField(source='upper_bound')
-    scalarEvent = serializers.CharField(source='address', max_length=20)
+    scalarEvent = serializers.CharField(source='address', max_length=40)
 
 
 class CategoricalEventSerializer(EventSerializer, serializers.ModelSerializer):
@@ -160,7 +160,7 @@ class CategoricalEventSerializer(EventSerializer, serializers.ModelSerializer):
         model = models.CategoricalEvent
         fields = EventSerializer.Meta.fields + ('categoricalEvent',)
 
-    categoricalEvent = serializers.CharField(source='address', max_length=20)
+    categoricalEvent = serializers.CharField(source='address', max_length=40)
 
 
 class MarketSerializer(ContractSerializer, serializers.ModelSerializer):
@@ -170,7 +170,7 @@ class MarketSerializer(ContractSerializer, serializers.ModelSerializer):
         fields = ContractSerializer.Meta.fields + ('eventContract', 'marketMaker', 'fee',)
 
     eventContract = EventField(source='event')
-    marketMaker = serializers.CharField(max_length=20, source='market_maker')
+    marketMaker = serializers.CharField(max_length=40, source='market_maker')
     fee = serializers.IntegerField()
 
 

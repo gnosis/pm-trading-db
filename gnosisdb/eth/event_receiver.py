@@ -1,5 +1,6 @@
 from abc import ABCMeta, abstractmethod
-from serializers import CentralizedOracleSerializer, ScalarEventSerializer, CategoricalEventSerializer
+from serializers import CentralizedOracleSerializer, ScalarEventSerializer, CategoricalEventSerializer,\
+    UltimateOracleSerializer, MarketSerializer
 
 
 class AbstractEventReceiver(object):
@@ -26,6 +27,22 @@ class EventReceiver(AbstractEventReceiver):
     }
 
     def save(self, decoded_event, block_info):
-        serializer = self.events.get(decoded_event.get('name'))
+        if self.events.get(decoded_event.get('name')):
+            serializer = self.events.get(decoded_event.get('name'))(data=decoded_event, block=block_info)
+            if serializer.is_valid():
+                serializer.save()
+
+
+class UltimateOracleReceiver(AbstractEventReceiver):
+
+    def save(self, decoded_event, block_info):
+        serializer = UltimateOracleSerializer(data=decoded_event, block=block_info)
+        if serializer.is_valid():
+            serializer.save()
+
+
+class MarketReceiver(AbstractEventReceiver):
+    def save(self, decoded_event, block_info):
+        serializer = MarketSerializer(data=decoded_event, block=block_info)
         if serializer.is_valid():
             serializer.save()

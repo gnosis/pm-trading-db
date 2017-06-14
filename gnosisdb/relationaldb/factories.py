@@ -22,9 +22,9 @@ class ContractFactory(factory_boy.DjangoModelFactory):
     class Meta:
         model = models.Contract
 
-    address = factory_boy.Sequence(lambda n: '{:020d}'.format(n))
-    factory = factory_boy.Sequence(lambda n: '{:020d}'.format(n))
-    creator = factory_boy.Sequence(lambda n: '{:020d}'.format(n))
+    address = factory_boy.Sequence(lambda n: '{:040d}'.format(n))
+    factory = factory_boy.Sequence(lambda n: '{:040d}'.format(n))
+    creator = factory_boy.Sequence(lambda n: '{:040d}'.format(n))
     creation_date = FuzzyDateTime(datetime.now(pytz.utc))
     creation_block = factory_boy.Sequence(lambda n: n)
 
@@ -43,7 +43,7 @@ class EventFactory(ContractFactory):
     class Meta:
         model = models.Event
 
-    collateral_token = factory_boy.Sequence(lambda n: '{:020d}'.format(n))
+    collateral_token = factory_boy.Sequence(lambda n: '{:040d}'.format(n))
     oracle = factory_boy.SubFactory(OracleFactory)
     is_winning_outcome_set = False
     winning_outcome = 1
@@ -79,7 +79,7 @@ class CentralizedOracleFactory(OracleFactory):
     class Meta:
         model = models.CentralizedOracle
 
-    owner = factory_boy.Sequence(lambda n: '{:020d}'.format(n))
+    owner = factory_boy.Sequence(lambda n: '{:040d}'.format(n))
     event_description = factory_boy.SubFactory(CategoricalEventFactory)
 
 
@@ -89,7 +89,7 @@ class UltimateOracleFactory(OracleFactory):
         model = models.UltimateOracle
 
     forwarded_oracle = factory_boy.SubFactory(OracleFactory)
-    collateral_token = factory_boy.Sequence(lambda n: '{:020d}'.format(n))
+    collateral_token = factory_boy.Sequence(lambda n: '{:040d}'.format(n))
     spread_multiplier = factory_boy.Sequence(lambda n: n)
     challenge_period = factory_boy.Sequence(lambda n: n)
     challenge_amount = factory_boy.Sequence(lambda n: n)

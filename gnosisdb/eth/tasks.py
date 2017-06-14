@@ -1,5 +1,5 @@
 from celery import shared_task
-from bot import Bot
+from event_listener import EventListener
 from celery.utils.log import get_task_logger
 
 logger = get_task_logger(__name__)
@@ -8,7 +8,7 @@ logger = get_task_logger(__name__)
 @shared_task
 def event_listener():
     try:
-        bot = Bot()
+        bot = EventListener()
         bot.execute()
     except Exception as err:
         logger.error(str(err))
