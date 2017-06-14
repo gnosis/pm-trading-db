@@ -6,6 +6,7 @@ from django.conf import settings
 from celery.utils.log import get_task_logger
 from eth.models import Daemon
 import sys
+from settings_utils.address_getter import addresses_getter
 
 logger = get_task_logger(__name__)
 
@@ -60,44 +61,6 @@ class EventListener(Singleton):
         else:
             raise UnknownBlock
 
-    def __load_file(self, import_name, silent=False):
-        """Imports an object based on a string.  This is useful if you want to
-        use import paths as endpoints or something similar.  An import path can
-        be specified either in dotted notation (``xml.sax.saxutils.escape``)
-        or with a colon as object delimiter (``xml.sax.saxutils:escape``).
-        If `silent` is True the return value will be `None` if the import fails.
-        :param import_name: the dotted name for the object to import.
-        :param silent: if set to `True` import errors are ignored and
-                       `None` is returned instead.
-        :return: imported object
-        """
-        # force the import name to automatically convert to strings
-        # __import__ is not able to handle unicode strings in the fromlist
-        # if the module is a package
-        import_name = str(import_name).replace(':', '.')
-        try:
-            try:
-                __import__(import_name)
-            except ImportError:
-                if '.' not in import_name:
-                    raise
-            else:
-                return sys.modules[import_name]
-            module_name, obj_name = import_name.rsplit('.', 1)
-            try:
-                module = __import__(module_name, None, None, [obj_name])
-            except ImportError:
-                # support importing modules not yet set up by the parent module
-                # (or package for that matter)
-                module = self.__load_file(module_name)
-            try:
-                return getattr(module, obj_name)
-            except AttributeError as e:
-                raise ImportError(e)
-        except ImportError as e:
-            if not silent:
-                raise Exception(sys.exc_info()[2])
-
     def execute(self):
         # update block number
         # get blocks and decode logs
@@ -108,40 +71,37 @@ class EventListener(Singleton):
             logs, block_info = self.get_logs(block)
 
             ###########################
-            # 1st Decode factory logs #
+            # Decode logs #
             ###########################
 
-            # Decode factory logs
-            other_logs = []
-            # logger.info('block has {} logs'.format(len(logs)))
-            for log in logs:
-                # Get ABI's and contract addresses from settings
-                factory = settings.GNOSISDB_CONTRACTS.get(self.decoder.remove_prefix(log[u'address']))
-                if factory:
-                    # add factory abi to decoder
-                    self.decoder.add_abi(loads(factory['factoryEventABI']))
+            for contract in settings.GNOSISDB_CONTRACTS:
+                # Add ABI
+                self.decoder.add_abi(contract.EVENT_ABI)
 
-                    # try to decode log
-                    decoded = self.decoder.decode_logs([log])
-                    if decoded:
-                        # save decoded events if valid
-                        for log_json in decoded:
-                            try:
-                                logger.info('LOG JSON: {}'.format(dumps(log_json)))
-                                logger.info('BLOCK JSON: {}'.format(dumps(block_info)))
-                                s_class = self.__load_file(factory['factoryEventSerializer'])
-                                # logger.info('serializer class {}'.format(s_class))
-                                s = s_class(data=log_json, block=block_info)
-                                # logger.info('serializer instance {}'.format(s))
-                                logger.info('serializer is_valid? {}'.format(s.is_valid()))
-                                if s.is_valid():
-                                    s.save()
-                                else:
-                                    logger.info('errors {}'.format(s.errors))
-                            except Exception as e:
-                                logger.info(e)
-                else:
-                    other_logs.append(log)
+                # Get addresses watching
+                addresses = None
+                if contract['ADDRESSES']:
+                    addresses = contract['ADDRESSES']
+                elif contract['ADDRESSES_GETTER']:
+                    try:
+                        addresses = addresses_getter(contract['ADDRESSES_GETTER'])
+                    except Exception as e:
+                        logger.info(e)
+                        return
 
-            # 2nd Decode Instance logs
-            # todo
+                # Filter logs by address and decode
+                for log in logs:
+                    if log['address'] in addresses:
+                        # try to decode it
+                        decoded = self.decoder.decode_logs([log])
+
+                        if decoded:
+                            # save decoded event with event receiver
+                            for log_json in decoded:
+                                try:
+                                    logger.info('LOG JSON: {}'.format(dumps(log_json)))
+                                    logger.info('BLOCK JSON: {}'.format(dumps(block_info)))
+
+                                    # load event receiver and save
+                                except Exception as e:
+                                    logger.info(e)

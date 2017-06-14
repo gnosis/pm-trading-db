@@ -1,6 +1,7 @@
 from ethereum.utils import sha3
 from utils import Singleton
 from eth_abi import decode_abi
+from ethereum.utils import remove_0x_head
 
 
 class Decoder(Singleton):
@@ -34,13 +35,6 @@ class Decoder(Singleton):
                 if self.methods.get(method_id):
                     del self.methods[method_id]
 
-    @staticmethod
-    def remove_prefix(data):
-        if data[0:2] == '0x':
-            return data[2::]
-        else:
-            return data
-
     def decode_logs(self, logs):
         decoded = []
         for log in logs:
@@ -65,23 +59,23 @@ class Decoder(Singleton):
                     }
 
                     if param[u'indexed']:
-                        decoded_p[u'value'] = self.remove_prefix(log[u'topics'][topics_i])
+                        decoded_p[u'value'] = remove_0x_head(log[u'topics'][topics_i])
                         topics_i += 1
                     else:
-                        decoded_p[u'value'] = self.remove_prefix(decoded_data[data_i])
+                        decoded_p[u'value'] = remove_0x_head(decoded_data[data_i])
                         data_i += 1
 
                     if u'[]' in param[u'type']:
                         if u'int' in param[u'type']:
-                            decoded_p[u'value'] = list([long(account) for account in decoded_p[u'value']])
+                            decoded_p[u'value'] = list([long(account, 16) for account in decoded_p[u'value']])
                         elif u'address' in param[u'type']:
-                            decoded_p[u'value'] = list([self.remove_prefix(account) for account in decoded_p[u'value']])
+                            decoded_p[u'value'] = list([remove_0x_head(account) for account in decoded_p[u'value']])
                         else:
                             decoded_p[u'value'] = list(decoded_p[u'value'])
                     elif u'int' in param[u'type']:
-                        decoded_p[u'value'] = long(decoded_p[u'value'])
+                        decoded_p[u'value'] = long(decoded_p[u'value'], 16)
                     elif u'address' == param[u'type']:
-                        address = self.remove_prefix(decoded_p[u'value'])
+                        address = remove_0x_head(decoded_p[u'value'])
                         if len(address) == 20:
                             decoded_p[u'value'] = address
                         elif len(address) == 64:
@@ -91,7 +85,7 @@ class Decoder(Singleton):
                 decoded.append({
                     u'params': decoded_params,
                     u'name': method[u'name'],
-                    u'address': self.remove_prefix(log[u'address'])
+                    u'address': remove_0x_head(log[u'address'])
                 })
 
         return decoded

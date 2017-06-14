@@ -3,8 +3,9 @@ from __future__ import unicode_literals
 from django.test import TestCase
 from eth.factories import DaemonFactory
 from eth.event_listener import EventListener
+from ethereum.utils import remove_0x_head
 from web3 import TestRPCProvider
-from json import loads, dumps
+from json import loads
 
 abi = loads(
     '[{"inputs": [{"type": "address", "name": ""}], "constant": true, "name": "isInstantiation", "payable": false, '
@@ -228,12 +229,12 @@ class TestDaemon(TestCase):
         self.assertEqual(2, len(decoded))
         self.assertDictEqual(
             {
-                u'address': self.bot.decoder.remove_prefix(factory_address),
+                u'address': remove_0x_head(factory_address),
                 u'name': u'OwnersInit',
                 u'params': [
                     {
                         u'name': u'owners',
-                        u'value': [self.bot.decoder.remove_prefix(account) for account in self.bot.web3.eth.accounts[0:2]]
+                        u'value': [remove_0x_head(account) for account in self.bot.web3.eth.accounts[0:2]]
                     }
                 ]
             },
@@ -241,16 +242,16 @@ class TestDaemon(TestCase):
         )
         self.assertDictEqual(
             {
-                u'address': self.bot.decoder.remove_prefix(factory_address),
+                u'address': remove_0x_head(factory_address),
                 u'name': u'ContractInstantiation',
                 u'params': [
                     {
                         u'name': 'sender',
-                        u'value': self.bot.decoder.remove_prefix(self.bot.web3.eth.coinbase)
+                        u'value': remove_0x_head(self.bot.web3.eth.coinbase)
                     },
                     {
                         u'name': 'instantiation',
-                        u'value': self.bot.decoder.remove_prefix(decoded[1][u'params'][1][u'value'])
+                        u'value': remove_0x_head(decoded[1][u'params'][1][u'value'])
                     }
                 ]
             },
