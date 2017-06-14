@@ -75,8 +75,9 @@ class EventListener(Singleton):
             ###########################
 
             for contract in settings.GNOSISDB_CONTRACTS:
+                logger.info('CONTRACT: {}'.format(contract))
                 # Add ABI
-                self.decoder.add_abi(contract.EVENT_ABI)
+                self.decoder.add_abi(contract.get('EVENT_ABI'))
 
                 # Get addresses watching
                 addresses = None
@@ -104,7 +105,8 @@ class EventListener(Singleton):
 
                                     # load event receiver and save
                                     event_receiver = import_string(contract['EVENT_DATA_RECEIVER'])
-                                    event_receiver.save(decoded_event=log_json, block_info=block_info)
+                                    logger.info('EVENT RECEIVER: {}'.format(event_receiver))
+                                    event_receiver().save(decoded_event=log_json, block_info=block_info)
                                     
                                 except Exception as e:
                                     logger.info(e)

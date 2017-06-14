@@ -1,6 +1,10 @@
 from abc import ABCMeta, abstractmethod
-from serializers import CentralizedOracleSerializer, ScalarEventSerializer, CategoricalEventSerializer,\
+from relationaldb.serializers import CentralizedOracleSerializer, ScalarEventSerializer, CategoricalEventSerializer,\
     UltimateOracleSerializer, MarketSerializer
+
+from celery.utils.log import get_task_logger
+
+logger = get_task_logger(__name__)
 
 
 class AbstractEventReceiver(object):
@@ -14,9 +18,13 @@ class AbstractEventReceiver(object):
 class CentralizedOracleReceiver(AbstractEventReceiver):
 
     def save(self, decoded_event, block_info):
+        logger.info("CentralizedOracleReceiver instantiating serializer")
         serializer = CentralizedOracleSerializer(data=decoded_event, block=block_info)
+        logger.info("CentralizedOracleReceiver checking serializer is valid ...")
         if serializer.is_valid():
+            logger.info("CentralizedOracleReceiver valid serialier")
             serializer.save()
+            logger.info("CentralizedOracleReceiver instance saved")
 
 
 class EventReceiver(AbstractEventReceiver):
