@@ -16,11 +16,11 @@ class UnknownBlock(Exception):
 
 class Bot(Singleton):
 
-    def __init__(self):
+    def __init__(self, rpc = None):
         super(Bot, self).__init__()
         self.decoder = Decoder()
         self.web3 = Web3(
-            RPCProvider(
+            rpc if rpc is not None else RPCProvider(
                 host=settings.ETHEREUM_NODE_HOST,
                 port=settings.ETHEREUM_NODE_PORT,
                 ssl=settings.ETHEREUM_NODE_SSL
