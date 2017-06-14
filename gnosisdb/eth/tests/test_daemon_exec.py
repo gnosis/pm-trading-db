@@ -9,16 +9,18 @@ from json import loads, dumps
 from relationaldb import models
 from ipfs.ipfs import Ipfs
 from relationaldb.factories import EventDescriptionFactory
+from ethereum.utils import remove_0x_head
 
 
 
-abi = loads('[{"constant":false,"inputs":[{"name":"ipfsHash","type":"bytes"}],"name":"createCentralizedOracle",'
+centralized_oracle_factory_abi = loads('[{"constant":false,"inputs":[{"name":"ipfsHash","type":"bytes"}],"name":"createCentralizedOracle",'
             '"outputs":[{"name":"centralizedOracle","type":"address"}],"payable":false,"type":"function"},'
             '{"anonymous":false,"inputs":[{"indexed":true,"name":"creator","type":"address"},{"indexed":false,'
             '"name":"centralizedOracle","type":"address"},{"indexed":false,"name":"ipfsHash","type":"bytes"}],'
             '"name":"CentralizedOracleCreation","type":"event"}]')
 
-bin_hex = "6060604052341561000c57fe5b5b6109ad8061001c6000396000f30060606040526000357c01000000000000000000000000000000" \
+centralized_oracle_factory_bin_hex =\
+          "6060604052341561000c57fe5b5b6109ad8061001c6000396000f30060606040526000357c01000000000000000000000000000000" \
           "00000000000000000000000000900463ffffffff1680634e2f220c1461003b575bfe5b341561004357fe5b61009360048080359060" \
           "2001908201803590602001908080601f01602080910402602001604051908101604052809392919081815260200183838082843782" \
           "0191505050505050919050506100d5565b604051808273ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffff" \
@@ -80,17 +82,17 @@ class TestDaemonExec(TestCase):
         self.rpc.server.server_close()
         self.rpc = None
 
-    def test_execute(self):
+    def test_create_centralized_oracle(self):
         # create Centralized Oracle Factory contract
-        contract_factory = self.web3.eth.contract(abi, bytecode=bin_hex)
+        contract_factory = self.web3.eth.contract(centralized_oracle_factory_abi, bytecode=centralized_oracle_factory_bin_hex)
         tx_hash = contract_factory.deploy()
         oracle_factory_address = self.web3.eth.getTransactionReceipt(tx_hash).get('contractAddress')
-        oracle_factory = self.web3.eth.contract(oracle_factory_address, abi=abi)
+        oracle_factory = self.web3.eth.contract(oracle_factory_address, abi=centralized_oracle_factory_abi)
         self.assertIsNotNone(oracle_factory)
 
         # Initiate bot
         contract_map = {
-            oracle_factory.address[2:]: {
+            remove_0x_head(oracle_factory.address): {
                 'name': 'Centralized Oracle Factory',
                 'factoryEventABI': '[{"inputs": [{"type": "bytes", "name": "ipfsHash"}], "constant": false, "name": "createCentralizedOracle", "payable": false, "outputs": [{"type": "address", "name": "centralizedOracle"}], "type": "function"}, {"inputs": [{"indexed": true, "type": "address", "name": "creator"}, {"indexed": false, "type": "address", "name": "centralizedOracle"}, {"indexed": false, "type": "bytes", "name": "ipfsHash"}], "type": "event", "name": "CentralizedOracleCreation", "anonymous": false}]',
                 'instanceABI': '[{"inputs": [], "constant": true, "name": "outcome", "payable": false, "outputs": [{"type": "int256", "name": ""}], "type": "function"}, {"inputs": [{"type": "int256", "name": "_outcome"}], "constant": false, "name": "setOutcome", "payable": false, "outputs": [], "type": "function"}, {"inputs": [], "constant": true, "name": "getOutcome", "payable": false, "outputs": [{"type": "int256", "name": ""}], "type": "function"}, {"inputs": [], "constant": true, "name": "owner", "payable": false, "outputs": [{"type": "address", "name": ""}], "type": "function"}, {"inputs": [{"type": "address", "name": "newOwner"}], "constant": false, "name": "replaceOwner", "payable": false, "outputs": [], "type": "function"}, {"inputs": [], "constant": true, "name": "ipfsHash", "payable": false, "outputs": [{"type": "bytes", "name": ""}], "type": "function"}, {"inputs": [], "constant": true, "name": "isSet", "payable": false, "outputs": [{"type": "bool", "name": ""}], "type": "function"}, {"inputs": [], "constant": true, "name": "isOutcomeSet", "payable": false, "outputs": [{"type": "bool", "name": ""}], "type": "function"}, {"inputs": [{"type": "address", "name": "_owner"}, {"type": "bytes", "name": "_ipfsHash"}], "type": "constructor", "payable": false}, {"inputs": [{"indexed": true, "type": "address", "name": "newOwner"}], "type": "event", "name": "OwnerReplacement", "anonymous": false}, {"inputs": [{"indexed": false, "type": "int256", "name": "outcome"}], "type": "event", "name": "OutcomeAssignment", "anonymous": false}]',
@@ -118,3 +120,16 @@ class TestDaemonExec(TestCase):
 
         listener_under_test.execute()
         self.assertEqual(len(models.CentralizedOracle.objects.all()), 1)
+
+    def test_create_standard_market(self):
+        pass
+
+    def test_market_buy_event(self):
+        pass
+
+    def test_market_sell_event(self):
+        pass
+
+    def test_market_shortsell_event(self):
+        pass
+
