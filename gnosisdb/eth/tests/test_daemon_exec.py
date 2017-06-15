@@ -9,14 +9,87 @@ from json import loads, dumps
 from relationaldb import models
 from ipfs.ipfs import Ipfs
 from relationaldb.factories import EventDescriptionFactory
+import os
 
 
 
-abi = loads('[{"constant":false,"inputs":[{"name":"ipfsHash","type":"bytes"}],"name":"createCentralizedOracle",'
+centralized_oracle_abi = loads('[{"constant":false,"inputs":[{"name":"ipfsHash","type":"bytes"}],"name":"createCentralizedOracle",'
             '"outputs":[{"name":"centralizedOracle","type":"address"}],"payable":false,"type":"function"},'
             '{"anonymous":false,"inputs":[{"indexed":true,"name":"creator","type":"address"},{"indexed":false,'
             '"name":"centralizedOracle","type":"address"},{"indexed":false,"name":"ipfsHash","type":"bytes"}],'
             '"name":"CentralizedOracleCreation","type":"event"}]')
+
+ultimate_oracle_abi = loads('[{"inputs": [{"type": "address", "name": "oracle"}, {"type": "address", "name": "collateralToken"},'
+                            '{"type": "uint8", "name": "spreadMultiplier"}, {"type": "uint256", "name": "challengePeriod"},'
+                            '{"type": "uint256", "name": "challengeAmount"}, {"type": "uint256", "name": "frontRunnerPeriod"}],'
+                            '"constant": false, "name": "createUltimateOracle", "payable": false, "outputs": [{"type": "address",'
+                            '"name": "ultimateOracle"}], "type": "function"}, {"inputs": [{"indexed": true, "type": "address",'
+                            '"name": "creator"}, {"indexed": false, "type": "address", "name": "ultimateOracle"}, {"indexed":'
+                            'false, "type": "address", "name": "oracle"}, {"indexed": false, "type": "address", "name":'
+                            '"collateralToken"}, {"indexed": false, "type": "uint8", "name": "spreadMultiplier"},'
+                            '{"indexed": false, "type": "uint256", "name": "challengePeriod"}, {"indexed": false, "type":'
+                            '"uint256", "name": "challengeAmount"}, {"indexed": false, "type": "uint256", "name":'
+                            '"frontRunnerPeriod"}], "type": "event", "name": "UltimateOracleCreation", "anonymous": false}]')
+
+ether_token_abi = loads('[{"inputs": [], "constant": true, "name": "name", "payable": false, "outputs": [{"type": "string",'
+                        '"name": ""}], "type": "function"}, {"inputs": [{"type": "address", "name": "spender"}, '
+                        '{"type": "uint256", "name": "value"}], "constant": false, "name": "approve", "payable": false,'
+                        '"outputs": [{"type": "bool", "name": ""}], "type": "function"}, {"inputs": [], "constant": true,'
+                        '"name": "totalSupply", "payable": false, "outputs": [{"type": "uint256", "name": ""}],'
+                        '"type": "function"}, {"inputs": [{"type": "address", "name": "from"}, {"type": "address",'
+                        '"name": "to"}, {"type": "uint256", "name": "value"}], "constant": false, "name": "transferFrom",'
+                        '"payable": false, "outputs": [{"type": "bool", "name": ""}], "type": "function"}, {"inputs":'
+                        '[{"type": "uint256", "name": "value"}], "constant": false, "name": "withdraw", "payable": false,'
+                        '"outputs": [], "type": "function"}, {"inputs": [], "constant": true, "name": "decimals",'
+                        '"payable": false, "outputs": [{"type": "uint8", "name": ""}], "type": "function"},'
+                        '{"inputs": [{"type": "address", "name": "owner"}], "constant": true, "name": "balanceOf",'
+                        '"payable": false, "outputs": [{"type": "uint256", "name": ""}], "type": "function"},'
+                        '{"inputs": [], "constant": true, "name": "symbol", "payable": false, "outputs": [{"type":'
+                        '"string", "name": ""}], "type": "function"}, {"inputs": [{"type": "address", "name": "to"},'
+                        '{"type": "uint256", "name": "value"}], "constant": false, "name": "transfer", "payable": false,'
+                        '"outputs": [{"type": "bool", "name": ""}], "type": "function"}, {"inputs": [], "constant": false,'
+                        '"name": "deposit", "payable": true, "outputs": [], "type": "function"}, {"inputs": [{"type":'
+                        '"address", "name": "owner"}, {"type": "address", "name": "spender"}], "constant": true, "name":'
+                        '"allowance", "payable": false, "outputs": [{"type": "uint256", "name": ""}], "type": "function"},'
+                        '{"inputs": [{"indexed": true, "type": "address", "name": "sender"}, {"indexed": false, "type":'
+                        '"uint256", "name": "value"}], "type": "event", "name": "Deposit", "anonymous": false}, {"inputs":'
+                        '[{"indexed": true, "type": "address", "name": "receiver"}, {"indexed": false, "type": "uint256",'
+                        '"name": "value"}], "type": "event", "name": "Withdrawal", "anonymous": false}, {"inputs":'
+                        '[{"indexed": true, "type": "address", "name": "from"}, {"indexed": true, "type": "address",'
+                        '"name": "to"}, {"indexed": false, "type": "uint256", "name": "value"}], "type": "event",'
+                        '"name": "Transfer", "anonymous": false}, {"inputs": [{"indexed": true, "type": "address",'
+                        '"name": "owner"}, {"indexed": true, "type": "address", "name": "spender"}, {"indexed": false,'
+                        '"type": "uint256", "name": "value"}], "type": "event", "name": "Approval", "anonymous": false}]')
+
+event_factory_abi = loads('[{"inputs": [{"type": "address", "name": "collateralToken"}, {"type": "address", "name": "oracle"},'
+                          '{"type": "int256", "name": "lowerBound"}, {"type": "int256", "name": "upperBound"}], "constant":'
+                          'false, "name": "createScalarEvent", "payable": false, "outputs": [{"type": "address", "name":'
+                          '"eventContract"}], "type": "function"}, {"inputs": [{"type": "bytes32", "name": ""}], "constant":'
+                          'true, "name": "categoricalEvents", "payable": false, "outputs": [{"type": "address", "name": ""}],'
+                          '"type": "function"}, {"inputs": [{"type": "bytes32", "name": ""}], "constant": true, "name":'
+                          '"scalarEvents", "payable": false, "outputs": [{"type": "address", "name": ""}], "type": "function"},'
+                          '{"inputs": [{"type": "address", "name": "collateralToken"}, {"type": "address", "name": "oracle"},'
+                          '{"type": "uint8", "name": "outcomeCount"}], "constant": false, "name": "createCategoricalEvent",'
+                          '"payable": false, "outputs": [{"type": "address", "name": "eventContract"}], "type": "function"},'
+                          '{"inputs": [{"indexed": true, "type": "address", "name": "creator"}, {"indexed": false, "type":'
+                          '"address", "name": "categoricalEvent"}, {"indexed": false, "type": "address", "name":'
+                          '"collateralToken"}, {"indexed": false, "type": "address", "name": "oracle"}, {"indexed": false,'
+                          '"type": "uint8", "name": "outcomeCount"}], "type": "event", "name": "CategoricalEventCreation",'
+                          '"anonymous": false}, {"inputs": [{"indexed": true, "type": "address", "name": "creator"},'
+                          '{"indexed": false, "type": "address", "name": "scalarEvent"}, {"indexed": false, "type": "address",'
+                          '"name": "collateralToken"}, {"indexed": false, "type": "address", "name": "oracle"},'
+                          '{"indexed": false, "type": "int256", "name": "lowerBound"}, {"indexed": false, "type": "int256",'
+                          '"name": "upperBound"}], "type": "event", "name": "ScalarEventCreation", "anonymous": false}]')
+
+market_factory_abi = loads('[{"inputs": [{"type": "address", "name": "market"}, {"type": "uint8", "name": "outcomeTokenIndex"},'
+                           '{"type": "uint256", "name": "outcomeTokenCount"}], "constant": true, "name": "calcProfit", "payable":'
+                           'false, "outputs": [{"type": "uint256", "name": "profit"}], "type": "function"}, {"inputs":'
+                           '[{"type": "address", "name": "market"}, {"type": "uint8", "name": "outcomeTokenIndex"},'
+                           '{"type": "uint256", "name": "outcomeTokenCount"}], "constant": true, "name": "calcCost",'
+                           '"payable": false, "outputs": [{"type": "uint256", "name": "cost"}], "type": "function"},'
+                           '{"inputs": [{"type": "address", "name": "market"}, {"type": "uint8", "name": "outcomeTokenIndex"}],'
+                           '"constant": true, "name": "calcMarginalPrice", "payable": false, "outputs": [{"type":'
+                           '"uint256", "name": "price"}], "type": "function"}]')
 
 bin_hex = "6060604052341561000c57fe5b5b6109ad8061001c6000396000f30060606040526000357c01000000000000000000000000000000" \
           "00000000000000000000000000900463ffffffff1680634e2f220c1461003b575bfe5b341561004357fe5b61009360048080359060" \
@@ -70,36 +143,64 @@ bin_hex = "6060604052341561000c57fe5b5b6109ad8061001c6000396000f3006060604052600
 
 class TestDaemonExec(TestCase):
     def setUp(self):
+        os.environ.update({'TESTRPC_GAS_LIMIT': '10000000000'})
         self.rpc = TestRPCProvider()
         self.web3 = Web3(self.rpc)
         self.daemon = DaemonFactory()
         self.ipfs = Ipfs()
+
+        self.tx_data = {'from': self.web3.eth.accounts[0], 'gas': 100000000}
+
+        # create token
+        token_contract_factory = self.web3.eth.contract(ether_token_abi, bytecode=bin_hex)
+        tx_hash = token_contract_factory.deploy()
+        self.ether_token_address = self.web3.eth.getTransactionReceipt(tx_hash).get('contractAddress')
+
+        # create oracles
+        centralized_contract_factory = self.web3.eth.contract(centralized_oracle_abi, bytecode=bin_hex)
+        tx_hash = centralized_contract_factory.deploy()
+        self.centralized_oracle_factory_address = self.web3.eth.getTransactionReceipt(tx_hash).get('contractAddress')
+        self.centralized_oracle_factory = self.web3.eth.contract(self.centralized_oracle_factory_address, abi=centralized_oracle_abi)
+
+        ultimate_contract_factory = self.web3.eth.contract(ultimate_oracle_abi, bytecode=bin_hex)
+        tx_hash = ultimate_contract_factory.deploy()
+        self.ultimate_oracle_factory_address = self.web3.eth.getTransactionReceipt(tx_hash).get('contractAddress')
+        self.ultimate_oracle_factory = self.web3.eth.contract(self.ultimate_oracle_factory_address, abi=ultimate_oracle_abi)
+
+        # create event contract
+        event_contract = self.web3.eth.contract(event_factory_abi, bytecode=bin_hex)
+        tx_hash = event_contract.deploy()
+        self.event_factory_address = self.web3.eth.getTransactionReceipt(tx_hash).get('contractAddress')
+
+        self.contracts = [
+            {
+                'NAME': 'Centralized Oracle Factory',
+                'EVENT_ABI': centralized_oracle_abi,
+                'EVENT_DATA_RECEIVER': 'eth.event_receiver.CentralizedOracleReceiver',
+                'ADDRESSES': [self.centralized_oracle_factory_address]
+            },
+            {
+                'NAME': 'Ultimate Oracle Factory',
+                'EVENT_ABI': ultimate_oracle_abi,
+                'EVENT_DATA_RECEIVER': 'eth.event_receiver.UltimatedOracleReceiver',
+                'ADDRESSES': [self.ultimate_oracle_factory_address]
+            },
+            {
+                'NAME': 'Event Factory',
+                'EVENT_ABI': event_factory_abi,
+                'EVENT_DATA_RECEIVER': 'eth.event_receiver.EventReceiver',
+                'ADDRESSES': [self.event_factory_address]
+            }
+        ]
+
+        self.listener_under_test = EventListener(self.rpc, self.contracts)
 
     def tearDown(self):
         self.rpc.server.shutdown()
         self.rpc.server.server_close()
         self.rpc = None
 
-    def test_execute(self):
-        # create Centralized Oracle Factory contract
-        contract_factory = self.web3.eth.contract(abi, bytecode=bin_hex)
-        tx_hash = contract_factory.deploy()
-        oracle_factory_address = self.web3.eth.getTransactionReceipt(tx_hash).get('contractAddress')
-        oracle_factory = self.web3.eth.contract(oracle_factory_address, abi=abi)
-        self.assertIsNotNone(oracle_factory)
-
-        # Initiate bot
-        contract_map = [
-            {
-                'NAME': 'Centralized Oracle Factory',
-                'EVENT_ABI': loads('[{"inputs": [{"type": "bytes", "name": "ipfsHash"}], "constant": false, "name": "createCentralizedOracle", "payable": false, "outputs": [{"type": "address", "name": "centralizedOracle"}], "type": "function"}, {"inputs": [{"indexed": true, "type": "address", "name": "creator"}, {"indexed": false, "type": "address", "name": "centralizedOracle"}, {"indexed": false, "type": "bytes", "name": "ipfsHash"}], "type": "event", "name": "CentralizedOracleCreation", "anonymous": false}]'),
-                'EVENT_DATA_RECEIVER': 'eth.event_receiver.CentralizedOracleReceiver',
-                'ADDRESSES': [oracle_factory.address]
-            },
-        ]
-        listener_under_test = EventListener(self.rpc, contract_map)
-        self.assertEqual(len(models.CentralizedOracle.objects.all()), 0)
-
+    def create_event_description(self):
         # Create event description
         event_description_factory = EventDescriptionFactory()
         categorical_event_description_json = {
@@ -109,10 +210,92 @@ class TestDaemonExec(TestCase):
             'outcomes': ['A', 'B', 'C']
         }
         ipfs_hash = self.ipfs.post(categorical_event_description_json)
+        return ipfs_hash
+
+    def test_create_centralized_oracle(self):
+        n_oracles = models.CentralizedOracle.objects.all().count()
+        self.assertEqual(n_oracles, 0)
+        ipfs_hash = self.create_event_description()
+        # Create centralized oracle
+        tx_hash = self.centralized_oracle_factory.transact().createCentralizedOracle(ipfs_hash)
+        self.assertIsNotNone(tx_hash)
+        self.listener_under_test.execute()
+        self.assertEqual(len(models.CentralizedOracle.objects.all()), n_oracles+1)
+
+    def test_create_ultimate_oracle(self):
+        spread_multiplier = 3
+        challenge_period = 200  # 200s
+        challenge_amount = 100  # 100 Wei
+        front_runner_period = 50  # 50s
+
+        n_oracles = models.UltimateOracle.objects.all().count()
+        self.assertEqual(n_oracles, 0)
 
         # Create centralized oracle
-        tx_hash = oracle_factory.transact().createCentralizedOracle(ipfs_hash)
+        ipfs_hash = self.create_event_description()
+        tx_hash = self.centralized_oracle_factory.transact().createCentralizedOracle(ipfs_hash)
+        centralized_oracle = models.CategoricalEvent.objects.get(ipfs_hash=ipfs_hash)
+
+        # Create ultimate oracle
+        tx_hash = self.ultimate_oracle_factory.transact(self.tx_data).createUltimateOracle(
+            centralized_oracle.address,
+            self.ether_token_address,
+            spread_multiplier,
+            challenge_period,
+            challenge_amount,
+            front_runner_period
+        )
         self.assertIsNotNone(tx_hash)
 
-        listener_under_test.execute()
-        self.assertEqual(len(models.CentralizedOracle.objects.all()), 1)
+        self.listener_under_test.execute()
+        self.assertEqual(len(models.UltimateOracle.objects.all()), n_oracles+1)
+
+    def test_create_categorical_event(self):
+        n_events = models.CategoricalEvent.objects.all().count()
+        self.assertEquals(n_events, 0)
+        # Create centralized oracle
+        ipfs_hash = self.create_event_description()
+        tx_hash = self.centralized_oracle_factory.transact(self.tx_data).createCentralizedOracle(ipfs_hash)
+        centralized_oracle = models.CategoricalEvent.objects.get(ipfs_hash=ipfs_hash)
+        event_factory = self.web3.eth.contract(self.event_factory_address, abi=event_factory_abi)
+        event_factory.transact().createCategoricalEvent(self.ether_token_address, centralized_oracle.address, 3)
+        self.listener_under_test.execute()
+        self.assertEquals(models.CategoricalEvent.objects.all().count(), n_events+1)
+
+    def test_create_scalar_event(self):
+        n_events = models.ScalarEvent.objects.all().count()
+        self.assertEquals(n_events, 0)
+        # Create centralized oracle
+        ipfs_hash = self.create_event_description()
+        tx_hash = self.centralized_oracle_factory.transact(self.tx_data).createCentralizedOracle(ipfs_hash)
+        centralized_oracle = models.CategoricalEvent.objects.get(ipfs_hash=ipfs_hash)
+
+        event_factory = self.web3.eth.contract(self.event_factory_address, abi=event_factory_abi)
+        event_factory.transact().createScalarEvent(self.ether_token_address,
+                                                   centralized_oracle.address,
+                                                   1,
+                                                   2)
+        self.listener_under_test.execute()
+        self.assertEquals(models.ScalarEvent.objects.all().count(), n_events+1)
+
+    def test_create_market(self):
+        n_markets = models.Market.objects.all().count()
+        self.assertEquals(n_markets, 0)
+
+        # Create centralized oracle
+        ipfs_hash = self.create_event_description()
+        tx_hash = self.centralized_oracle_factory.transact(self.tx_data).createCentralizedOracle(ipfs_hash)
+        centralized_oracle = models.CategoricalEvent.objects.get(ipfs_hash=ipfs_hash)
+
+        event_factory = self.web3.eth.contract(self.event_factory_address, abi=event_factory_abi)
+        event_tx = event_factory.transact(self.tx_data).createCategoricalEvent(self.ether_token_address, centralized_oracle.address, 3)
+        categorical_event_address = self.web3.eth.getTransactionReceipt(tx_hash).get('contractAddress')
+
+        market_contract = self.web3.eth.contract(market_factory_abi, bytecode=bin_hex)
+        tx_hash = market_contract.deploy()
+        market_factory_address = self.web3.eth.getTransactionReceipt(tx_hash).get('contractAddress')
+        market_factory = self.web3.eth.contract(market_factory_address, abi=market_factory_abi)
+        market_tx = market_factory.transact(self.tx_data).createMarket(categorical_event_address, market_factory.address, 0)
+
+        self.listener_under_test.execute()
+        self.assertEquals(models.Market.objects.all().count(), n_markets+1)
