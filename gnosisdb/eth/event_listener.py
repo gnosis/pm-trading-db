@@ -17,7 +17,7 @@ class UnknownBlock(Exception):
 
 class EventListener(Singleton):
 
-    def __init__(self, rpc = None):
+    def __init__(self, rpc = None, contract_map = settings.GNOSISDB_CONTRACTS):
         super(EventListener, self).__init__()
         self.decoder = Decoder()
         self.web3 = Web3(
@@ -27,6 +27,7 @@ class EventListener(Singleton):
                 ssl=settings.ETHEREUM_NODE_SSL
             )
         )
+        self.contract_map = contract_map
         self.callback_per_block = getattr(settings, 'CALLBACK_PER_BLOCK', None)
         self.callback_per_exec = getattr(settings, 'CALLBACK_PER_EXEC', None)
         self.filter_logs = getattr(settings, 'LOG_FILTER_FUNCTION', None)
@@ -74,7 +75,7 @@ class EventListener(Singleton):
             # Decode logs #
             ###########################
 
-            for contract in settings.GNOSISDB_CONTRACTS:
+            for contract in self.contract_map:
                 logger.info('CONTRACT: {}'.format(contract))
                 # Add ABI
                 self.decoder.add_abi(contract.get('EVENT_ABI'))

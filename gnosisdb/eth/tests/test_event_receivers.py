@@ -254,4 +254,3 @@ class TestEventReceiver(TestCase):
         MarketReceiver().save(market_dict, block)
         market = Market.objects.get(event=event_address)
         self.assertIsNotNone(market.pk)
-        
