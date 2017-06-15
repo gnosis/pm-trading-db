@@ -206,7 +206,7 @@ class TestSerializers(TestCase):
         }
 
         oracle_event = {
-            'address': ultimate_oracle.factory[0:6] + 'another',
+            'address': ultimate_oracle.factory[0:-8] + 'another',
             'params': [
                 {
                     'name': 'creator',
@@ -214,11 +214,11 @@ class TestSerializers(TestCase):
                 },
                 {
                     'name': 'ultimateOracle',
-                    'value': ultimate_oracle.address[0:6] + 'another',
+                    'value': ultimate_oracle.address[0:-8] + 'another',
                 },
                 {
                     'name': 'oracle',
-                    'value': ultimate_oracle.forwarded_oracle.address[0:8] + 'wrong oracle'
+                    'value': ultimate_oracle.forwarded_oracle.address[0:-5] + 'wrong'
                 },
                 {
                     'name': 'collateralToken',
@@ -374,6 +374,10 @@ class TestSerializers(TestCase):
                 {
                     'name': 'fee',
                     'value': market_factory.fee
+                },
+                {
+                    'name': 'market',
+                    'value': market_factory.address[0:-7] + 'MARKET'
                 }
             ]
         }

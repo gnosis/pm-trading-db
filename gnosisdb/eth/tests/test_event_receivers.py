@@ -132,7 +132,7 @@ class TestEventReceiver(TestCase):
 
         scalar_event = {
             'address': oracle.factory[0:33] + 'GIACOMO',
-            'name': 'scalarEvent',
+            'name': 'ScalarEventCreation',
             'params': [
                 {
                     'name': 'creator',
@@ -181,7 +181,7 @@ class TestEventReceiver(TestCase):
 
         categorical_event = {
             'address': oracle.factory[0:33] + 'GIACOMO',
-            'name': 'categoricalEvent',
+            'name': 'CategoricalEventCreation',
             'params': [
                 {
                     'name': 'creator',
@@ -247,6 +247,10 @@ class TestEventReceiver(TestCase):
                 {
                     'name': 'fee',
                     'value': market.fee
+                },
+                {
+                    'name': 'market',
+                    'value': market.address[0:7] + 'another'
                 }
             ]
         }

@@ -89,16 +89,14 @@ class TestDaemonExec(TestCase):
         self.assertIsNotNone(oracle_factory)
 
         # Initiate bot
-        contract_map = {
-            oracle_factory.address[2:]: {
-                'name': 'Centralized Oracle Factory',
-                'factoryEventABI': '[{"inputs": [{"type": "bytes", "name": "ipfsHash"}], "constant": false, "name": "createCentralizedOracle", "payable": false, "outputs": [{"type": "address", "name": "centralizedOracle"}], "type": "function"}, {"inputs": [{"indexed": true, "type": "address", "name": "creator"}, {"indexed": false, "type": "address", "name": "centralizedOracle"}, {"indexed": false, "type": "bytes", "name": "ipfsHash"}], "type": "event", "name": "CentralizedOracleCreation", "anonymous": false}]',
-                'instanceABI': '[{"inputs": [], "constant": true, "name": "outcome", "payable": false, "outputs": [{"type": "int256", "name": ""}], "type": "function"}, {"inputs": [{"type": "int256", "name": "_outcome"}], "constant": false, "name": "setOutcome", "payable": false, "outputs": [], "type": "function"}, {"inputs": [], "constant": true, "name": "getOutcome", "payable": false, "outputs": [{"type": "int256", "name": ""}], "type": "function"}, {"inputs": [], "constant": true, "name": "owner", "payable": false, "outputs": [{"type": "address", "name": ""}], "type": "function"}, {"inputs": [{"type": "address", "name": "newOwner"}], "constant": false, "name": "replaceOwner", "payable": false, "outputs": [], "type": "function"}, {"inputs": [], "constant": true, "name": "ipfsHash", "payable": false, "outputs": [{"type": "bytes", "name": ""}], "type": "function"}, {"inputs": [], "constant": true, "name": "isSet", "payable": false, "outputs": [{"type": "bool", "name": ""}], "type": "function"}, {"inputs": [], "constant": true, "name": "isOutcomeSet", "payable": false, "outputs": [{"type": "bool", "name": ""}], "type": "function"}, {"inputs": [{"type": "address", "name": "_owner"}, {"type": "bytes", "name": "_ipfsHash"}], "type": "constructor", "payable": false}, {"inputs": [{"indexed": true, "type": "address", "name": "newOwner"}], "type": "event", "name": "OwnerReplacement", "anonymous": false}, {"inputs": [{"indexed": false, "type": "int256", "name": "outcome"}], "type": "event", "name": "OutcomeAssignment", "anonymous": false}]',
-                'factoryEventSerializer': 'relationaldb.serializers.CentralizedOracleSerializer',
-                'instanceAddressesGetter': None,
-                'instanceEventSerializer': None
+        contract_map = [
+            {
+                'NAME': 'Centralized Oracle Factory',
+                'EVENT_ABI': loads('[{"inputs": [{"type": "bytes", "name": "ipfsHash"}], "constant": false, "name": "createCentralizedOracle", "payable": false, "outputs": [{"type": "address", "name": "centralizedOracle"}], "type": "function"}, {"inputs": [{"indexed": true, "type": "address", "name": "creator"}, {"indexed": false, "type": "address", "name": "centralizedOracle"}, {"indexed": false, "type": "bytes", "name": "ipfsHash"}], "type": "event", "name": "CentralizedOracleCreation", "anonymous": false}]'),
+                'EVENT_DATA_RECEIVER': 'eth.event_receiver.CentralizedOracleReceiver',
+                'ADDRESSES': [oracle_factory.address[2:]]
             },
-        }
+        ]
         listener_under_test = EventListener(self.rpc, contract_map)
         self.assertEqual(len(models.CentralizedOracle.objects.all()), 0)
 
