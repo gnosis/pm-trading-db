@@ -4,6 +4,7 @@ from django.test import TestCase
 from web3 import Web3
 from eth.factories import DaemonFactory
 from eth.event_listener import EventListener
+from eth.web3_service import Web3Service
 from web3 import TestRPCProvider
 from json import loads, dumps
 from relationaldb import models
@@ -145,7 +146,10 @@ class TestDaemonExec(TestCase):
     def setUp(self):
         os.environ.update({'TESTRPC_GAS_LIMIT': '10000000000'})
         self.rpc = TestRPCProvider()
+        web3_service = Web3Service()
         self.web3 = Web3(self.rpc)
+        # Mock web3
+        web3_service.web3 = self.web3
         self.daemon = DaemonFactory()
         self.ipfs = Ipfs()
 
