@@ -4,6 +4,7 @@ from django.test import TestCase
 from web3 import Web3
 from eth.factories import DaemonFactory
 from eth.event_listener import EventListener
+from eth.web3_service import Web3Service
 from web3 import TestRPCProvider
 from json import loads, dumps
 from relationaldb import models
@@ -71,7 +72,10 @@ bin_hex = "6060604052341561000c57fe5b5b6109ad8061001c6000396000f3006060604052600
 class TestDaemonExec(TestCase):
     def setUp(self):
         self.rpc = TestRPCProvider()
+        web3_service = Web3Service()
         self.web3 = Web3(self.rpc)
+        # Mock web3
+        web3_service.web3 = self.web3
         self.daemon = DaemonFactory()
         self.ipfs = Ipfs()
 
@@ -97,7 +101,7 @@ class TestDaemonExec(TestCase):
                 'ADDRESSES': [oracle_factory.address]
             },
         ]
-        listener_under_test = EventListener(self.rpc, contract_map)
+        listener_under_test = EventListener(contract_map)
         self.assertEqual(len(models.CentralizedOracle.objects.all()), 0)
 
         # Create event description

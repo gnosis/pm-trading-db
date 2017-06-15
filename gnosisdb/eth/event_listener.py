@@ -1,7 +1,7 @@
 from utils import Singleton
 from decoder import Decoder
 from json import loads, dumps
-from web3 import Web3, RPCProvider
+from eth.web3_service import Web3Service
 from django.conf import settings
 from django.utils.module_loading import import_string
 from celery.utils.log import get_task_logger
@@ -17,16 +17,10 @@ class UnknownBlock(Exception):
 
 class EventListener(Singleton):
 
-    def __init__(self, rpc = None, contract_map=settings.GNOSISDB_CONTRACTS):
+    def __init__(self, contract_map=settings.GNOSISDB_CONTRACTS):
         super(EventListener, self).__init__()
         self.decoder = Decoder()
-        self.web3 = Web3(
-            rpc if rpc is not None else RPCProvider(
-                host=settings.ETHEREUM_NODE_HOST,
-                port=settings.ETHEREUM_NODE_PORT,
-                ssl=settings.ETHEREUM_NODE_SSL
-            )
-        )
+        self.web3 = Web3Service().web3
         self.contract_map = contract_map
 
     def next_block(self):
