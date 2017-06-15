@@ -92,7 +92,8 @@ market_factory_abi = loads('[{"inputs": [{"type": "address", "name": "market"}, 
                            '"constant": true, "name": "calcMarginalPrice", "payable": false, "outputs": [{"type":'
                            '"uint256", "name": "price"}], "type": "function"}]')
 
-bin_hex = "6060604052341561000c57fe5b5b6109ad8061001c6000396000f30060606040526000357c01000000000000000000000000000000" \
+
+centralized_oracle_bytecode = "6060604052341561000c57fe5b5b6109ad8061001c6000396000f30060606040526000357c01000000000000000000000000000000" \
           "00000000000000000000000000900463ffffffff1680634e2f220c1461003b575bfe5b341561004357fe5b61009360048080359060" \
           "2001908201803590602001908080601f01602080910402602001604051908101604052809392919081815260200183838082843782" \
           "0191505050505050919050506100d5565b604051808273ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffff" \
@@ -141,6 +142,11 @@ bin_hex = "6060604052341561000c57fe5b5b6109ad8061001c6000396000f3006060604052600
           "a15d89c1a7e9b0534395a3d76f02abe2fdc9cd57a9cb0029a165627a7a723058201542f2e1ea92f43165a6f655c469365bdc5bb05e" \
           "075981b919d3b50c7d3468d80029"
 
+token_bytecode = ""
+ultimate_oracle_bytecode = ""
+event_bytecode = ""
+market_bytecode = ""
+
 
 class TestDaemonExec(TestCase):
     def setUp(self):
@@ -156,23 +162,23 @@ class TestDaemonExec(TestCase):
         self.tx_data = {'from': self.web3.eth.accounts[0], 'gas': 100000000}
 
         # create token
-        token_contract_factory = self.web3.eth.contract(ether_token_abi, bytecode=bin_hex)
+        token_contract_factory = self.web3.eth.contract(ether_token_abi, bytecode=token_bytecode)
         tx_hash = token_contract_factory.deploy()
         self.ether_token_address = self.web3.eth.getTransactionReceipt(tx_hash).get('contractAddress')
 
         # create oracles
-        centralized_contract_factory = self.web3.eth.contract(centralized_oracle_abi, bytecode=bin_hex)
+        centralized_contract_factory = self.web3.eth.contract(centralized_oracle_abi, bytecode=centralized_oracle_bytecode)
         tx_hash = centralized_contract_factory.deploy()
         self.centralized_oracle_factory_address = self.web3.eth.getTransactionReceipt(tx_hash).get('contractAddress')
         self.centralized_oracle_factory = self.web3.eth.contract(self.centralized_oracle_factory_address, abi=centralized_oracle_abi)
 
-        ultimate_contract_factory = self.web3.eth.contract(ultimate_oracle_abi, bytecode=bin_hex)
+        ultimate_contract_factory = self.web3.eth.contract(ultimate_oracle_abi, bytecode=ultimate_oracle_bytecode)
         tx_hash = ultimate_contract_factory.deploy()
         self.ultimate_oracle_factory_address = self.web3.eth.getTransactionReceipt(tx_hash).get('contractAddress')
         self.ultimate_oracle_factory = self.web3.eth.contract(self.ultimate_oracle_factory_address, abi=ultimate_oracle_abi)
 
         # create event contract
-        event_contract = self.web3.eth.contract(event_factory_abi, bytecode=bin_hex)
+        event_contract = self.web3.eth.contract(event_factory_abi, bytecode=event_bytecode)
         tx_hash = event_contract.deploy()
         self.event_factory_address = self.web3.eth.getTransactionReceipt(tx_hash).get('contractAddress')
 
@@ -186,7 +192,7 @@ class TestDaemonExec(TestCase):
             {
                 'NAME': 'Ultimate Oracle Factory',
                 'EVENT_ABI': ultimate_oracle_abi,
-                'EVENT_DATA_RECEIVER': 'eth.event_receiver.UltimatedOracleFactoryReceiver',
+                'EVENT_DATA_RECEIVER': 'eth.event_receiver.UltimateOracleFactoryReceiver',
                 'ADDRESSES': [self.ultimate_oracle_factory_address]
             },
             {
@@ -221,7 +227,7 @@ class TestDaemonExec(TestCase):
         self.assertEqual(n_oracles, 0)
         ipfs_hash = self.create_event_description()
         # Create centralized oracle
-        tx_hash = self.centralized_oracle_factory.transact().createCentralizedOracle(ipfs_hash)
+        tx_hash = self.centralized_oracle_factory.transact(self.tx_data).createCentralizedOracle(ipfs_hash)
         self.assertIsNotNone(tx_hash)
         self.listener_under_test.execute()
         self.assertEqual(len(models.CentralizedOracle.objects.all()), n_oracles+1)
@@ -237,7 +243,7 @@ class TestDaemonExec(TestCase):
 
         # Create centralized oracle
         ipfs_hash = self.create_event_description()
-        tx_hash = self.centralized_oracle_factory.transact().createCentralizedOracle(ipfs_hash)
+        tx_hash = self.centralized_oracle_factory.transact(self.tx_data).createCentralizedOracle(ipfs_hash)
         self.listener_under_test.execute()
         centralized_oracle = models.CentralizedOracle.objects.get(event_description__ipfs_hash=ipfs_hash)
 
@@ -278,7 +284,7 @@ class TestDaemonExec(TestCase):
         centralized_oracle = models.CentralizedOracle.objects.get(event_description__ipfs_hash=ipfs_hash)
 
         event_factory = self.web3.eth.contract(self.event_factory_address, abi=event_factory_abi)
-        event_factory.transact().createScalarEvent(self.ether_token_address,
+        event_factory.transact(self.tx_data).createScalarEvent(self.ether_token_address,
                                                    centralized_oracle.address,
                                                    1,
                                                    2)
@@ -300,7 +306,7 @@ class TestDaemonExec(TestCase):
         self.listener_under_test.execute()
         categorical_event_address = self.web3.eth.getTransactionReceipt(tx_hash).get('contractAddress')
 
-        market_contract = self.web3.eth.contract(market_factory_abi, bytecode=bin_hex)
+        market_contract = self.web3.eth.contract(market_factory_abi, bytecode=market_bytecode)
         tx_hash = market_contract.deploy()
         market_factory_address = self.web3.eth.getTransactionReceipt(tx_hash).get('contractAddress')
         market_factory = self.web3.eth.contract(market_factory_address, abi=market_factory_abi)
