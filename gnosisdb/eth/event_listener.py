@@ -17,7 +17,7 @@ class UnknownBlock(Exception):
 
 class EventListener(Singleton):
 
-    def __init__(self, rpc = None, contract_map = settings.GNOSISDB_CONTRACTS):
+    def __init__(self, rpc = None, contract_map=settings.GNOSISDB_CONTRACTS):
         super(EventListener, self).__init__()
         self.decoder = Decoder()
         self.web3 = Web3(
@@ -28,9 +28,6 @@ class EventListener(Singleton):
             )
         )
         self.contract_map = contract_map
-        self.callback_per_block = getattr(settings, 'CALLBACK_PER_BLOCK', None)
-        self.callback_per_exec = getattr(settings, 'CALLBACK_PER_EXEC', None)
-        self.filter_logs = getattr(settings, 'LOG_FILTER_FUNCTION', None)
 
     def next_block(self):
         return Daemon.get_solo().block_number
@@ -82,20 +79,22 @@ class EventListener(Singleton):
 
                 # Get addresses watching
                 addresses = None
-                if contract['ADDRESSES']:
+                if contract.get('ADDRESSES'):
                     addresses = contract['ADDRESSES']
-                elif contract['ADDRESSES_GETTER']:
+                elif contract.get('ADDRESSES_GETTER'):
                     try:
                         addresses = addresses_getter(contract['ADDRESSES_GETTER'])
                     except Exception as e:
                         logger.info(e)
                         return
-
+                logger.info('Loop logs')
                 # Filter logs by address and decode
                 for log in logs:
                     if log['address'] in addresses:
                         # try to decode it
+                        logger.info('Run decoder')
                         decoded = self.decoder.decode_logs([log])
+                        logger.info('Decoded')
 
                         if decoded:
                             # save decoded event with event receiver

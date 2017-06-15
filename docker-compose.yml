@@ -1,10 +1,5 @@
 version: '2'
-#networks:
-#  testnet:
-#    driver: bridge
-#    ipam:
-#      config:
-#      - subnet: 172.25.0.0/24
+
 services:
   ipfs:
     hostname: ipfs
@@ -12,12 +7,9 @@ services:
     ports:
       - "8080:8080"
       - "4001:4001"
-      - "192.168.1.165:5001:5001" # for testing purposes: change this to your wlan ip address
+      - "5001:5001"
     volumes:
       - ./.ipfs/:/data/ipfs/
-#    networks:
-#      testnet:
-#        ipv4_address: 172.25.0.101
   rabbit:
     hostname: rabbit
     image: rabbitmq:latest

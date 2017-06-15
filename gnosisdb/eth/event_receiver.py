@@ -18,27 +18,27 @@ class AbstractEventReceiver(object):
 class CentralizedOracleReceiver(AbstractEventReceiver):
 
     def save(self, decoded_event, block_info):
-        logger.info("CentralizedOracleReceiver instantiating serializer")
         serializer = CentralizedOracleSerializer(data=decoded_event, block=block_info)
-        logger.info("CentralizedOracleReceiver checking serializer is valid ...")
         if serializer.is_valid():
-            logger.info("CentralizedOracleReceiver valid serialier")
             serializer.save()
-            logger.info("CentralizedOracleReceiver instance saved")
 
 
 class EventReceiver(AbstractEventReceiver):
 
     events = {
-        'scalarEvent': ScalarEventSerializer,
-        'categoricalEvent': CategoricalEventSerializer
+        'ScalarEventCreation': ScalarEventSerializer,
+        'CategoricalEventCreation': CategoricalEventSerializer
     }
 
     def save(self, decoded_event, block_info):
+        from json import dumps
+        logger.info('Event Factory Serializer {}'.format(dumps(decoded_event)))
         if self.events.get(decoded_event.get('name')):
             serializer = self.events.get(decoded_event.get('name'))(data=decoded_event, block=block_info)
             if serializer.is_valid():
                 serializer.save()
+            else:
+                logger.info(serializer.errors)
 
 
 class UltimateOracleReceiver(AbstractEventReceiver):
