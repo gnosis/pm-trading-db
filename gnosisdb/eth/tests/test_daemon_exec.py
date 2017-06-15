@@ -94,7 +94,7 @@ class TestDaemonExec(TestCase):
                 'NAME': 'Centralized Oracle Factory',
                 'EVENT_ABI': loads('[{"inputs": [{"type": "bytes", "name": "ipfsHash"}], "constant": false, "name": "createCentralizedOracle", "payable": false, "outputs": [{"type": "address", "name": "centralizedOracle"}], "type": "function"}, {"inputs": [{"indexed": true, "type": "address", "name": "creator"}, {"indexed": false, "type": "address", "name": "centralizedOracle"}, {"indexed": false, "type": "bytes", "name": "ipfsHash"}], "type": "event", "name": "CentralizedOracleCreation", "anonymous": false}]'),
                 'EVENT_DATA_RECEIVER': 'eth.event_receiver.CentralizedOracleReceiver',
-                'ADDRESSES': [oracle_factory.address[2:]]
+                'ADDRESSES': [oracle_factory.address]
             },
         ]
         listener_under_test = EventListener(self.rpc, contract_map)
