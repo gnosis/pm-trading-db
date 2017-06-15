@@ -180,24 +180,24 @@ class TestDaemonExec(TestCase):
             {
                 'NAME': 'Centralized Oracle Factory',
                 'EVENT_ABI': centralized_oracle_abi,
-                'EVENT_DATA_RECEIVER': 'eth.event_receiver.CentralizedOracleReceiver',
+                'EVENT_DATA_RECEIVER': 'eth.event_receiver.CentralizedOracleFactoryReceiver',
                 'ADDRESSES': [self.centralized_oracle_factory_address]
             },
             {
                 'NAME': 'Ultimate Oracle Factory',
                 'EVENT_ABI': ultimate_oracle_abi,
-                'EVENT_DATA_RECEIVER': 'eth.event_receiver.UltimatedOracleReceiver',
+                'EVENT_DATA_RECEIVER': 'eth.event_receiver.UltimatedOracleFactoryReceiver',
                 'ADDRESSES': [self.ultimate_oracle_factory_address]
             },
             {
                 'NAME': 'Event Factory',
                 'EVENT_ABI': event_factory_abi,
-                'EVENT_DATA_RECEIVER': 'eth.event_receiver.EventReceiver',
+                'EVENT_DATA_RECEIVER': 'eth.event_receiver.EventFactoryReceiver',
                 'ADDRESSES': [self.event_factory_address]
             }
         ]
 
-        self.listener_under_test = EventListener(self.rpc, self.contracts)
+        self.listener_under_test = EventListener(self.contracts)
 
     def tearDown(self):
         self.rpc.server.shutdown()
@@ -238,7 +238,8 @@ class TestDaemonExec(TestCase):
         # Create centralized oracle
         ipfs_hash = self.create_event_description()
         tx_hash = self.centralized_oracle_factory.transact().createCentralizedOracle(ipfs_hash)
-        centralized_oracle = models.CategoricalEvent.objects.get(ipfs_hash=ipfs_hash)
+        self.listener_under_test.execute()
+        centralized_oracle = models.CentralizedOracle.objects.get(event_description__ipfs_hash=ipfs_hash)
 
         # Create ultimate oracle
         tx_hash = self.ultimate_oracle_factory.transact(self.tx_data).createUltimateOracle(
@@ -260,9 +261,10 @@ class TestDaemonExec(TestCase):
         # Create centralized oracle
         ipfs_hash = self.create_event_description()
         tx_hash = self.centralized_oracle_factory.transact(self.tx_data).createCentralizedOracle(ipfs_hash)
-        centralized_oracle = models.CategoricalEvent.objects.get(ipfs_hash=ipfs_hash)
+        self.listener_under_test.execute()
+        centralized_oracle = models.CentralizedOracle.objects.get(event_description__ipfs_hash=ipfs_hash)
         event_factory = self.web3.eth.contract(self.event_factory_address, abi=event_factory_abi)
-        event_factory.transact().createCategoricalEvent(self.ether_token_address, centralized_oracle.address, 3)
+        event_factory.transact(self.tx_data).createCategoricalEvent(self.ether_token_address, centralized_oracle.address, 3)
         self.listener_under_test.execute()
         self.assertEquals(models.CategoricalEvent.objects.all().count(), n_events+1)
 
@@ -272,7 +274,8 @@ class TestDaemonExec(TestCase):
         # Create centralized oracle
         ipfs_hash = self.create_event_description()
         tx_hash = self.centralized_oracle_factory.transact(self.tx_data).createCentralizedOracle(ipfs_hash)
-        centralized_oracle = models.CategoricalEvent.objects.get(ipfs_hash=ipfs_hash)
+        self.listener_under_test.execute()
+        centralized_oracle = models.CentralizedOracle.objects.get(event_description__ipfs_hash=ipfs_hash)
 
         event_factory = self.web3.eth.contract(self.event_factory_address, abi=event_factory_abi)
         event_factory.transact().createScalarEvent(self.ether_token_address,
@@ -289,10 +292,12 @@ class TestDaemonExec(TestCase):
         # Create centralized oracle
         ipfs_hash = self.create_event_description()
         tx_hash = self.centralized_oracle_factory.transact(self.tx_data).createCentralizedOracle(ipfs_hash)
-        centralized_oracle = models.CategoricalEvent.objects.get(ipfs_hash=ipfs_hash)
+        self.listener_under_test.execute()
+        centralized_oracle = models.CentralizedOracle.objects.get(event_description__ipfs_hash=ipfs_hash)
 
         event_factory = self.web3.eth.contract(self.event_factory_address, abi=event_factory_abi)
         event_tx = event_factory.transact(self.tx_data).createCategoricalEvent(self.ether_token_address, centralized_oracle.address, 3)
+        self.listener_under_test.execute()
         categorical_event_address = self.web3.eth.getTransactionReceipt(tx_hash).get('contractAddress')
 
         market_contract = self.web3.eth.contract(market_factory_abi, bytecode=bin_hex)

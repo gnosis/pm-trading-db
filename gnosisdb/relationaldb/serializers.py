@@ -234,3 +234,12 @@ class IPFSEventDescriptionDeserializer(serializers.ModelSerializer):
         instance.is_valid(raise_exception=True)
         result = instance.save()
         return result
+
+
+# Instance Serializers
+
+
+class OutcomeTokenSerializer(ContractSerializer, serializers.ModelSerializer):
+    address = EventField(source='event')
+    outcomeToken = CharField(max_length=40, source='address')
+    index = serializers.IntegerField(min_value=0)

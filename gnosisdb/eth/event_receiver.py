@@ -15,7 +15,7 @@ class AbstractEventReceiver(object):
     def save(self, decoded_event, block_info): pass
 
 
-class CentralizedOracleReceiver(AbstractEventReceiver):
+class CentralizedOracleFactoryReceiver(AbstractEventReceiver):
 
     def save(self, decoded_event, block_info):
         serializer = CentralizedOracleSerializer(data=decoded_event, block=block_info)
@@ -23,7 +23,7 @@ class CentralizedOracleReceiver(AbstractEventReceiver):
             serializer.save()
 
 
-class EventReceiver(AbstractEventReceiver):
+class EventFactoryReceiver(AbstractEventReceiver):
 
     events = {
         'ScalarEventCreation': ScalarEventSerializer,
@@ -41,7 +41,7 @@ class EventReceiver(AbstractEventReceiver):
                 logger.info(serializer.errors)
 
 
-class UltimateOracleReceiver(AbstractEventReceiver):
+class UltimateOracleFactoryReceiver(AbstractEventReceiver):
 
     def save(self, decoded_event, block_info):
         serializer = UltimateOracleSerializer(data=decoded_event, block=block_info)
@@ -49,7 +49,7 @@ class UltimateOracleReceiver(AbstractEventReceiver):
             serializer.save()
 
 
-class MarketReceiver(AbstractEventReceiver):
+class MarketFactoryReceiver(AbstractEventReceiver):
     def save(self, decoded_event, block_info):
         serializer = MarketSerializer(data=decoded_event, block=block_info)
         if serializer.is_valid():

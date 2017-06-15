@@ -37,6 +37,7 @@ class CategoricalEvent(Event):
 # Tokens
 class OutcomeToken(Contract):
     event = models.ForeignKey(Event)
+    index = models.PositiveIntegerField()
 
 
 # Event Descriptions
