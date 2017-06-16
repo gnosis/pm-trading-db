@@ -55,6 +55,7 @@ class OutcomeTokenFactory(ContractFactory):
         model = models.OutcomeToken
 
     event = factory_boy.SubFactory(EventFactory)
+    index = 1
 
 
 class EventDescriptionFactory(factory_boy.DjangoModelFactory):

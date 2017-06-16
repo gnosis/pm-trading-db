@@ -3,7 +3,8 @@ from __future__ import unicode_literals
 from django.test import TestCase
 from json import loads
 from eth.event_receiver import (
-    CentralizedOracleFactoryReceiver, UltimateOracleFactoryReceiver, EventFactoryReceiver, MarketFactoryReceiver
+    CentralizedOracleFactoryReceiver, UltimateOracleFactoryReceiver, EventFactoryReceiver, MarketFactoryReceiver,
+    CentralizedOracleInstanceReceiver, OutcomeTokenReceiver
 )
 
 from relationaldb.models import (
@@ -12,7 +13,7 @@ from relationaldb.models import (
 
 from relationaldb.factories import (
     UltimateOracleFactory, CentralizedOracleFactory, CategoricalEventFactory,
-    OracleFactory, EventFactory, MarketFactory
+    OracleFactory, EventFactory, MarketFactory, OutcomeTokenFactory
 )
 from datetime import datetime
 from time import mktime
@@ -258,3 +259,126 @@ class TestEventReceiver(TestCase):
         MarketFactoryReceiver().save(market_dict, block)
         market = Market.objects.get(event=event_address)
         self.assertIsNotNone(market.pk)
+
+    #
+    # contract instances
+    #
+
+    def test_centralized_oracle_instance_receiver(self):
+        oracle_factory = CentralizedOracleFactory()
+        oracle_address = oracle_factory.address[1:-7] + 'GIACOMO'
+        # oracle.event_description
+        event_description_json = {
+            'title': oracle_factory.event_description.title,
+            'description': oracle_factory.event_description.description,
+            'resolution_date': oracle_factory.event_description.resolution_date.isoformat(),
+            'outcomes': ['Yes', 'No']
+        }
+
+        # save event_description to IPFS
+        ipfs_hash = self.ipfs.post(event_description_json)
+
+        block = {
+            'number': oracle_factory.creation_block,
+            'timestamp': mktime(oracle_factory.creation_date.timetuple())
+        }
+
+        oracle_event = {
+            'address': oracle_factory.factory[0:-7] + 'GIACOMO',
+            'params': [
+                {
+                    'name': 'creator',
+                    'value': oracle_factory.address
+                },
+                {
+                    'name': 'centralizedOracle',
+                    'value': oracle_factory.address[1:-8] + 'INSTANCE',
+                },
+                {
+                    'name': 'ipfsHash',
+                    'value': ipfs_hash
+                }
+            ]
+        }
+
+        CentralizedOracleInstanceReceiver().save(oracle_event, block)
+        created_oracle = CentralizedOracle.objects.get(address=oracle_address)
+        self.assertIsNotNone(created_oracle.pk)
+
+    def test_outcometoken_instance_receiver(self):
+        outcome_token_factory = OutcomeTokenFactory()
+        outcome_token = None
+        oracle_factory = OracleFactory()
+        event_factory = EventFactory()
+        event = None
+        event_address = event_factory.address[0:-7] + 'GIACOMO'
+
+        block = {
+            'number': oracle_factory.creation_block,
+            'timestamp': mktime(oracle_factory.creation_date.timetuple())
+        }
+
+        scalar_event = {
+            'address': oracle_factory.factory[1:-12] + 'TESTINSTANCE',
+            'params': [
+                {
+                    'name': 'creator',
+                    'value': oracle_factory.creator
+                },
+                {
+                    'name': 'collateralToken',
+                    'value': event_factory.collateral_token
+                },
+                {
+                    'name': 'oracle',
+                    'value': oracle_factory.address
+                },
+                {
+                    'name': 'outcomeCount',
+                    'value': 1
+                },
+                {
+                    'name': 'upperBound',
+                    'value': 1
+                },
+                {
+                    'name': 'lowerBound',
+                    'value': 0
+                },
+                {
+                    'name': 'scalarEvent',
+                    'value': event_factory.address[1:-12] + 'TESTINSTANCE'
+                }
+            ]
+        }
+
+        EventFactoryReceiver().save(scalar_event, block)
+        event = ScalarEvent.objects.get(address=event_address)
+
+        block = {
+            'number': oracle_factory.creation_block,
+            'timestamp': mktime(oracle_factory.creation_date.timetuple())
+        }
+        oracle_event = {
+            'address': oracle_factory.factory[0:-7] + 'GIACOMO',
+            'params': [
+                {
+                    'name': 'creator',
+                    'value': event.creator
+                },
+                {
+                    'name': 'address',
+                    'value': event.address
+                },
+                {
+                    'name': 'outcomeToken',
+                    'value': oracle_factory.address[1:-8] + 'INSTANCE',
+                },
+                {
+                    'name': 'index',
+                    'value': outcome_token_factory.index
+                }
+            ]
+        }
+        outcome_token = OutcomeTokenReceiver().save(oracle_event, block)
+        self.assertIsNotNone(outcome_token.pk)

@@ -1,6 +1,9 @@
 from abc import ABCMeta, abstractmethod
-from relationaldb.serializers import CentralizedOracleSerializer, ScalarEventSerializer, CategoricalEventSerializer,\
-    UltimateOracleSerializer, MarketSerializer
+from relationaldb.serializers import (
+    CentralizedOracleSerializer, ScalarEventSerializer, CategoricalEventSerializer,
+    UltimateOracleSerializer, MarketSerializer, OutcomeTokenInstanceSerializer,
+    CentralizedOracleInstanceSerializer
+)
 
 from celery.utils.log import get_task_logger
 
@@ -50,6 +53,7 @@ class UltimateOracleFactoryReceiver(AbstractEventReceiver):
 
 
 class MarketFactoryReceiver(AbstractEventReceiver):
+
     def save(self, decoded_event, block_info):
         serializer = MarketSerializer(data=decoded_event, block=block_info)
         if serializer.is_valid():
@@ -59,3 +63,20 @@ class MarketFactoryReceiver(AbstractEventReceiver):
 class StandardMarketOrderReceiver(AbstractEventReceiver):
     def save(self, decoded_event, block_info):
         pass
+
+
+# contract instances
+class CentralizedOracleInstanceReceiver(AbstractEventReceiver):
+
+    def save(self, decoded_event, block_info):
+        serializer = CentralizedOracleInstanceSerializer(data=decoded_event, block=block_info)
+        if serializer.is_valid():
+            serializer.save()
+
+
+class OutcomeTokenReceiver(AbstractEventReceiver):
+
+    def save(self, decoded_event, block_info):
+        serializer = OutcomeTokenInstanceSerializer(data=decoded_event, block=block_info)
+        if serializer.is_valid():
+            serializer.save()
