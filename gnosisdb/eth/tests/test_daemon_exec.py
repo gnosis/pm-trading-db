@@ -152,10 +152,9 @@ class TestDaemonExec(TestCase):
     def setUp(self):
         os.environ.update({'TESTRPC_GAS_LIMIT': '10000000000'})
         self.rpc = TestRPCProvider()
-        web3_service = Web3Service()
-        self.web3 = Web3(self.rpc)
+        web3_service = Web3Service(self.rpc)
+        self.web3 = web3_service.web3
         # Mock web3
-        web3_service.web3 = self.web3
         self.daemon = DaemonFactory()
         self.ipfs = Ipfs()
 
