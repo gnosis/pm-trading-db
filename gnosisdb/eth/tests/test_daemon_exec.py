@@ -313,4 +313,13 @@ class TestDaemonExec(TestCase):
         market_tx = market_factory.transact(self.tx_data).createMarket(categorical_event_address, market_factory.address, 0)
 
         self.listener_under_test.execute()
-        self.assertEquals(models.Market.objects.all().count(), n_markets+1)
+        self.assertEquals(models.Market.objects.all().count(), n_markets + 1)
+
+    def test_market_buy_event(self):
+        pass
+
+    def test_market_sell_event(self):
+        pass
+
+    def test_market_short_sell_event(self):
+        pass

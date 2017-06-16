@@ -10,6 +10,9 @@ class AbstractAddressesGetter(object):
     @abstractmethod
     def get_addresses(self): pass
 
+    @abstractmethod
+    def contains_address(self, address): pass
+
 
 def addresses_getter(module_path):
     """Returns the addresses list.
@@ -22,7 +25,7 @@ def addresses_getter(module_path):
         reference = import_string(module_path)
         if inspect.isclass(reference):
             if issubclass(reference, AbstractAddressesGetter):
-                return reference().get_addresses()
+                return reference()
             else:
                 raise ImportError("AddressesGetter class must inherit from %s " % str(AbstractAddressesGetter.__name__))
         elif inspect.isfunction(reference):
