@@ -54,3 +54,8 @@ class MarketFactoryReceiver(AbstractEventReceiver):
         serializer = MarketSerializer(data=decoded_event, block=block_info)
         if serializer.is_valid():
             serializer.save()
+
+
+class StandardMarketOrderReceiver(AbstractEventReceiver):
+    def save(self, decoded_event, block_info):
+        pass
