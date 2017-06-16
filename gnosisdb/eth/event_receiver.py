@@ -60,6 +60,11 @@ class MarketFactoryReceiver(AbstractEventReceiver):
             serializer.save()
 
 
+class MarketOrderReceiver(AbstractEventReceiver):
+    def save(self, decoded_event, block_info):
+        pass
+
+
 # contract instances
 class CentralizedOracleInstanceReceiver(AbstractEventReceiver):
 
