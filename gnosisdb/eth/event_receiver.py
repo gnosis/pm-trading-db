@@ -74,6 +74,21 @@ class CentralizedOracleInstanceReceiver(AbstractEventReceiver):
             serializer.save()
 
 
+class EventInstanceReceiver(AbstractEventReceiver):
+
+    # TODO, develop serializers
+    events = {
+        'Issuance': '', # sum to totalSupply, update data
+        'Revocation': '', # subtract from total Supply, update data
+        'OutcomeTokenCreation': OutcomeTokenInstanceSerializer
+    }
+
+    def save(self, decoded_event, block_info):
+        serializer = self.events.get(decoded_event.get('name'))(data=decoded_event, block=block_info)
+        if serializer.is_valid():
+            serializer.save()
+
+# TODO remove
 class OutcomeTokenReceiver(AbstractEventReceiver):
 
     def save(self, decoded_event, block_info):

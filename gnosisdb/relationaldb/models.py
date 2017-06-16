@@ -42,14 +42,14 @@ class CategoricalEvent(Event):
 class OutcomeToken(models.Model):
     event = models.ForeignKey(Event)
     index = models.PositiveIntegerField()
-    total_supply = models.BigIntegerField()
+    total_supply = models.BigIntegerField(default=0)
     address = models.CharField(max_length=40)
 
 
 class OutcomeTokenBalance(models.Model):
     account = models.ForeignKey(Account)
     outcome_token = models.ForeignKey(OutcomeToken)
-    balance = models.BigIntegerField()
+    balance = models.BigIntegerField(default=0)
 
 
 # Event Descriptions
