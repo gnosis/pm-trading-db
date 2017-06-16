@@ -17,6 +17,10 @@ class Contract(models.Model):
         abstract = True
 
 
+class Account(models.Model):
+    address = models.CharField(max_length=40)
+
+
 # Events
 class Event(Contract):
     collateral_token = models.CharField(max_length=40)
@@ -35,9 +39,17 @@ class CategoricalEvent(Event):
 
 
 # Tokens
-class OutcomeToken(Contract):
+class OutcomeToken(models.Model):
     event = models.ForeignKey(Event)
     index = models.PositiveIntegerField()
+    total_supply = models.BigIntegerField()
+    address = models.CharField(max_length=40)
+
+
+class OutcomeTokenBalance(models.Model):
+    account = models.ForeignKey(Account)
+    outcome_token = models.ForeignKey(OutcomeToken)
+    balance = models.BigIntegerField()
 
 
 # Event Descriptions
@@ -84,10 +96,10 @@ class UltimateOracle(Oracle):
 
 # Market
 class Market(Contract):
-    event = models.ForeignKey('Event')
+    event = models.ForeignKey(Event)
     market_maker = models.CharField(max_length=40)
     fee = models.PositiveIntegerField()
     funding = models.BigIntegerField(null=True)
     net_outcome_tokens_sold = models.TextField(validators=[validate_comma_separated_integer_list], null=True)
-    # outcome_probabilities = models.TextField(validators=[validate_comma_separated_integer_list])
+    withdrawn_fees = models.BigIntegerField()
     stage = models.PositiveIntegerField(null=True)
