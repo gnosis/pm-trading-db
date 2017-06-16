@@ -263,7 +263,7 @@ class TestDaemonExec(TestCase):
         market_tx = market_factory.transact(self.tx_data).createMarket(categorical_event_address, market_factory.address, 0)
         self.listener_under_test.execute()
         self.assertEquals(models.Market.objects.all().count(), 1)
-        # Send Buy Order
+        # TODO Send Buy Order after tests are fixed
 
 
 
