@@ -60,7 +60,7 @@ class MarketFactoryReceiver(AbstractEventReceiver):
             serializer.save()
 
 
-class StandardMarketOrderReceiver(AbstractEventReceiver):
+class MarketOrderReceiver(AbstractEventReceiver):
     def save(self, decoded_event, block_info):
         pass
 
