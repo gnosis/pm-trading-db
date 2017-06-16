@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 from django.test import TestCase
 from json import loads
 from eth.event_receiver import (
-    CentralizedOracleReceiver, UltimateOracleReceiver, EventReceiver, MarketReceiver
+    CentralizedOracleFactoryReceiver, UltimateOracleFactoryReceiver, EventFactoryReceiver, MarketFactoryReceiver
 )
 
 from relationaldb.models import (
@@ -64,7 +64,7 @@ class TestEventReceiver(TestCase):
             ]
         }
 
-        CentralizedOracleReceiver().save(oracle_event, block)
+        CentralizedOracleFactoryReceiver().save(oracle_event, block)
         created_oracle = CentralizedOracle.objects.get(address=oracle_address)
         self.assertIsNotNone(created_oracle.pk)
 
@@ -116,7 +116,7 @@ class TestEventReceiver(TestCase):
             ]
         }
 
-        UltimateOracleReceiver().save(oracle_event, block)
+        UltimateOracleFactoryReceiver().save(oracle_event, block)
         created_oracle = UltimateOracle.objects.get(address=oracle_address)
         self.assertIsNotNone(created_oracle.pk)
 
@@ -132,7 +132,7 @@ class TestEventReceiver(TestCase):
 
         scalar_event = {
             'address': oracle.factory[0:33] + 'GIACOMO',
-            'name': 'scalarEvent',
+            'name': 'ScalarEventCreation',
             'params': [
                 {
                     'name': 'creator',
@@ -165,7 +165,7 @@ class TestEventReceiver(TestCase):
             ]
         }
 
-        EventReceiver().save(scalar_event, block)
+        EventFactoryReceiver().save(scalar_event, block)
         event = ScalarEvent.objects.get(address=event_address)
         self.assertIsNotNone(event.pk)
 
@@ -181,7 +181,7 @@ class TestEventReceiver(TestCase):
 
         categorical_event = {
             'address': oracle.factory[0:33] + 'GIACOMO',
-            'name': 'categoricalEvent',
+            'name': 'CategoricalEventCreation',
             'params': [
                 {
                     'name': 'creator',
@@ -206,7 +206,7 @@ class TestEventReceiver(TestCase):
             ]
         }
 
-        EventReceiver().save(categorical_event, block)
+        EventFactoryReceiver().save(categorical_event, block)
         event = CategoricalEvent.objects.get(address=event_address)
         self.assertIsNotNone(event.pk)
 
@@ -247,11 +247,14 @@ class TestEventReceiver(TestCase):
                 {
                     'name': 'fee',
                     'value': market.fee
+                },
+                {
+                    'name': 'market',
+                    'value': market.address[0:7] + 'another'
                 }
             ]
         }
 
-        MarketReceiver().save(market_dict, block)
+        MarketFactoryReceiver().save(market_dict, block)
         market = Market.objects.get(event=event_address)
         self.assertIsNotNone(market.pk)
-        

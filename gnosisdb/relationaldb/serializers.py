@@ -167,11 +167,12 @@ class MarketSerializer(ContractSerializer, serializers.ModelSerializer):
 
     class Meta:
         model = models.Market
-        fields = ContractSerializer.Meta.fields + ('eventContract', 'marketMaker', 'fee',)
+        fields = ContractSerializer.Meta.fields + ('eventContract', 'marketMaker', 'fee', 'market', )
 
     eventContract = EventField(source='event')
     marketMaker = serializers.CharField(max_length=40, source='market_maker')
     fee = serializers.IntegerField()
+    market = serializers.CharField(max_length=40, source='address')
 
 
 class ScalarEventDescriptionSerializer(serializers.ModelSerializer):
@@ -233,3 +234,12 @@ class IPFSEventDescriptionDeserializer(serializers.ModelSerializer):
         instance.is_valid(raise_exception=True)
         result = instance.save()
         return result
+
+
+# Instance Serializers
+
+
+class OutcomeTokenSerializer(ContractSerializer, serializers.ModelSerializer):
+    address = EventField(source='event')
+    outcomeToken = CharField(max_length=40, source='address')
+    index = serializers.IntegerField(min_value=0)
