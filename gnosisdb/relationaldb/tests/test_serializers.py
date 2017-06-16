@@ -1,11 +1,12 @@
 from unittest import TestCase
 from relationaldb.factories import (
     OracleFactory, CentralizedOracleFactory, UltimateOracleFactory, EventFactory,
-    MarketFactory, EventDescriptionFactory
+    MarketFactory, EventDescriptionFactory, OutcomeTokenFactory
 )
 from relationaldb.serializers import (
     CentralizedOracleSerializer, EventSerializer, ScalarEventSerializer, UltimateOracleSerializer,
-    CategoricalEventSerializer, MarketSerializer, IPFSEventDescriptionDeserializer
+    CategoricalEventSerializer, MarketSerializer, IPFSEventDescriptionDeserializer,
+    CentralizedOracleInstanceSerializer, OutcomeTokenInstanceSerializer
 )
 
 from ipfs.ipfs import Ipfs
@@ -431,3 +432,125 @@ class TestSerializers(TestCase):
         serializer = IPFSEventDescriptionDeserializer(data={'ipfs_hash': ipfs_hash})
         self.assertTrue(serializer.is_valid(), serializer.errors)
         self.assertIsNotNone(serializer.save())
+
+    def test_create_centralized_oracle_instance(self):
+        oracle = CentralizedOracleFactory()
+        # oracle.event_description
+        event_description_json = {
+            'title': oracle.event_description.title,
+            'description': oracle.event_description.description,
+            'resolution_date': oracle.event_description.resolution_date.isoformat(),
+            'outcomes': ['Yes', 'No']
+        }
+
+        # save event_description to IPFS
+        ipfs_hash = self.ipfs.post(event_description_json)
+
+        block = {
+            'number': oracle.creation_block,
+            'timestamp': mktime(oracle.creation_date.timetuple())
+        }
+
+        oracle_event = {
+            'address': oracle.factory[0:-7] + 'GIACOMO',
+            'params': [
+                {
+                    'name': 'creator',
+                    'value': oracle.address
+                },
+                {
+                    'name': 'centralizedOracle',
+                    'value': oracle.address[1:-8] + 'INSTANCE',
+                },
+                {
+                    'name': 'ipfsHash',
+                    'value': ipfs_hash
+                }
+            ]
+        }
+
+        s = CentralizedOracleInstanceSerializer(data=oracle_event, block=block)
+        self.assertTrue(s.is_valid(), s.errors)
+        instance = s.save()
+        self.assertIsNotNone(instance)
+
+    def test_create_outcome_token_instance(self):
+        outcome_token_factory = OutcomeTokenFactory()
+        oracle_factory = OracleFactory()
+        event_factory = EventFactory()
+        event = None
+
+        block = {
+            'number': oracle_factory.creation_block,
+            'timestamp': mktime(oracle_factory.creation_date.timetuple())
+        }
+
+        scalar_event = {
+            'address': oracle_factory.factory[1:-12] + 'TESTINSTANCE',
+            'params': [
+                {
+                    'name': 'creator',
+                    'value': oracle_factory.creator
+                },
+                {
+                    'name': 'collateralToken',
+                    'value': event_factory.collateral_token
+                },
+                {
+                    'name': 'oracle',
+                    'value': oracle_factory.address
+                },
+                {
+                    'name': 'outcomeCount',
+                    'value': 1
+                },
+                {
+                    'name': 'upperBound',
+                    'value': 1
+                },
+                {
+                    'name': 'lowerBound',
+                    'value': 0
+                },
+                {
+                    'name': 'scalarEvent',
+                    'value': event_factory.address[1:-12] + 'TESTINSTANCE'
+                }
+            ]
+        }
+
+        s = ScalarEventSerializer(data=scalar_event, block=block)
+        s.is_valid()
+        event = s.save()
+
+        block = {
+            'number': oracle_factory.creation_block,
+            'timestamp': mktime(oracle_factory.creation_date.timetuple())
+        }
+
+        oracle_event = {
+            'address': oracle_factory.factory[0:-7] + 'GIACOMO',
+            'params': [
+                {
+                    'name': 'creator',
+                    'value': event.creator
+                },
+                {
+                    'name': 'address',
+                    'value': event.address
+                },
+                {
+                    'name': 'outcomeToken',
+                    'value': oracle_factory.address[1:-8] + 'INSTANCE',
+                },
+                {
+                    'name': 'index',
+                    'value': outcome_token_factory.index
+                }
+            ]
+        }
+
+        s = OutcomeTokenInstanceSerializer(data=oracle_event, block=block)
+        self.assertTrue(s.is_valid(), s.errors)
+        instance = s.save()
+        self.assertIsNotNone(instance)

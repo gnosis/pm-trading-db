@@ -238,8 +238,16 @@ class IPFSEventDescriptionDeserializer(serializers.ModelSerializer):
 
 # Instance Serializers
 
+class OutcomeTokenInstanceSerializer(ContractSerializer, serializers.ModelSerializer):
+    class Meta:
+        model = models.OutcomeToken
+        fields = ContractSerializer.Meta.fields + ('address', 'index', 'outcomeToken',)
 
-class OutcomeTokenSerializer(ContractSerializer, serializers.ModelSerializer):
     address = EventField(source='event')
     outcomeToken = CharField(max_length=40, source='address')
     index = serializers.IntegerField(min_value=0)
+
+
+class CentralizedOracleInstanceSerializer(CentralizedOracleSerializer):
+    pass
+
