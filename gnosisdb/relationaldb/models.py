@@ -47,9 +47,6 @@ class EventDescription(models.Model):
     resolution_date = models.DateTimeField()
     ipfs_hash = models.CharField(max_length=46, unique=True)
 
-    # class Meta:
-    #     abstract = True
-
 
 class ScalarEventDescription(EventDescription):
     unit = models.TextField()
