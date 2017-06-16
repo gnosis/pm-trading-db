@@ -73,18 +73,20 @@ class EventListener(Singleton):
 
                 # Get addresses watching
                 addresses = None
+                getter = None
                 if contract.get('ADDRESSES'):
                     addresses = contract['ADDRESSES']
                 elif contract.get('ADDRESSES_GETTER'):
                     try:
-                        addresses = addresses_getter(contract['ADDRESSES_GETTER'])
+                        getter = addresses_getter(contract['ADDRESSES_GETTER'])
                     except Exception as e:
                         logger.info(e)
                         return
                 logger.info('Loop logs')
                 # Filter logs by address and decode
                 for log in logs:
-                    if log['address'] in addresses:
+                    if (addresses is not None and log['address'] in addresses) or \
+                            (getter is not None and getter.contains_address(log['address'])):
                         # try to decode it
                         logger.info('Run decoder')
                         decoded = self.decoder.decode_logs([log])
