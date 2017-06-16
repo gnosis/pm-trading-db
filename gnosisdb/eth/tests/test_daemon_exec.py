@@ -14,110 +14,6 @@ from compiled_contracts import AbiLoader
 import os
 
 
-
-standard_market_abi = loads('[{"inputs": [], "constant": true, "name": "creator", "payable": false, '
-                            '"outputs": [{"type": "address", "name": ""}], "type": "function"}, {"inputs": [], '
-                            '"constant": true, "name": "marketMaker", "payable": false, "outputs": [{"type": "address",'
-                            '"name": ""}], "type": "function"}, {"inputs": [{"type": "uint8",'
-                            '"name": "outcomeTokenIndex"}, {"type": "uint256", "name": "outcomeTokenCount"},'
-                            '{"type": "uint256", "name": "minProfit"}], "constant": false, "name": "shortSell",'
-                            '"payable": false, "outputs": [{"type": "uint256", "name": "cost"}], "type": "function"},'
-                            '{"inputs": [], "constant": false, "name": "close", "payable": false, "outputs": [],'
-                            '"type": "function"}, {"inputs": [{"type": "uint8", "name": "outcomeTokenIndex"},'
-                            '{"type": "uint256", "name": "outcomeTokenCount"}, {"type": "uint256",'
-                            '"name": "minProfit"}], "constant": false, "name": "sell", "payable": false,'
-                            '"outputs": [{"type": "uint256", "name": "profit"}], "type": "function"}, {"inputs": [],'
-                            '"constant": false, "name": "withdrawFees", "payable": false, "outputs":'
-                            '[{"type": "uint256", "name": "fees"}], "type": "function"}, {"inputs": [],'
-                            '"constant": true, "name": "createdAtBlock", "payable": false, "outputs": [{'
-                            '"type": "uint256", "name": ""}], "type": "function"}, {"inputs": [{"type": "uint256",'
-                            '"name": ""}], "constant": true, "name": "netOutcomeTokensSold", "payable": false,'
-                            '"outputs": [{"type": "int256", "name": ""}], "type": "function"}, {"inputs": [{'
-                            '"type": "uint256", "name": "outcomeTokenCost"}], "constant": true, "name": "calcMarketFee",'
-                            ' "payable": false, "outputs": [{"type": "uint256", "name": ""}], "type": "function"},'
-                            '{"inputs": [], "constant": true, "name": "stage", "payable": false, "outputs": [{'
-                            '"type": "uint8", "name": ""}], "type": "function"}, {"inputs": [{"type": "uint256",'
-                            '"name": "_funding"}], "constant": false, "name": "fund", "payable": false, "outputs": [],'
-                            '"type": "function"}, {"inputs": [], "constant": true, "name": "funding", "payable": false,'
-                            '"outputs": [{"type": "uint256", "name": ""}], "type": "function"}, {"inputs": [],'
-                            '"constant": true, "name": "fee", "payable": false, "outputs": [{"type": "uint24",'
-                            '"name": ""}], "type": "function"}, {"inputs": [], "constant": true, "name": "eventContract",'
-                            ' "payable": false, "outputs": [{"type": "address", "name": ""}], "type": "function"},'
-                            '{"inputs": [{"type": "uint8", "name": "outcomeTokenIndex"}, {"type": "uint256",'
-                            '"name": "outcomeTokenCount"}, {"type": "uint256", "name": "maxCost"}],'
-                            '"constant": false, "name": "buy", "payable": false, "outputs": [{"type": "uint256",'
-                            '"name": "cost"}], "type": "function"}, {"inputs": [], "constant": true,'
-                            '"name": "FEE_RANGE", "payable": false, "outputs": [{"type": "uint24", "name": ""}],'
-                            '"type": "function"}, {"inputs": [{"type": "address", "name": "_creator"},'
-                            '{"type": "address", "name": "_eventContract"}, {"type": "address",'
-                            '"name": "_marketMaker"}, {"type": "uint24", "name": "_fee"}], "type": "constructor",'
-                            '"payable": false}, {"inputs": [{"indexed": false, "type": "uint256", "name": "funding"}],'
-                            '"type": "event", "name": "MarketFunding", "anonymous": false}, {"inputs": [],'
-                            '"type": "event", "name": "MarketClosing", "anonymous": false}, {"inputs": [{'
-                            '"indexed": false, "type": "uint256", "name": "fees"}], "type": "event",'
-                            '"name": "FeeWithdrawal", "anonymous": false}, {"inputs": [{"indexed": true,'
-                            '"type": "address", "name": "buyer"}, {"indexed": false, "type": "uint8",'
-                            '"name": "outcomeTokenIndex"}, {"indexed": false, "type": "uint256",'
-                            '"name": "outcomeTokenCount"}, {"indexed": false, "type": "uint256", "name": "cost"}],'
-                            '"type": "event", "name": "OutcomeTokenPurchase", "anonymous": false},'
-                            '{"inputs": [{"indexed": true, "type": "address", "name": "seller"}, {"indexed": false,'
-                            '"type": "uint8", "name": "outcomeTokenIndex"}, {"indexed": false, "type": "uint256",'
-                            '"name": "outcomeTokenCount"}, {"indexed": false, "type": "uint256", "name": "profit"}],'
-                            '"type": "event", "name": "OutcomeTokenSale", "anonymous": false}, {"inputs": [{'
-                            '"indexed": true, "type": "address", "name": "buyer"}, {"indexed": false, "type": "uint8",'
-                            '"name": "outcomeTokenIndex"}, {"indexed": false, "type": "uint256",'
-                            '"name": "outcomeTokenCount"}, {"indexed": false, "type": "uint256", "name": "cost"}],'
-                            '"type": "event", "name": "OutcomeTokenShortSale", "anonymous": false}]')
-
-centralized_oracle_abi = loads('[{"constant":false,"inputs":[{"name":"ipfsHash","type":"bytes"}],"name":"createCentralizedOracle",'
-            '"outputs":[{"name":"centralizedOracle","type":"address"}],"payable":false,"type":"function"},'
-            '{"anonymous":false,"inputs":[{"indexed":true,"name":"creator","type":"address"},{"indexed":false,'
-            '"name":"centralizedOracle","type":"address"},{"indexed":false,"name":"ipfsHash","type":"bytes"}],'
-            '"name":"CentralizedOracleCreation","type":"event"}]')
-
-ultimate_oracle_abi = loads('[{"inputs": [{"type": "address", "name": "oracle"}, {"type": "address", "name": "collateralToken"},'
-                            '{"type": "uint8", "name": "spreadMultiplier"}, {"type": "uint256", "name": "challengePeriod"},'
-                            '{"type": "uint256", "name": "challengeAmount"}, {"type": "uint256", "name": "frontRunnerPeriod"}],'
-                            '"constant": false, "name": "createUltimateOracle", "payable": false, "outputs": [{"type": "address",'
-                            '"name": "ultimateOracle"}], "type": "function"}, {"inputs": [{"indexed": true, "type": "address",'
-                            '"name": "creator"}, {"indexed": false, "type": "address", "name": "ultimateOracle"}, {"indexed":'
-                            'false, "type": "address", "name": "oracle"}, {"indexed": false, "type": "address", "name":'
-                            '"collateralToken"}, {"indexed": false, "type": "uint8", "name": "spreadMultiplier"},'
-                            '{"indexed": false, "type": "uint256", "name": "challengePeriod"}, {"indexed": false, "type":'
-                            '"uint256", "name": "challengeAmount"}, {"indexed": false, "type": "uint256", "name":'
-                            '"frontRunnerPeriod"}], "type": "event", "name": "UltimateOracleCreation", "anonymous": false}]')
-
-event_factory_abi = loads('[{"inputs": [{"type": "address", "name": "collateralToken"}, {"type": "address", "name": "oracle"},'
-                          '{"type": "int256", "name": "lowerBound"}, {"type": "int256", "name": "upperBound"}], "constant":'
-                          'false, "name": "createScalarEvent", "payable": false, "outputs": [{"type": "address", "name":'
-                          '"eventContract"}], "type": "function"}, {"inputs": [{"type": "bytes32", "name": ""}], "constant":'
-                          'true, "name": "categoricalEvents", "payable": false, "outputs": [{"type": "address", "name": ""}],'
-                          '"type": "function"}, {"inputs": [{"type": "bytes32", "name": ""}], "constant": true, "name":'
-                          '"scalarEvents", "payable": false, "outputs": [{"type": "address", "name": ""}], "type": "function"},'
-                          '{"inputs": [{"type": "address", "name": "collateralToken"}, {"type": "address", "name": "oracle"},'
-                          '{"type": "uint8", "name": "outcomeCount"}], "constant": false, "name": "createCategoricalEvent",'
-                          '"payable": false, "outputs": [{"type": "address", "name": "eventContract"}], "type": "function"},'
-                          '{"inputs": [{"indexed": true, "type": "address", "name": "creator"}, {"indexed": false, "type":'
-                          '"address", "name": "categoricalEvent"}, {"indexed": false, "type": "address", "name":'
-                          '"collateralToken"}, {"indexed": false, "type": "address", "name": "oracle"}, {"indexed": false,'
-                          '"type": "uint8", "name": "outcomeCount"}], "type": "event", "name": "CategoricalEventCreation",'
-                          '"anonymous": false}, {"inputs": [{"indexed": true, "type": "address", "name": "creator"},'
-                          '{"indexed": false, "type": "address", "name": "scalarEvent"}, {"indexed": false, "type": "address",'
-                          '"name": "collateralToken"}, {"indexed": false, "type": "address", "name": "oracle"},'
-                          '{"indexed": false, "type": "int256", "name": "lowerBound"}, {"indexed": false, "type": "int256",'
-                          '"name": "upperBound"}], "type": "event", "name": "ScalarEventCreation", "anonymous": false}]')
-
-market_factory_abi = loads('[{"inputs": [{"type": "address", "name": "market"}, {"type": "uint8", "name": "outcomeTokenIndex"},'
-                           '{"type": "uint256", "name": "outcomeTokenCount"}], "constant": true, "name": "calcProfit", "payable":'
-                           'false, "outputs": [{"type": "uint256", "name": "profit"}], "type": "function"}, {"inputs":'
-                           '[{"type": "address", "name": "market"}, {"type": "uint8", "name": "outcomeTokenIndex"},'
-                           '{"type": "uint256", "name": "outcomeTokenCount"}], "constant": true, "name": "calcCost",'
-                           '"payable": false, "outputs": [{"type": "uint256", "name": "cost"}], "type": "function"},'
-                           '{"inputs": [{"type": "address", "name": "market"}, {"type": "uint8", "name": "outcomeTokenIndex"}],'
-                           '"constant": true, "name": "calcMarginalPrice", "payable": false, "outputs": [{"type":'
-                           '"uint256", "name": "price"}], "type": "function"}]')
-
-
 centralized_oracle_bytecode = "6060604052341561000c57fe5b5b6109ad8061001c6000396000f30060606040526000357c01000000000000000000000000000000" \
           "00000000000000000000000000900463ffffffff1680634e2f220c1461003b575bfe5b341561004357fe5b61009360048080359060" \
           "2001908201803590602001908080601f01602080910402602001604051908101604052809392919081815260200183838082843782" \
@@ -196,12 +92,12 @@ class TestDaemonExec(TestCase):
         centralized_contract_factory = self.web3.eth.contract(abi=self.abi_loader.centralized_oracle_factory(), bytecode=centralized_oracle_bytecode)
         tx_hash = centralized_contract_factory.deploy()
         self.centralized_oracle_factory_address = self.web3.eth.getTransactionReceipt(tx_hash).get('contractAddress')
-        self.centralized_oracle_factory = self.web3.eth.contract(self.centralized_oracle_factory_address, abi=centralized_oracle_abi)
+        self.centralized_oracle_factory = self.web3.eth.contract(self.centralized_oracle_factory_address, abi=self.abi_loader.centralized_oracle_factory())
 
         ultimate_contract_factory = self.web3.eth.contract(abi=self.abi_loader.ultimate_oracle_factory(), bytecode=ultimate_oracle_bytecode)
         tx_hash = ultimate_contract_factory.deploy()
         self.ultimate_oracle_factory_address = self.web3.eth.getTransactionReceipt(tx_hash).get('contractAddress')
-        self.ultimate_oracle_factory = self.web3.eth.contract(self.ultimate_oracle_factory_address, abi=ultimate_oracle_abi)
+        self.ultimate_oracle_factory = self.web3.eth.contract(self.ultimate_oracle_factory_address, abi=self.abi_loader.ultimate_oracle_factory())
 
         # create event contract
         event_contract = self.web3.eth.contract(abi=self.abi_loader.event_factory(), bytecode=event_bytecode)
@@ -302,7 +198,7 @@ class TestDaemonExec(TestCase):
         tx_hash = self.centralized_oracle_factory.transact(self.tx_data).createCentralizedOracle(ipfs_hash)
         self.listener_under_test.execute()
         centralized_oracle = models.CentralizedOracle.objects.get(event_description__ipfs_hash=ipfs_hash)
-        event_factory = self.web3.eth.contract(self.event_factory_address, abi=event_factory_abi)
+        event_factory = self.web3.eth.contract(self.event_factory_address, abi=self.abi_loader.event_factory())
         event_factory.transact(self.tx_data).createCategoricalEvent(self.ether_token_address, centralized_oracle.address, 3)
         self.listener_under_test.execute()
         self.assertEquals(models.CategoricalEvent.objects.all().count(), n_events+1)
@@ -316,7 +212,7 @@ class TestDaemonExec(TestCase):
         self.listener_under_test.execute()
         centralized_oracle = models.CentralizedOracle.objects.get(event_description__ipfs_hash=ipfs_hash)
 
-        event_factory = self.web3.eth.contract(self.event_factory_address, abi=event_factory_abi)
+        event_factory = self.web3.eth.contract(self.event_factory_address, abi=self.abi_loader.event_factory())
         event_factory.transact(self.tx_data).createScalarEvent(self.ether_token_address,
                                                    centralized_oracle.address,
                                                    1,
@@ -334,15 +230,15 @@ class TestDaemonExec(TestCase):
         self.listener_under_test.execute()
         centralized_oracle = models.CentralizedOracle.objects.get(event_description__ipfs_hash=ipfs_hash)
 
-        event_factory = self.web3.eth.contract(self.event_factory_address, abi=event_factory_abi)
+        event_factory = self.web3.eth.contract(self.event_factory_address, abi=self.abi_loader.event_factory())
         event_tx = event_factory.transact(self.tx_data).createCategoricalEvent(self.ether_token_address, centralized_oracle.address, 3)
         self.listener_under_test.execute()
         categorical_event_address = self.web3.eth.getTransactionReceipt(tx_hash).get('contractAddress')
 
-        market_contract = self.web3.eth.contract(market_factory_abi, bytecode=market_bytecode)
+        market_contract = self.web3.eth.contract(abi=self.abi_loader.standard_market_factory(), bytecode=market_bytecode)
         tx_hash = market_contract.deploy()
         market_factory_address = self.web3.eth.getTransactionReceipt(tx_hash).get('contractAddress')
-        market_factory = self.web3.eth.contract(market_factory_address, abi=market_factory_abi)
+        market_factory = self.web3.eth.contract(market_factory_address, abi=self.abi_loader.standard_market_factory())
         market_tx = market_factory.transact(self.tx_data).createMarket(categorical_event_address, market_factory.address, 0)
 
         self.listener_under_test.execute()
@@ -355,15 +251,15 @@ class TestDaemonExec(TestCase):
         self.listener_under_test.execute()
         centralized_oracle = models.CentralizedOracle.objects.get(event_description__ipfs_hash=ipfs_hash)
         # Create categorical event
-        event_factory = self.web3.eth.contract(self.event_factory_address, abi=event_factory_abi)
+        event_factory = self.web3.eth.contract(self.event_factory_address, abi=self.abi_loader.event_factory())
         event_tx = event_factory.transact(self.tx_data).createCategoricalEvent(self.ether_token_address, centralized_oracle.address, 3)
         self.listener_under_test.execute()
         categorical_event_address = self.web3.eth.getTransactionReceipt(tx_hash).get('contractAddress')
         # Create market
-        market_contract = self.web3.eth.contract(market_factory_abi, bytecode=market_bytecode)
+        market_contract = self.web3.eth.contract(abi=self.abi_loader.standard_market_factory(), bytecode=market_bytecode)
         tx_hash = market_contract.deploy()
         market_factory_address = self.web3.eth.getTransactionReceipt(tx_hash).get('contractAddress')
-        market_factory = self.web3.eth.contract(market_factory_address, abi=market_factory_abi)
+        market_factory = self.web3.eth.contract(market_factory_address, abi=self.abi_loader.standard_market_factory())
         market_tx = market_factory.transact(self.tx_data).createMarket(categorical_event_address, market_factory.address, 0)
         self.listener_under_test.execute()
         self.assertEquals(models.Market.objects.all().count(), 1)

@@ -8,7 +8,7 @@ def path_to(file):
 class AbiLoader(SingletonObject):
     def load(self, abi):
         try:
-            file = open(path_to(abi), 'r')
+            file = open(path_to('abi/{}'.format(abi)), 'r')
             return loads(file.read())
         except:
             return None
