@@ -6,6 +6,7 @@ from relationaldb.serializers import (
 )
 
 from celery.utils.log import get_task_logger
+from json import dumps
 
 logger = get_task_logger(__name__)
 
@@ -24,6 +25,10 @@ class CentralizedOracleFactoryReceiver(AbstractEventReceiver):
         serializer = CentralizedOracleSerializer(data=decoded_event, block=block_info)
         if serializer.is_valid():
             serializer.save()
+            logger.info('Centralized Oracle Factory Result Added: {}'.format(dumps(decoded_event)))
+        else:
+            logger.warning('INVALID Centralized Oracle Factory Result: {}'.format(dumps(decoded_event)))
+            logger.warning(serializer.errors)
 
 
 class EventFactoryReceiver(AbstractEventReceiver):
@@ -34,14 +39,14 @@ class EventFactoryReceiver(AbstractEventReceiver):
     }
 
     def save(self, decoded_event, block_info):
-        from json import dumps
-        logger.info('Event Factory Serializer {}'.format(dumps(decoded_event)))
         if self.events.get(decoded_event.get('name')):
             serializer = self.events.get(decoded_event.get('name'))(data=decoded_event, block=block_info)
             if serializer.is_valid():
                 serializer.save()
+                logger.info('Event Factory Result Added: {}'.format(dumps(decoded_event)))
             else:
-                logger.info(serializer.errors)
+                logger.warning('INVALID Event Factory Result: {}'.format(dumps(decoded_event)))
+                logger.warning(serializer.errors)
 
 
 class UltimateOracleFactoryReceiver(AbstractEventReceiver):
@@ -50,6 +55,10 @@ class UltimateOracleFactoryReceiver(AbstractEventReceiver):
         serializer = UltimateOracleSerializer(data=decoded_event, block=block_info)
         if serializer.is_valid():
             serializer.save()
+            logger.info('Ultimate Oracle Factory Result Added: {}'.format(dumps(decoded_event)))
+        else:
+            logger.warning('INVALID Ultimate Oracle Factory Result: {}'.format(dumps(decoded_event)))
+            logger.warning(serializer.errors)
 
 
 class MarketFactoryReceiver(AbstractEventReceiver):
@@ -58,6 +67,10 @@ class MarketFactoryReceiver(AbstractEventReceiver):
         serializer = MarketSerializer(data=decoded_event, block=block_info)
         if serializer.is_valid():
             serializer.save()
+            logger.info('Market Factory Result Added: {}'.format(dumps(decoded_event)))
+        else:
+            logger.warning('INVALID Market Factory Result: {}'.format(dumps(decoded_event)))
+            logger.warning(serializer.errors)
 
 
 class MarketOrderReceiver(AbstractEventReceiver):
@@ -72,6 +85,10 @@ class CentralizedOracleInstanceReceiver(AbstractEventReceiver):
         serializer = CentralizedOracleInstanceSerializer(data=decoded_event, block=block_info)
         if serializer.is_valid():
             serializer.save()
+            logger.info('Centralized Oracle Instance Added: {}'.format(dumps(decoded_event)))
+        else:
+            logger.warning('INVALID Centralized Oracle Instance: {}'.format(dumps(decoded_event)))
+            logger.warning(serializer.errors)
 
 
 class EventInstanceReceiver(AbstractEventReceiver):
@@ -87,6 +104,11 @@ class EventInstanceReceiver(AbstractEventReceiver):
         serializer = self.events.get(decoded_event.get('name'))(data=decoded_event, block=block_info)
         if serializer.is_valid():
             serializer.save()
+            logger.info('Event Instance Added: {}'.format(dumps(decoded_event)))
+        else:
+            logger.warning('INVALID Event Instance: {}'.format(dumps(decoded_event)))
+            logger.warning(serializer.errors)
+
 
 # TODO remove
 class OutcomeTokenReceiver(AbstractEventReceiver):
@@ -95,3 +117,7 @@ class OutcomeTokenReceiver(AbstractEventReceiver):
         serializer = OutcomeTokenInstanceSerializer(data=decoded_event, block=block_info)
         if serializer.is_valid():
             serializer.save()
+            logger.info('Outcome Token Added: {}'.format(dumps(decoded_event)))
+        else:
+            logger.warning('INVALID Outcome Token: {}'.format(dumps(decoded_event)))
+            logger.warning(serializer.errors)

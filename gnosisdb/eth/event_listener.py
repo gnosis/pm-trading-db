@@ -31,7 +31,7 @@ class EventListener(Singleton):
         current = self.web3.eth.blockNumber
         if daemon.block_number < current:
             blocks_to_update = range(daemon.block_number+1, current+1)
-            logger.info("block range {}-{} {}".format(daemon.block_number, current, blocks_to_update))
+            # logger.info("block range {}-{} {}".format(daemon.block_number, current, blocks_to_update))
             daemon.block_number = current
             daemon.save()
             return blocks_to_update
@@ -43,10 +43,10 @@ class EventListener(Singleton):
         logs = []
 
         if block and block.get(u'hash'):
-            logger.info('block hash {}'.format(block.get('hash')))
+            # logger.info('block hash {}'.format(block.get('hash')))
             for tx in block[u'transactions']:
                 receipt = self.web3.eth.getTransactionReceipt(tx)
-                logger.info('receipt: {}'.format(dumps(receipt)))
+                # logger.info('receipt: {}'.format(dumps(receipt)))
                 if receipt.get('logs'):
                     logs.extend(receipt[u'logs'])
             return logs, block
@@ -57,7 +57,7 @@ class EventListener(Singleton):
         # update block number
         # get blocks and decode logs
         for block in self.update_and_next_block():
-            logger.info("block {}".format(block))
+            # logger.info("block {}".format(block))
 
             # first get un-decoded logs and the block info
             logs, block_info = self.get_logs(block)
@@ -77,8 +77,9 @@ class EventListener(Singleton):
                 elif contract['ADDRESSES_GETTER']:
                     try:
                         addresses = addresses_getter(contract['ADDRESSES_GETTER'])
+                        logger.info('ADDRESS GETTER: {}'.format(addresses))
                     except Exception as e:
-                        logger.info(e)
+                        logger.error(e)
                         return
 
                 # Filter logs by address and decode
@@ -91,12 +92,12 @@ class EventListener(Singleton):
                             # save decoded event with event receiver
                             for log_json in decoded:
                                 try:
-                                    logger.info('LOG JSON: {}'.format(dumps(log_json)))
-                                    logger.info('BLOCK JSON: {}'.format(dumps(block_info)))
+                                    # logger.info('LOG JSON: {}'.format(dumps(log_json)))
+                                    # logger.info('BLOCK JSON: {}'.format(dumps(block_info)))
 
                                     # load event receiver and save
                                     event_receiver = import_string(contract['EVENT_DATA_RECEIVER'])
                                     logger.info('EVENT RECEIVER: {}'.format(event_receiver))
                                     event_receiver().save(decoded_event=log_json, block_info=block_info)
                                 except Exception as e:
-                                    logger.info(e)
+                                    logger.error(e)
