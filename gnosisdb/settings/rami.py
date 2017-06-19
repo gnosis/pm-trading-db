@@ -41,13 +41,13 @@ GNOSISDB_CONTRACTS = [
         'EVENT_DATA_RECEIVER': 'eth.event_receiver.MarketFactoryReceiver',
         'NAME': 'Standard Market Factory'
     },
-    # {
-    #     'ADDRESSES': [],
-    #     'ADDRESSES_GETTER': 'eth.address_getters.MarketAddressGetter',
-    #     'EVENT_ABI': AbiLoader().standard_market(),
-    #     'EVENT_DATA_RECEIVER': 'eth.event_receiver.MarketOrderReceiver',
-    #     'NAME': 'Standard Markets Buy/Sell/Short Receiver'
-    # },
+    {
+        'ADDRESSES': [],
+        'ADDRESSES_GETTER': 'eth.address_getters.MarketAddressGetter',
+        'EVENT_ABI': AbiLoader().standard_market(),
+        'EVENT_DATA_RECEIVER': 'eth.event_receiver.MarketOrderReceiver',
+        'NAME': 'Standard Markets Buy/Sell/Short Receiver'
+    },
 ]
 
 ETHEREUM_NODE_HOST= '172.17.0.1'

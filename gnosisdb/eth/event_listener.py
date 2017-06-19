@@ -76,7 +76,7 @@ class EventListener(Singleton):
                     addresses = contract['ADDRESSES']
                 elif contract['ADDRESSES_GETTER']:
                     try:
-                        addresses = addresses_getter(contract['ADDRESSES_GETTER'])
+                        addresses = addresses_getter(str(contract['ADDRESSES_GETTER']))
                         logger.info('ADDRESS GETTER: {}'.format(addresses))
                     except Exception as e:
                         logger.error(e)

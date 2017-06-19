@@ -12,7 +12,7 @@ class AbstractAddressesGetter(object):
     def get_addresses(self): pass
 
     @abstractmethod
-    def contains_address(self, address): pass
+    def __contains__(self, address): pass
 
 
 def addresses_getter(module_path):
@@ -26,12 +26,12 @@ def addresses_getter(module_path):
         reference = import_string(module_path)
         if inspect.isclass(reference):
             if issubclass(reference, AbstractAddressesGetter):
-                return reference().get_addresses()
+                return reference()
             else:
                 raise ImportError("AddressesGetter class must inherit from %s " % str(AbstractAddressesGetter.__name__))
         elif inspect.isfunction(reference):
             return reference()
         else:
-            raise ImportError("%s doesn't look like a module path" % module_path)
+            raise ImportError("%s doesn't look like a class path" % module_path)
     else:
-        raise ImportError("%s doesn't look like a module path" % module_path)
+        raise ImportError("%s doesn't look like a string" % module_path)

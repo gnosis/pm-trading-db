@@ -75,7 +75,7 @@ class MarketFactoryReceiver(AbstractEventReceiver):
 
 class MarketOrderReceiver(AbstractEventReceiver):
     def save(self, decoded_event, block_info):
-        pass
+        logger.info("Market Order Captured: {}".format(dumps(decoded_event)))
 
 
 # contract instances
