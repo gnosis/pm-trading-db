@@ -155,7 +155,7 @@ CELERYD_PREFETCH_MULTIPLIER = 1
 CELERYD_MAX_TASKS_PER_CHILD = 1000
 
 # IPFS
-IPFS_HOST = 'http://ipfs' #'ipfs'
+IPFS_HOST = 'http://ipfs' # 'ipfs'
 IPFS_PORT = 5001
 
 

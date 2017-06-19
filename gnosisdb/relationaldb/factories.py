@@ -17,19 +17,29 @@ def randomSHA256():
     return hashlib.sha256(str(random.random())).hexdigest()
 
 
+class BlockTimestampedFactory(factory_boy.Factory):
+    creation_date_time = FuzzyDateTime(datetime.now(pytz.utc))
+    creation_block = factory_boy.Sequence(lambda n: n)
+
+
 class ContractFactory(factory_boy.DjangoModelFactory):
 
     class Meta:
         model = models.Contract
 
     address = factory_boy.Sequence(lambda n: '{:040d}'.format(n))
+
+
+class ContractCreatedByFactory(ContractFactory, BlockTimestampedFactory):
+
+    class Meta:
+        model = models.ContractCreatedByFactory
+
     factory = factory_boy.Sequence(lambda n: '{:040d}'.format(n))
     creator = factory_boy.Sequence(lambda n: '{:040d}'.format(n))
-    creation_date = FuzzyDateTime(datetime.now(pytz.utc))
-    creation_block = factory_boy.Sequence(lambda n: n)
 
 
-class OracleFactory(ContractFactory):
+class OracleFactory(ContractCreatedByFactory):
 
     class Meta:
         model = models.Oracle
@@ -38,7 +48,7 @@ class OracleFactory(ContractFactory):
     outcome = factory_boy.Sequence(lambda n: n)
 
 
-class EventFactory(ContractFactory):
+class EventFactory(ContractCreatedByFactory):
 
     class Meta:
         model = models.Event
@@ -46,7 +56,8 @@ class EventFactory(ContractFactory):
     collateral_token = factory_boy.Sequence(lambda n: '{:040d}'.format(n))
     oracle = factory_boy.SubFactory(OracleFactory)
     is_winning_outcome_set = False
-    winning_outcome = 1
+    outcome = 1
+    redeemed_winnings = 0
 
 
 class OutcomeTokenFactory(ContractFactory):
@@ -56,6 +67,7 @@ class OutcomeTokenFactory(ContractFactory):
 
     event = factory_boy.SubFactory(EventFactory)
     index = 1
+    total_supply = factory_boy.Sequence(lambda n: n)
 
 
 class EventDescriptionFactory(factory_boy.DjangoModelFactory):
@@ -68,7 +80,7 @@ class EventDescriptionFactory(factory_boy.DjangoModelFactory):
     ipfs_hash = factory_boy.Sequence(lambda n: '{:046d}'.format(n))
 
 
-class CategoricalEventFactory(EventDescriptionFactory):
+class CategoricalEventDescriptionFactory(EventDescriptionFactory):
     class Meta:
         model = models.CategoricalEventDescription
 
@@ -81,7 +93,7 @@ class CentralizedOracleFactory(OracleFactory):
         model = models.CentralizedOracle
 
     owner = factory_boy.Sequence(lambda n: '{:040d}'.format(n))
-    event_description = factory_boy.SubFactory(CategoricalEventFactory)
+    event_description = factory_boy.SubFactory(CategoricalEventDescriptionFactory)
 
 
 class UltimateOracleFactory(OracleFactory):
@@ -102,17 +114,18 @@ class UltimateOracleFactory(OracleFactory):
     total_amount = factory_boy.Sequence(lambda n: n)
 
 
-class MarketFactory(ContractFactory):
+class MarketFactory(ContractCreatedByFactory):
 
     class Meta:
         model = models.Market
 
     event = factory_boy.SubFactory(EventFactory)
-    market_maker = faker.name()
+    market_maker = factory_boy.Sequence(lambda _: faker.name())
     fee = factory_boy.Sequence(lambda n: n)
     funding = factory_boy.Sequence(lambda n: n)
     net_outcome_tokens_sold = factory_boy.Sequence(lambda n: n)
     withdrawn_fees = 0
     # outcome_probabilities = factory.Sequence(lambda n: n)
-    stage = factory_boy.Sequence(lambda n: n)
-
+    stage = 0
+    revenue = factory_boy.Sequence(lambda n: n)
+    collected_fees = 0

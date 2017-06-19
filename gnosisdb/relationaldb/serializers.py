@@ -6,20 +6,31 @@ from datetime import datetime
 from ipfsapi.exceptions import ErrorResponse
 
 
+class BlockTimestampedSerializer(serializers.BaseSerializer):
+    class Meta:
+        fields = ('creation_date_time', 'creation_block', )
+
+    creation_date_time = serializers.DateTimeField(format="%Y-%m-%dT%H:%M:%S")
+    creation_block = serializers.IntegerField()
+
+
 # Declare basic fields, join params on root object and
 class ContractSerializer(serializers.BaseSerializer):
     class Meta:
-        fields = ('factory', 'creator', 'creation_date', 'creation_block', )
+        fields = ('address', )
 
-    # address = serializers.CharField()
+    address = serializers.CharField(max_length=40)
+
+
+class ContractCreatedByFactorySerializer(BlockTimestampedSerializer, ContractSerializer):
+    class Meta:
+        fields = BlockTimestampedSerializer.Meta.fields + ContractSerializer.Meta.fields + ('factory', 'creator',)
     factory = serializers.CharField(max_length=40)  # included prefix
-    creation_date = serializers.DateTimeField(format="%Y-%m-%dT%H:%M:%S")
-    creation_block = serializers.IntegerField()
     creator = serializers.CharField(max_length=40)
 
     def __init__(self, *args, **kwargs):
         self.block = kwargs.pop('block')
-        super(ContractSerializer, self).__init__(*args, **kwargs)
+        super(ContractCreatedByFactorySerializer, self).__init__(*args, **kwargs)
         data = kwargs.pop('data')
         # Event params moved to root object
         new_data = {
@@ -107,21 +118,33 @@ class EventField(CharField):
             raise serializers.ValidationError('eventContract address must exist')
 
 
-class CentralizedOracleSerializer(ContractSerializer, serializers.ModelSerializer):
+class OracleSerializer(ContractCreatedByFactorySerializer):
+    class Meta:
+        fields = ContractCreatedByFactorySerializer.Meta.fields + ('is_outcome_set', 'outcome')
+
+    is_outcome_set = serializers.BooleanField(default=False)
+    outcome = serializers.IntegerField(default=0)
+
+
+class CentralizedOracleSerializer(OracleSerializer, serializers.ModelSerializer):
     
     class Meta:
         model = models.CentralizedOracle
-        fields = ContractSerializer.Meta.fields + ('ipfsHash', 'centralizedOracle')
+        fields = OracleSerializer.Meta.fields + ('ipfsHash', 'centralizedOracle')
 
     centralizedOracle = serializers.CharField(max_length=40, source='address')
     ipfsHash = IpfsHashField(source='event_description')
 
+    def create(self, validated_data):
+        validated_data['owner'] = validated_data['creator']
+        return models.CentralizedOracle.objects.create(*validated_data)
 
-class UltimateOracleSerializer(ContractSerializer, serializers.ModelSerializer):
+
+class UltimateOracleSerializer(OracleSerializer, serializers.ModelSerializer):
 
     class Meta:
         model = models.UltimateOracle
-        fields = ContractSerializer.Meta.fields + ('ultimateOracle', 'oracle', 'collateralToken',
+        fields = OracleSerializer.Meta.fields + ('ultimateOracle', 'oracle', 'collateralToken',
                                                    'spreadMultiplier', 'challengePeriod', 'challengeAmount',
                                                    'frontRunnerPeriod')
     ultimateOracle = serializers.CharField(max_length=40, source='address')
@@ -133,11 +156,11 @@ class UltimateOracleSerializer(ContractSerializer, serializers.ModelSerializer):
     frontRunnerPeriod = serializers.IntegerField(source='front_runner_period')
 
 
-class EventSerializer(ContractSerializer, serializers.ModelSerializer):
+class EventSerializer(ContractCreatedByFactorySerializer, serializers.ModelSerializer):
 
     class Meta:
         models = models.Event
-        fields = ContractSerializer.Meta.fields + ('collateralToken', 'creator', 'oracle',)
+        fields = ContractCreatedByFactorySerializer.Meta.fields + ('collateralToken', 'creator', 'oracle',)
 
     collateralToken = serializers.CharField(max_length=40, source='collateral_token')
     creator = serializers.CharField(max_length=40)
@@ -163,11 +186,11 @@ class CategoricalEventSerializer(EventSerializer, serializers.ModelSerializer):
     categoricalEvent = serializers.CharField(source='address', max_length=40)
 
 
-class MarketSerializer(ContractSerializer, serializers.ModelSerializer):
+class MarketSerializer(ContractCreatedByFactorySerializer, serializers.ModelSerializer):
 
     class Meta:
         model = models.Market
-        fields = ContractSerializer.Meta.fields + ('eventContract', 'marketMaker', 'fee', 'market', )
+        fields = ContractCreatedByFactorySerializer.Meta.fields + ('eventContract', 'marketMaker', 'fee', 'market', )
 
     eventContract = EventField(source='event')
     marketMaker = serializers.CharField(max_length=40, source='market_maker')
