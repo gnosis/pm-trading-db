@@ -8,4 +8,4 @@ class TestAddressGetters(TestCase):
         getter = MarketAddressGetter()
         market = MarketFactory.create()
         self.assertIsNotNone(market)
-        self.assertTrue(getter.contains_address(market.address))
+        self.assertTrue(getter.__contains__(market.address))

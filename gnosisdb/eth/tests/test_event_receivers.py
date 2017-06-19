@@ -8,7 +8,7 @@ from eth.event_receiver import (
 )
 
 from relationaldb.models import (
-    CentralizedOracle, UltimateOracle, ScalarEvent, CategoricalEvent, Market
+    CentralizedOracle, UltimateOracle, ScalarEvent, CategoricalEvent, Market, OutcomeToken
 )
 
 from relationaldb.factories import (
@@ -42,7 +42,7 @@ class TestEventReceiver(TestCase):
 
         block = {
             'number': oracle.creation_block,
-            'timestamp': self.to_timestamp(oracle.creation_date)
+            'timestamp': self.to_timestamp(oracle.creation_date_time)
         }
 
         oracle_address = oracle.address[1:-7] + 'GIACOMO'
@@ -74,7 +74,7 @@ class TestEventReceiver(TestCase):
 
         block = {
             'number': oracle.creation_block,
-            'timestamp': self.to_timestamp(oracle.creation_date)
+            'timestamp': self.to_timestamp(oracle.creation_date_time)
         }
 
         oracle_address = oracle.address[0:33] + 'GIACOMO'
@@ -128,7 +128,7 @@ class TestEventReceiver(TestCase):
 
         block = {
             'number': oracle.creation_block,
-            'timestamp': self.to_timestamp(oracle.creation_date)
+            'timestamp': self.to_timestamp(oracle.creation_date_time)
         }
 
         scalar_event = {
@@ -177,7 +177,7 @@ class TestEventReceiver(TestCase):
 
         block = {
             'number': oracle.creation_block,
-            'timestamp': self.to_timestamp(oracle.creation_date)
+            'timestamp': self.to_timestamp(oracle.creation_date_time)
         }
 
         categorical_event = {
@@ -219,7 +219,7 @@ class TestEventReceiver(TestCase):
 
         block = {
             'number': oracle.creation_block,
-            'timestamp': self.to_timestamp(oracle.creation_date)
+            'timestamp': self.to_timestamp(oracle.creation_date_time)
         }
 
         market_dict = {
@@ -280,7 +280,7 @@ class TestEventReceiver(TestCase):
     #
     #     block = {
     #         'number': oracle_factory.creation_block,
-    #         'timestamp': mktime(oracle_factory.creation_date.timetuple())
+    #         'timestamp': mktime(oracle_factory.creation_date_time.timetuple())
     #     }
     #
     #     oracle_event = {
@@ -315,10 +315,11 @@ class TestEventReceiver(TestCase):
 
         block = {
             'number': oracle_factory.creation_block,
-            'timestamp': mktime(oracle_factory.creation_date.timetuple())
+            'timestamp': mktime(oracle_factory.creation_date_time.timetuple())
         }
 
         scalar_event = {
+            'name': 'ScalarEventCreation',
             'address': oracle_factory.factory[1:-12] + 'TESTINSTANCE',
             'params': [
                 {
@@ -347,7 +348,7 @@ class TestEventReceiver(TestCase):
                 },
                 {
                     'name': 'scalarEvent',
-                    'value': event_factory.address[1:-12] + 'TESTINSTANCE'
+                    'value': event_address
                 }
             ]
         }
@@ -357,8 +358,9 @@ class TestEventReceiver(TestCase):
 
         block = {
             'number': oracle_factory.creation_block,
-            'timestamp': mktime(oracle_factory.creation_date.timetuple())
+            'timestamp': mktime(oracle_factory.creation_date_time.timetuple())
         }
+        outcome_token_address = oracle_factory.address[1:-8] + 'INSTANCE'
         oracle_event = {
             'address': oracle_factory.factory[0:-7] + 'GIACOMO',
             'params': [
@@ -372,7 +374,7 @@ class TestEventReceiver(TestCase):
                 },
                 {
                     'name': 'outcomeToken',
-                    'value': oracle_factory.address[1:-8] + 'INSTANCE',
+                    'value': outcome_token_address,
                 },
                 {
                     'name': 'index',
@@ -381,4 +383,4 @@ class TestEventReceiver(TestCase):
             ]
         }
         outcome_token = OutcomeTokenReceiver().save(oracle_event, block)
-        self.assertIsNotNone(outcome_token.pk)
+        self.assertIsNotNone(OutcomeToken.objects.get(address=outcome_token_address))

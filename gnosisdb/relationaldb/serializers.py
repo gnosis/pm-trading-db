@@ -276,10 +276,13 @@ class OutcomeTokenInstanceSerializer(ContractSerializer, serializers.ModelSerial
     index = serializers.IntegerField(min_value=0)
 
     def __init__(self, *args, **kwargs):
+        self.block = kwargs.pop('block')
         super(OutcomeTokenInstanceSerializer, self).__init__(*args, **kwargs)
         data = kwargs.pop('data')
         new_data = {
-            'address': data.get('address')
+            'address': data.get('address'),
+            'creation_date_time': datetime.fromtimestamp(self.block.get('timestamp')),
+            'creation_block': self.block.get('number')
         }
         for param in data.get('params'):
             new_data[param[u'name']] = param[u'value']

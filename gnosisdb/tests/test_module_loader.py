@@ -14,14 +14,15 @@ class TestModuleLoader(unittest.TestCase):
             def get_addresses(self):
                 return ['0x0', '0x1']
 
-            def contains_address(self, address):
+            def __contains__(self, address):
                 return address in ['0x0', '0x1']
+
 
         class InvalidAddressesGetter(object):
             def get_addresses(self):
                 return ['0x0', '0x1']
 
-            def contains_address(self, address):
+            def __contains__(self, address):
                 return address in ['0x0', '0x1']
 
         def addresses_getter():
@@ -48,7 +49,7 @@ class TestModuleLoader(unittest.TestCase):
         self.assertFalse(inspect.isclass(func))
 
     def test_getting_addresses_utils_function(self):
-        clazz_addresses = addresses_getter(self.class_path)
+        clazz_addresses = addresses_getter(self.class_path).get_addresses()
         # invalid_clazz_addresses = addresses_getter(self.invalid_class_path)
         func_addresses = addresses_getter(self.func_path)
 
