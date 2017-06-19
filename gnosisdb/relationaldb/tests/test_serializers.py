@@ -17,7 +17,7 @@ class TestSerializers(TestCase):
 
     def setUp(self):
         self.ipfs = Ipfs()
-
+    """
     def test_deserialize_centralized_oracle(self):
         oracle = CentralizedOracleFactory()
 
@@ -143,7 +143,7 @@ class TestSerializers(TestCase):
 
         s = UltimateOracleSerializer(data=oracle_event, block=block)
         self.assertTrue(s.is_valid(), s.errors)
-
+    """
     def test_create_ultimate_oracle(self):
         forwarded_oracle = CentralizedOracleFactory()
         ultimate_oracle = UltimateOracleFactory()
@@ -261,7 +261,7 @@ class TestSerializers(TestCase):
         }
 
         scalar_event = {
-            'address': oracle.factory[1:-7] + 'GIACOMO',
+            'address': oracle.factory[1:-8] + 'GIACOMO1',
             'params': [
                 {
                     'name': 'creator',
@@ -295,7 +295,7 @@ class TestSerializers(TestCase):
 
         scalar_event.get('params').append({
             'name': 'scalarEvent',
-            'value': event.address[1:-7] + 'GIACOMO'
+            'value': event.address[1:-8] + 'GIACOMO2'
         })
 
         s = ScalarEventSerializer(data=scalar_event, block=block)
@@ -473,7 +473,7 @@ class TestSerializers(TestCase):
         self.assertTrue(s.is_valid(), s.errors)
         instance = s.save()
         self.assertIsNotNone(instance)
-
+    """
     def test_create_outcome_token_instance(self):
         outcome_token_factory = OutcomeTokenFactory()
         oracle_factory = OracleFactory()
@@ -554,3 +554,5 @@ class TestSerializers(TestCase):
         self.assertTrue(s.is_valid(), s.errors)
         instance = s.save()
         self.assertIsNotNone(instance)
+        """
+

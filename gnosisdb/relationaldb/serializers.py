@@ -25,6 +25,7 @@ class ContractSerializer(serializers.BaseSerializer):
 class ContractCreatedByFactorySerializer(BlockTimestampedSerializer, ContractSerializer):
     class Meta:
         fields = BlockTimestampedSerializer.Meta.fields + ContractSerializer.Meta.fields + ('factory', 'creator',)
+
     factory = serializers.CharField(max_length=40)  # included prefix
     creator = serializers.CharField(max_length=40)
 
@@ -34,8 +35,9 @@ class ContractCreatedByFactorySerializer(BlockTimestampedSerializer, ContractSer
         data = kwargs.pop('data')
         # Event params moved to root object
         new_data = {
+            'address': data[u'address'], # TODO comment this with Denis
             'factory': data[u'address'],
-            'creation_date': datetime.fromtimestamp(self.block.get('timestamp')),
+            'creation_date_time': datetime.fromtimestamp(self.block.get('timestamp')),
             'creation_block': self.block.get('number')
         }
 
@@ -137,7 +139,7 @@ class CentralizedOracleSerializer(OracleSerializer, serializers.ModelSerializer)
 
     def create(self, validated_data):
         validated_data['owner'] = validated_data['creator']
-        return models.CentralizedOracle.objects.create(*validated_data)
+        return models.CentralizedOracle.objects.create(**validated_data)
 
 
 class UltimateOracleSerializer(OracleSerializer, serializers.ModelSerializer):
@@ -190,12 +192,15 @@ class MarketSerializer(ContractCreatedByFactorySerializer, serializers.ModelSeri
 
     class Meta:
         model = models.Market
-        fields = ContractCreatedByFactorySerializer.Meta.fields + ('eventContract', 'marketMaker', 'fee', 'market', )
+        fields = ContractCreatedByFactorySerializer.Meta.fields + ('eventContract', 'marketMaker', 'fee',
+                                                                   'market', 'revenue', 'collected_fees',)
 
     eventContract = EventField(source='event')
     marketMaker = serializers.CharField(max_length=40, source='market_maker')
     fee = serializers.IntegerField()
     market = serializers.CharField(max_length=40, source='address')
+    revenue = serializers.IntegerField(default=0)
+    collected_fees = serializers.IntegerField(default=0)
 
 
 class ScalarEventDescriptionSerializer(serializers.ModelSerializer):
