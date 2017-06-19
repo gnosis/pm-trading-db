@@ -4,7 +4,8 @@ from relationaldb.models import Contract, Market
 from gnosisdb.utils import SingletonObject
 
 
-class ContractAddressGetter(SingletonObject):
+# TODO Enforce singleton
+class ContractAddressGetter(AbstractAddressesGetter):
     def __init__(self, model = Contract):
         self.model = model
 
