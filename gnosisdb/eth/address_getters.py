@@ -10,7 +10,7 @@ class ContractAddressGetter(AbstractAddressesGetter):
     def get_addresses(self):
         return self.model.objects.all()
 
-    def contains_address(self, address):
+    def __contains__(self, address):
         try:
             self.model.objects.get(address=address)
             return True
