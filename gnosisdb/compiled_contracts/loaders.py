@@ -2,8 +2,10 @@ import os
 from json import loads
 from gnosisdb.utils import SingletonObject
 
+
 def path_to(file):
     return os.path.abspath(os.path.join(os.path.dirname(__file__), file))
+
 
 class AbstractLoader(SingletonObject):
     def load(self, file): pass

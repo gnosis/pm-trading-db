@@ -1,12 +1,10 @@
 from django.core.exceptions import ObjectDoesNotExist
 from settings_utils.address_getter import AbstractAddressesGetter
 from relationaldb.models import Contract, Market
-from gnosisdb.utils import SingletonObject
 
 
-# TODO Enforce singleton
 class ContractAddressGetter(AbstractAddressesGetter):
-    def __init__(self, model = Contract):
+    def __init__(self, model=Contract):
         self.model = model
 
     def get_addresses(self):
