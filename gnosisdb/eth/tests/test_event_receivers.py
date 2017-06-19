@@ -4,7 +4,7 @@ from django.test import TestCase
 from json import loads
 from eth.event_receiver import (
     CentralizedOracleFactoryReceiver, UltimateOracleFactoryReceiver, EventFactoryReceiver, MarketFactoryReceiver,
-    CentralizedOracleInstanceReceiver, OutcomeTokenReceiver
+    OutcomeTokenReceiver
 )
 
 from relationaldb.models import (
@@ -12,7 +12,7 @@ from relationaldb.models import (
 )
 
 from relationaldb.factories import (
-    UltimateOracleFactory, CentralizedOracleFactory, CategoricalEventFactory,
+    UltimateOracleFactory, CentralizedOracleFactory,
     OracleFactory, EventFactory, MarketFactory, OutcomeTokenFactory
 )
 from datetime import datetime

@@ -39,8 +39,8 @@ class Event(ContractCreatedByFactory):
     oracle = models.ForeignKey(Oracle, related_name='event_oracle')
     collateral_token = models.CharField(max_length=40)
     is_winning_outcome_set = models.BooleanField(default=False)
-    winning_outcome = models.BigIntegerField(null=True)
-    # TODO add redeemWinnings
+    outcome = models.BigIntegerField(null=True)
+    redeemed_winnings = models.BigIntegerField(default=0)
 
 
 class ScalarEvent(Event):
@@ -122,7 +122,7 @@ class Market(ContractCreatedByFactory):
     funding = models.BigIntegerField(null=True)
     net_outcome_tokens_sold = models.TextField(validators=[validate_comma_separated_integer_list], null=True)
     withdrawn_fees = models.BigIntegerField(default=0)
-    stage = models.PositiveIntegerField(choices=stages)
+    stage = models.PositiveIntegerField(choices=stages, default=0)
     revenue = models.BigIntegerField()
     collected_fees = models.BigIntegerField()
 

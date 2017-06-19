@@ -23,7 +23,7 @@ class TestSerializers(TestCase):
 
         block = {
             'number': oracle.creation_block,
-            'timestamp': mktime(oracle.creation_date.timetuple())
+            'timestamp': mktime(oracle.creation_date_time.timetuple())
         }
 
         oracle_event = {
@@ -53,7 +53,7 @@ class TestSerializers(TestCase):
 
         block = {
             'number': oracle.creation_block,
-            'timestamp': mktime(oracle.creation_date.timetuple())
+            'timestamp': mktime(oracle.creation_date_time.timetuple())
         }
 
         oracle_event = {
@@ -100,7 +100,7 @@ class TestSerializers(TestCase):
 
         block = {
             'number': ultimate_oracle.creation_block,
-            'timestamp': mktime(ultimate_oracle.creation_date.timetuple())
+            'timestamp': mktime(ultimate_oracle.creation_date_time.timetuple())
         }
 
         oracle_event = {
@@ -150,7 +150,7 @@ class TestSerializers(TestCase):
 
         block = {
             'number': ultimate_oracle.creation_block,
-            'timestamp': mktime(ultimate_oracle.creation_date.timetuple())
+            'timestamp': mktime(ultimate_oracle.creation_date_time.timetuple())
         }
 
         oracle_event = {
@@ -203,7 +203,7 @@ class TestSerializers(TestCase):
 
         block = {
             'number': ultimate_oracle.creation_block,
-            'timestamp': mktime(ultimate_oracle.creation_date.timetuple())
+            'timestamp': mktime(ultimate_oracle.creation_date_time.timetuple())
         }
 
         oracle_event = {
@@ -257,7 +257,7 @@ class TestSerializers(TestCase):
 
         block = {
             'number': oracle.creation_block,
-            'timestamp': mktime(oracle.creation_date.timetuple())
+            'timestamp': mktime(oracle.creation_date_time.timetuple())
         }
 
         scalar_event = {
@@ -309,7 +309,7 @@ class TestSerializers(TestCase):
 
         block = {
             'number': oracle.creation_block,
-            'timestamp': mktime(oracle.creation_date.timetuple())
+            'timestamp': mktime(oracle.creation_date_time.timetuple())
         }
 
         categorical_event = {
@@ -354,7 +354,7 @@ class TestSerializers(TestCase):
 
         block = {
             'number': oracle.creation_block,
-            'timestamp': mktime(oracle.creation_date.timetuple())
+            'timestamp': mktime(oracle.creation_date_time.timetuple())
         }
 
         market_dict = {
@@ -448,7 +448,7 @@ class TestSerializers(TestCase):
 
         block = {
             'number': oracle.creation_block,
-            'timestamp': mktime(oracle.creation_date.timetuple())
+            'timestamp': mktime(oracle.creation_date_time.timetuple())
         }
 
         oracle_event = {
@@ -482,7 +482,7 @@ class TestSerializers(TestCase):
 
         block = {
             'number': oracle_factory.creation_block,
-            'timestamp': mktime(oracle_factory.creation_date.timetuple())
+            'timestamp': mktime(oracle_factory.creation_date_time.timetuple())
         }
 
         scalar_event = {
@@ -525,7 +525,7 @@ class TestSerializers(TestCase):
 
         block = {
             'number': oracle_factory.creation_block,
-            'timestamp': mktime(oracle_factory.creation_date.timetuple())
+            'timestamp': mktime(oracle_factory.creation_date_time.timetuple())
         }
 
         oracle_event = {
