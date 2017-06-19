@@ -473,7 +473,7 @@ class TestSerializers(TestCase):
         self.assertTrue(s.is_valid(), s.errors)
         instance = s.save()
         self.assertIsNotNone(instance)
-    """
+
     def test_create_outcome_token_instance(self):
         outcome_token_factory = OutcomeTokenFactory()
         oracle_factory = OracleFactory()
@@ -550,9 +550,7 @@ class TestSerializers(TestCase):
             ]
         }
 
-        s = OutcomeTokenInstanceSerializer(data=oracle_event, block=block)
+        s = OutcomeTokenInstanceSerializer(data=oracle_event)
         self.assertTrue(s.is_valid(), s.errors)
         instance = s.save()
         self.assertIsNotNone(instance)
-        """
-

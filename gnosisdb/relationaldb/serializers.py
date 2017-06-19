@@ -129,7 +129,7 @@ class OracleSerializer(ContractCreatedByFactorySerializer):
 
 
 class CentralizedOracleSerializer(OracleSerializer, serializers.ModelSerializer):
-    
+
     class Meta:
         model = models.CentralizedOracle
         fields = OracleSerializer.Meta.fields + ('ipfsHash', 'centralizedOracle')
@@ -147,8 +147,8 @@ class UltimateOracleSerializer(OracleSerializer, serializers.ModelSerializer):
     class Meta:
         model = models.UltimateOracle
         fields = OracleSerializer.Meta.fields + ('ultimateOracle', 'oracle', 'collateralToken',
-                                                   'spreadMultiplier', 'challengePeriod', 'challengeAmount',
-                                                   'frontRunnerPeriod')
+                                                 'spreadMultiplier', 'challengePeriod', 'challengeAmount',
+                                                 'frontRunnerPeriod')
     ultimateOracle = serializers.CharField(max_length=40, source='address')
     oracle = OracleField(source='forwarded_oracle')
     collateralToken = serializers.CharField(max_length=40, source='collateral_token')
@@ -274,6 +274,17 @@ class OutcomeTokenInstanceSerializer(ContractSerializer, serializers.ModelSerial
     address = EventField(source='event')
     outcomeToken = CharField(max_length=40, source='address')
     index = serializers.IntegerField(min_value=0)
+
+    def __init__(self, *args, **kwargs):
+        super(OutcomeTokenInstanceSerializer, self).__init__(*args, **kwargs)
+        data = kwargs.pop('data')
+        new_data = {
+            'address': data.get('address')
+        }
+        for param in data.get('params'):
+            new_data[param[u'name']] = param[u'value']
+
+        self.initial_data = new_data
 
 
 class CentralizedOracleInstanceSerializer(CentralizedOracleSerializer):
