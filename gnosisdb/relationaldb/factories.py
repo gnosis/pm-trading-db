@@ -112,6 +112,7 @@ class MarketFactory(ContractFactory):
     fee = factory_boy.Sequence(lambda n: n)
     funding = factory_boy.Sequence(lambda n: n)
     net_outcome_tokens_sold = factory_boy.Sequence(lambda n: n)
+    withdrawn_fees = 0
     # outcome_probabilities = factory.Sequence(lambda n: n)
     stage = factory_boy.Sequence(lambda n: n)
 

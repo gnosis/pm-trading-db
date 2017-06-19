@@ -1,5 +1,5 @@
 from ethereum.utils import sha3
-from utils import Singleton
+from settings_utils.singleton import Singleton
 from eth_abi import decode_abi
 from ethereum.utils import remove_0x_head
 from celery.utils.log import get_task_logger

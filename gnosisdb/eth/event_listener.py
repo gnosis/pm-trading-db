@@ -1,4 +1,4 @@
-from utils import Singleton
+from settings_utils.singleton import Singleton
 from decoder import Decoder
 from json import loads, dumps
 from eth.web3_service import Web3Service
@@ -67,30 +67,25 @@ class EventListener(Singleton):
             ###########################
 
             for contract in self.contract_map:
-                logger.info('CONTRACT: {}'.format(contract))
                 # Add ABI
-                self.decoder.add_abi(contract.get('EVENT_ABI'))
+                self.decoder.add_abi(contract['EVENT_ABI'])
 
                 # Get addresses watching
                 addresses = None
-                getter = None
-                if contract.get('ADDRESSES'):
+                if contract['ADDRESSES']:
                     addresses = contract['ADDRESSES']
-                elif contract.get('ADDRESSES_GETTER'):
+                elif contract['ADDRESSES_GETTER']:
                     try:
-                        getter = addresses_getter(contract['ADDRESSES_GETTER'])
+                        addresses = addresses_getter(contract['ADDRESSES_GETTER'])
                     except Exception as e:
                         logger.info(e)
                         return
-                logger.info('Loop logs')
+
                 # Filter logs by address and decode
                 for log in logs:
-                    if (addresses is not None and log['address'] in addresses) or \
-                            (getter is not None and getter.contains_address(log['address'])):
+                    if log['address'] in addresses:
                         # try to decode it
-                        logger.info('Run decoder')
                         decoded = self.decoder.decode_logs([log])
-                        logger.info('Decoded')
 
                         if decoded:
                             # save decoded event with event receiver
@@ -103,6 +98,5 @@ class EventListener(Singleton):
                                     event_receiver = import_string(contract['EVENT_DATA_RECEIVER'])
                                     logger.info('EVENT RECEIVER: {}'.format(event_receiver))
                                     event_receiver().save(decoded_event=log_json, block_info=block_info)
-                                    
                                 except Exception as e:
                                     logger.info(e)

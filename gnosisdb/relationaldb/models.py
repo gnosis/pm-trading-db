@@ -101,5 +101,5 @@ class Market(Contract):
     fee = models.PositiveIntegerField()
     funding = models.BigIntegerField(null=True)
     net_outcome_tokens_sold = models.TextField(validators=[validate_comma_separated_integer_list], null=True)
-    withdrawn_fees = models.BigIntegerField()
+    withdrawn_fees = models.BigIntegerField(default=0)
     stage = models.PositiveIntegerField(null=True)

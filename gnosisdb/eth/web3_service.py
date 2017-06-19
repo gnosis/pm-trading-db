@@ -1,4 +1,4 @@
-from utils import Singleton
+from settings_utils.singleton import Singleton
 from web3 import Web3, RPCProvider
 from django.conf import settings
 
