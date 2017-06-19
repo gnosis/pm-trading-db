@@ -17,40 +17,40 @@ GNOSISDB_CONTRACTS = [
         'ADDRESSES': ['0x254dffcd3277c0b1660f6d42efbb754edababc2b'],
         'ADDRESSES_GETTER': '',
         'EVENT_ABI': AbiLoader().centralized_oracle_factory(),
-        'EVENT_DATA_RECEIVER': 'eth.event_receiver.CentralizedOracleReceiver',
+        'EVENT_DATA_RECEIVER': 'eth.event_receiver.CentralizedOracleFactoryReceiver',
         'NAME': 'Centralized Oracle Factory' # optional
     },
     {
         'ADDRESSES': ['0xc89ce4735882c9f0f0fe26686c53074e09b0d550'],
         'ADDRESSES_GETTER': '',
         'EVENT_ABI': AbiLoader().ultimate_oracle_factory(),
-        'EVENT_DATA_RECEIVER': 'eth.event_receiver.UltimateOracleReceiver',
+        'EVENT_DATA_RECEIVER': 'eth.event_receiver.UltimateOracleFactoryReceiver',
         'NAME': 'Ultimate Oracle Factory'
     },
     {
         'ADDRESSES': ['0x5b1869d9a4c187f2eaa108f3062412ecf0526b24'],
         'ADDRESSES_GETTER': '',
         'EVENT_ABI': AbiLoader().event_factory(),
-        'EVENT_DATA_RECEIVER': 'eth.event_receiver.EventReceiver',
+        'EVENT_DATA_RECEIVER': 'eth.event_receiver.EventFactoryReceiver',
         'NAME': 'Event Factory'
     },
     {
         'ADDRESSES': ['0x9561c133dd8580860b6b7e504bc5aa500f0f06a7'],
         'ADDRESSES_GETTER': '',
         'EVENT_ABI': AbiLoader().standard_market_factory(),
-        'EVENT_DATA_RECEIVER': 'eth.event_receiver.MarketReceiver',
+        'EVENT_DATA_RECEIVER': 'eth.event_receiver.MarketFactoryReceiver',
         'NAME': 'Standard Market Factory'
     },
-    {
-        'ADDRESSES': [],
-        'ADDRESSES_GETTER': 'eth.address_getters.MarketAddressGetter',
-        'EVENT_ABI': AbiLoader().standard_market(),
-        'EVENT_DATA_RECEIVER': 'eth.event_receiver.MarketOrderReceiver',
-        'NAME': 'Standard Markets Buy/Sell/Short Receiver'
-    },
+    # {
+    #     'ADDRESSES': [],
+    #     'ADDRESSES_GETTER': 'eth.address_getters.MarketAddressGetter',
+    #     'EVENT_ABI': AbiLoader().standard_market(),
+    #     'EVENT_DATA_RECEIVER': 'eth.event_receiver.MarketOrderReceiver',
+    #     'NAME': 'Standard Markets Buy/Sell/Short Receiver'
+    # },
 ]
 
-ETHEREUM_NODE_HOST= 'localhost'
+ETHEREUM_NODE_HOST= '172.17.0.1'
 ETHEREUM_NODE_PORT = 8545
 ETHEREUM_NODE_SSL = 0
 
