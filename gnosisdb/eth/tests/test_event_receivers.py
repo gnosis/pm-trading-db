@@ -4,7 +4,7 @@ from django.test import TestCase
 from json import loads
 from eth.event_receiver import (
     CentralizedOracleFactoryReceiver, UltimateOracleFactoryReceiver, EventFactoryReceiver, MarketFactoryReceiver,
-    CentralizedOracleInstanceReceiver, EventInstanceReceiver
+    CentralizedOracleInstanceReceiver, EventInstanceReceiver, UltimateOracleInstanceReceiver
 )
 
 from relationaldb.models import (
@@ -505,6 +505,38 @@ class TestEventReceiver(TestCase):
         centralized_oracle = CentralizedOracle.objects.get(address=oracle_factory.address)
         self.assertTrue(centralized_oracle.is_outcome_set)
         self.assertEqual(centralized_oracle.outcome, 1)
+
+    def test_ultimate_oracle_instance_outcome_assignment_receiver(self):
+        oracle_factory = UltimateOracleFactory()
+        assignment_event = {
+            'name': 'ForwardedOracleOutcomeAssignment',
+            'address': oracle_factory.address,
+            'params': [{
+                'name': 'outcome',
+                'value': 1,
+            }]
+        }
+
+        UltimateOracleInstanceReceiver().save(assignment_event)
+        ultimate_oracle = UltimateOracle.objects.get(address=oracle_factory.address)
+        self.assertTrue(ultimate_oracle.forwarded_oracle.is_outcome_set)
+        self.assertEqual(ultimate_oracle.forwarded_oracle.outcome, 1)
+
+    def test_ultimate_oracle_instance_outcome_challenge_receiver(self):
+        oracle_factory = UltimateOracleFactory()
+        assignment_event = {
+            'name': 'OutcomeChallenge',
+            'address': oracle_factory.address,
+            'params': [{
+                'name': 'outcome',
+                'value': 1,
+            }]
+        }
+
+        UltimateOracleInstanceReceiver().save(assignment_event)
+        ultimate_oracle = UltimateOracle.objects.get(address=oracle_factory.address)
+        self.assertEqual(ultimate_oracle.total_amount, oracle_factory.challenge_amount)
+        self.assertEqual(ultimate_oracle.front_runner, 1)
 
 
 

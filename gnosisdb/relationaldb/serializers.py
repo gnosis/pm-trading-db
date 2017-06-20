@@ -4,6 +4,7 @@ from relationaldb import models
 from ipfs.ipfs import Ipfs
 from datetime import datetime
 from ipfsapi.exceptions import ErrorResponse
+from time import mktime
 
 
 class BlockTimestampedSerializer(serializers.BaseSerializer):
@@ -442,6 +443,47 @@ class OutcomeAssignmentOracleSerializer(ContractNotTimestampted, serializers.Mod
             raise serializers.ValidationError('CentralizedOracle %s does not exist'.format(validated_data.get('address')))
 
 
+class ForwardedOracleOutcomeAssignmentSerializer(ContractNotTimestampted, serializers.ModelSerializer):
+
+    class Meta:
+        model = models.UltimateOracle
+        fields = ('address', 'outcome',)
+
+    address = serializers.CharField(max_length=40)
+    outcome = serializers.IntegerField()
+
+    def create(self, validated_data):
+        ultimate_oracle = None
+        try:
+            ultimate_oracle = models.UltimateOracle.objects.get(address=validated_data.get('address'))
+            ultimate_oracle.outcome_set_at_timestamp = mktime(datetime.now().timetuple())
+            ultimate_oracle.save()
+            if not ultimate_oracle.forwarded_oracle.is_outcome_set:
+                ultimate_oracle.forwarded_oracle.is_outcome_set = True
+                ultimate_oracle.forwarded_oracle.outcome = validated_data.get('outcome')
+                ultimate_oracle.forwarded_oracle.save()
+            return ultimate_oracle
+        except models.UltimateOracle.DoesNotExist:
+            raise serializers.ValidationError('UltimateOracle %s does not exist'.format(validated_data.get('address')))
 
 
+class OutcomeChallengeSerializer(ContractNotTimestampted, serializers.ModelSerializer):
 
+    class Meta:
+        model = models.UltimateOracle
+        fields = ('address', 'outcome',)
+
+    address = serializers.CharField(max_length=40)
+    outcome = serializers.IntegerField()
+
+    def create(self, validated_data):
+        ultimate_oracle = None
+        try:
+            ultimate_oracle = models.UltimateOracle.objects.get(address=validated_data.get('address'))
+            ultimate_oracle.total_amount = ultimate_oracle.challenge_amount
+            ultimate_oracle.front_runner = validated_data.get('outcome')
+            ultimate_oracle.front_runner_set_at_timestamp = mktime(datetime.now().timetuple())
+            ultimate_oracle.save()
+            return ultimate_oracle
+        except models.UltimateOracle.DoesNotExist:
+            raise serializers.ValidationError('UltimateOracle %s does not exist'.format(validated_data.get('address')))

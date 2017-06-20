@@ -5,7 +5,8 @@ from relationaldb.serializers import (
     CentralizedOracleInstanceSerializer, OutcomeTokenIssuanceSerializer,
     OutcomeTokenRevocationSerializer, OutcomeAssignmentEventSerializer,
     WinningsRedemptionSerializer, OwnerReplacementSerializer,
-    OutcomeAssignmentOracleSerializer
+    OutcomeAssignmentOracleSerializer, ForwardedOracleOutcomeAssignmentSerializer,
+    OutcomeChallengeSerializer
 )
 
 from celery.utils.log import get_task_logger
@@ -100,6 +101,27 @@ class CentralizedOracleInstanceReceiver(AbstractEventReceiver):
             logger.info('Centralized Oracle Instance Added: {}'.format(dumps(decoded_event)))
         else:
             logger.warning('INVALID Centralized Oracle Instance: {}'.format(dumps(decoded_event)))
+            logger.warning(serializer.errors)
+
+
+class UltimateOracleInstanceReceiver(AbstractEventReceiver):
+
+    events = {
+        'ForwardedOracleOutcomeAssignment': ForwardedOracleOutcomeAssignmentSerializer,
+        'OutcomeChallenge': OutcomeChallengeSerializer
+    }
+
+    def save(self, decoded_event, block_info=None):
+        if block_info:
+            serializer = self.events.get(decoded_event.get('name'))(data=decoded_event, block=block_info)
+        else:
+            serializer = self.events.get(decoded_event.get('name'))(data=decoded_event)
+
+        if serializer.is_valid():
+            serializer.save()
+            logger.info('Ultimate Oracle Factory Result Added: {}'.format(dumps(decoded_event)))
+        else:
+            logger.warning('INVALID Ultimate Oracle Factory Result: {}'.format(dumps(decoded_event)))
             logger.warning(serializer.errors)
 
 
