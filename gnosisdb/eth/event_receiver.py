@@ -2,7 +2,8 @@ from abc import ABCMeta, abstractmethod
 from relationaldb.serializers import (
     CentralizedOracleSerializer, ScalarEventSerializer, CategoricalEventSerializer,
     UltimateOracleSerializer, MarketSerializer, OutcomeTokenInstanceSerializer,
-    CentralizedOracleInstanceSerializer
+    CentralizedOracleInstanceSerializer, OutcomeTokenIssuanceSerializer,
+    OutcomeTokenRevocationSerializer
 )
 
 from celery.utils.log import get_task_logger
@@ -95,13 +96,17 @@ class EventInstanceReceiver(AbstractEventReceiver):
 
     # TODO, develop serializers
     events = {
-        'Issuance': '', # sum to totalSupply, update data
-        'Revocation': '', # subtract from total Supply, update data
+        'Issuance': OutcomeTokenIssuanceSerializer, # sum to totalSupply, update data
+        'Revocation': OutcomeTokenRevocationSerializer, # subtract from total Supply, update data
         'OutcomeTokenCreation': OutcomeTokenInstanceSerializer
     }
 
-    def save(self, decoded_event, block_info):
-        serializer = self.events.get(decoded_event.get('name'))(data=decoded_event, block=block_info)
+    def save(self, decoded_event, block_info=None):
+        if block_info:
+            serializer = self.events.get(decoded_event.get('name'))(data=decoded_event, block=block_info)
+        else:
+            serializer = self.events.get(decoded_event.get('name'))(data=decoded_event)
+
         if serializer.is_valid():
             serializer.save()
             logger.info('Event Instance Added: {}'.format(dumps(decoded_event)))

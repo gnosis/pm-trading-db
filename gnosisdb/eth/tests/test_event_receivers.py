@@ -384,3 +384,55 @@ class TestEventReceiver(TestCase):
         }
         EventInstanceReceiver().save(outcome_event, block)
         self.assertIsNotNone(OutcomeToken.objects.get(address=outcome_token_address))
+
+    def test_event_instance_issuance_receiver(self):
+        outcome_token_factory = OutcomeTokenFactory()
+        event = {
+            'name': 'Issuance',
+            'address': outcome_token_factory.address,
+            'params': [
+                {
+                    'name': 'owner',
+                    'value': outcome_token_factory.address[0:-7] + 'GIACOMO'
+                },
+                {
+                    'name': 'amount',
+                    'value': 1000,
+                }
+            ]
+        }
+
+        EventInstanceReceiver().save(event)
+        outcome_token = OutcomeToken.objects.get(address= outcome_token_factory.address)
+        self.assertIsNotNone(outcome_token.pk)
+        self.assertEquals(outcome_token_factory.total_supply + 1000, outcome_token.total_supply)
+
+    def test_event_instance_revocation_receiver(self):
+        outcome_token_factory = OutcomeTokenFactory()
+        revocation_event = {
+            'name': 'Revocation',
+            'address': outcome_token_factory.address,
+            'params': [
+                {
+                    'name': 'owner',
+                    'value': outcome_token_factory.address[0:-7] + 'GIACOMO'
+                },
+                {
+                    'name': 'amount',
+                    'value': 1000,
+                }
+            ]
+        }
+
+        issuance_event = revocation_event.copy()
+        issuance_event.update({'name': 'Issuance'})
+
+        # do issuance
+        EventInstanceReceiver().save(issuance_event)
+        # do revocation
+        EventInstanceReceiver().save(revocation_event)
+        outcome_token = OutcomeToken.objects.get(address= outcome_token_factory.address)
+        self.assertIsNotNone(outcome_token.pk)
+        self.assertEquals(outcome_token_factory.total_supply, outcome_token.total_supply)
+
+

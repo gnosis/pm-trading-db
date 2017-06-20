@@ -60,7 +60,8 @@ class OutcomeToken(Contract):
 
 
 class OutcomeTokenBalance(models.Model):
-    address = models.CharField(max_length=40)
+    # address = models.CharField(max_length=40)
+    owner = models.CharField(max_length=40)
     outcome_token = models.ForeignKey(OutcomeToken)
     balance = models.BigIntegerField(default=0)
 

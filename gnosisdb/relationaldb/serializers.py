@@ -58,7 +58,7 @@ class ContractNotTimestampted(ContractSerializer):
         data = kwargs.pop('data')
         # Event params moved to root object
         new_data = {
-            'address': data[u'address']
+            'address': data.get('address')
         }
 
         for param in data.get('params'):
@@ -294,6 +294,89 @@ class OutcomeTokenInstanceSerializer(ContractNotTimestampted, serializers.ModelS
     address = EventField(source='event')
     outcomeToken = CharField(max_length=40, source='address')
     index = serializers.IntegerField(min_value=0)
+
+
+class OutcomeTokenIssuanceSerializer(ContractSerializer, serializers.ModelSerializer):
+
+    class Meta:
+        model = models.OutcomeToken
+        fields = ('owner', 'amount', 'address',)
+
+    owner = serializers.CharField(max_length=40)
+    amount = serializers.IntegerField()
+    address = serializers.CharField(max_length=40, source='outcome_token')
+
+    def __init__(self, *args, **kwargs):
+        super(OutcomeTokenIssuanceSerializer, self).__init__(*args, **kwargs)
+        data = kwargs.pop('data')
+        new_data = {
+            'address': data.get('address'),
+        }
+
+        for param in data.get('params'):
+            new_data[param[u'name']] = param[u'value']
+
+        self.initial_data = new_data
+
+    def create(self, validated_data):
+        outcome_token = None
+        outcome_token_balance = None
+        try:
+            outcome_token_balance = models.OutcomeTokenBalance.objects.get(owner=validated_data.get('owner'))
+            outcome_token_balance.balance += validated_data.get('amount')
+            outcome_token_balance.outcome_token.total_supply += validated_data.get('amount')
+            outcome_token_balance.save()
+        except models.OutcomeTokenBalance.DoesNotExist:
+            outcome_token = models.OutcomeToken.objects.get(address=validated_data.get('outcome_token'))
+            outcome_token.total_supply += validated_data.get('amount')
+            outcome_token.address = validated_data.get('outcome_token')
+            outcome_token.save()
+
+            outcome_token_balance = models.OutcomeTokenBalance()
+            outcome_token_balance.balance = validated_data.get('amount')
+            outcome_token_balance.owner = validated_data.get('owner')
+            outcome_token_balance.outcome_token = outcome_token
+            outcome_token_balance.save()
+
+        return outcome_token
+
+
+class OutcomeTokenRevocationSerializer(ContractSerializer, serializers.ModelSerializer):
+
+    class Meta:
+        model = models.OutcomeToken
+        fields = ('owner', 'amount', 'address',)
+
+    owner = serializers.CharField(max_length=40)
+    amount = serializers.IntegerField()
+    address = serializers.CharField(max_length=40, source='outcome_token')
+
+    def __init__(self, *args, **kwargs):
+        super(OutcomeTokenRevocationSerializer, self).__init__(*args, **kwargs)
+        data = kwargs.pop('data')
+        new_data = {
+            'address': data.get('address'),
+        }
+
+        for param in data.get('params'):
+            new_data[param[u'name']] = param[u'value']
+
+        self.initial_data = new_data
+
+    def create(self, validated_data):
+        outcome_token = None
+        outcome_token_balance = None
+        try:
+            outcome_token_balance = models.OutcomeTokenBalance.objects.get(owner=validated_data.get('owner'))
+            outcome_token_balance.balance -= validated_data.get('amount')
+            outcome_token_balance.outcome_token.total_supply -= validated_data.get('amount')
+            # TODO check if exist a better solution to automatically update related models
+            outcome_token_balance.outcome_token.save()
+            outcome_token_balance.save()
+        except models.OutcomeTokenBalance.DoesNotExist:
+            pass
+
+        return outcome_token_balance.outcome_token
 
 
 class CentralizedOracleInstanceSerializer(CentralizedOracleSerializer):
