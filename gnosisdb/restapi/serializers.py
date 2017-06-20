@@ -10,7 +10,7 @@ class ContractSerializer(serializers.BaseSerializer):
             'address': instance.address,
             # 'factory_address': instance.factory_address,
             'creator': instance.creator,
-            'creation_date': instance.creation_date,
+            'creation_date': instance.creation_date_time,
             'creation_block': instance.creation_block
         }
 
@@ -96,12 +96,12 @@ class EventSerializer(serializers.ModelSerializer):
     collateral_token = serializers.CharField()
     oracle = OracleSerializer(many=False, read_only=True)
     is_winning_outcome_set = serializers.BooleanField()
-    winning_outcome = serializers.DecimalField(max_digits=80, decimal_places=0)
+    outcome = serializers.IntegerField()
     # outcome_tokens = OutcomeTokenSerializer(many=True, read_only=True)
 
     class Meta:
         model = Event
-        fields = ('contract', 'collateral_token', 'oracle', 'is_winning_outcome_set', 'winning_outcome')
+        fields = ('contract', 'collateral_token', 'oracle', 'is_winning_outcome_set', 'outcome')
 
 
 class IntegerCSVSerializer(serializers.BaseSerializer):
