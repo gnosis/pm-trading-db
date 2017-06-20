@@ -296,7 +296,7 @@ class OutcomeTokenInstanceSerializer(ContractNotTimestampted, serializers.ModelS
     index = serializers.IntegerField(min_value=0)
 
 
-class OutcomeTokenIssuanceSerializer(ContractSerializer, serializers.ModelSerializer):
+class OutcomeTokenIssuanceSerializer(ContractNotTimestampted, serializers.ModelSerializer):
 
     class Meta:
         model = models.OutcomeToken
@@ -305,18 +305,6 @@ class OutcomeTokenIssuanceSerializer(ContractSerializer, serializers.ModelSerial
     owner = serializers.CharField(max_length=40)
     amount = serializers.IntegerField()
     address = serializers.CharField(max_length=40, source='outcome_token')
-
-    def __init__(self, *args, **kwargs):
-        super(OutcomeTokenIssuanceSerializer, self).__init__(*args, **kwargs)
-        data = kwargs.pop('data')
-        new_data = {
-            'address': data.get('address'),
-        }
-
-        for param in data.get('params'):
-            new_data[param[u'name']] = param[u'value']
-
-        self.initial_data = new_data
 
     def create(self, validated_data):
         outcome_token = None
@@ -341,7 +329,7 @@ class OutcomeTokenIssuanceSerializer(ContractSerializer, serializers.ModelSerial
         return outcome_token
 
 
-class OutcomeTokenRevocationSerializer(ContractSerializer, serializers.ModelSerializer):
+class OutcomeTokenRevocationSerializer(ContractNotTimestampted, serializers.ModelSerializer):
 
     class Meta:
         model = models.OutcomeToken
@@ -351,18 +339,6 @@ class OutcomeTokenRevocationSerializer(ContractSerializer, serializers.ModelSeri
     amount = serializers.IntegerField()
     address = serializers.CharField(max_length=40, source='outcome_token')
 
-    def __init__(self, *args, **kwargs):
-        super(OutcomeTokenRevocationSerializer, self).__init__(*args, **kwargs)
-        data = kwargs.pop('data')
-        new_data = {
-            'address': data.get('address'),
-        }
-
-        for param in data.get('params'):
-            new_data[param[u'name']] = param[u'value']
-
-        self.initial_data = new_data
-
     def create(self, validated_data):
         outcome_token = None
         outcome_token_balance = None
@@ -370,7 +346,7 @@ class OutcomeTokenRevocationSerializer(ContractSerializer, serializers.ModelSeri
             outcome_token_balance = models.OutcomeTokenBalance.objects.get(owner=validated_data.get('owner'))
             outcome_token_balance.balance -= validated_data.get('amount')
             outcome_token_balance.outcome_token.total_supply -= validated_data.get('amount')
-            # TODO check if exist a better solution to automatically update related models
+            # TODO check if exists a better solution to automatically update related models
             outcome_token_balance.outcome_token.save()
             outcome_token_balance.save()
         except models.OutcomeTokenBalance.DoesNotExist:
@@ -379,6 +355,93 @@ class OutcomeTokenRevocationSerializer(ContractSerializer, serializers.ModelSeri
         return outcome_token_balance.outcome_token
 
 
+class OutcomeAssignmentEventSerializer(ContractNotTimestampted, serializers.ModelSerializer):
+
+    class Meta:
+        model = models.Event
+        fields = ('outcome', 'address',)
+
+    outcome = serializers.IntegerField()
+    address = serializers.CharField(max_length=40)
+
+    def create(self, validated_data):
+        event = None
+        try:
+            event = models.Event.objects.get(address=validated_data.get('address'))
+            event.is_winning_outcome_set = True
+            event.outcome = validated_data.get('outcome')
+            event.save()
+            return event
+        except event.DoesNotExist:
+            raise serializers.ValidationError('Event %s does not exist'.format(validated_data.get('address')))
+
+
+class WinningsRedemptionSerializer(ContractNotTimestampted, serializers.ModelSerializer):
+
+    class Meta:
+        model = models.Event
+        fields = ('address', 'receiver', 'winnings',)
+
+    address = serializers.CharField(max_length=40)
+    receiver = serializers.CharField(max_length=40)
+    winnings = serializers.IntegerField()
+
+    def create(self, validated_data):
+        event = None
+        try:
+            event = models.Event.objects.get(address=validated_data.get('address'))
+            event.redeemed_winnings += validated_data.get('winnings')
+            event.save()
+            return event
+        except event.DoesNotExist:
+            raise serializers.ValidationError('Event %s does not exist'.format(validated_data.get('address')))
+
+
 class CentralizedOracleInstanceSerializer(CentralizedOracleSerializer):
     pass
+
+
+class OwnerReplacementSerializer(ContractNotTimestampted, serializers.ModelSerializer):
+
+    class Meta:
+        model = models.CentralizedOracle
+        fields = ('address', 'newOwner',)
+
+    address = serializers.CharField(max_length=40)
+    newOwner = serializers.CharField(max_length=40)
+
+    def create(self, validated_data):
+        centralized_oracle = None
+        try:
+            centralized_oracle = models.CentralizedOracle.objects.get(address=validated_data.get('address'))
+            centralized_oracle.owner = validated_data.get('newOwner')
+            centralized_oracle.save()
+            return centralized_oracle
+        except models.CentralizedOracle.DoesNotExist:
+            raise serializers.ValidationError('CentralizedOracle %s does not exist'.format(validated_data.get('address')))
+
+
+class OutcomeAssignmentOracleSerializer(ContractNotTimestampted, serializers.ModelSerializer):
+
+    class Meta:
+        model = models.CentralizedOracle
+        fields = ('address', 'outcome',)
+
+    address = serializers.CharField(max_length=40)
+    outcome = serializers.IntegerField()
+
+    def create(self, validated_data):
+        centralized_oracle = None
+        try:
+            centralized_oracle = models.CentralizedOracle.objects.get(address=validated_data.get('address'))
+            centralized_oracle.is_outcome_set = True
+            centralized_oracle.outcome = validated_data.get('outcome')
+            centralized_oracle.save()
+            return centralized_oracle
+        except centralized_oracle.DoesNotExist:
+            raise serializers.ValidationError('CentralizedOracle %s does not exist'.format(validated_data.get('address')))
+
+
+
+
 

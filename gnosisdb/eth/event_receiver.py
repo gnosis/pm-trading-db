@@ -3,7 +3,9 @@ from relationaldb.serializers import (
     CentralizedOracleSerializer, ScalarEventSerializer, CategoricalEventSerializer,
     UltimateOracleSerializer, MarketSerializer, OutcomeTokenInstanceSerializer,
     CentralizedOracleInstanceSerializer, OutcomeTokenIssuanceSerializer,
-    OutcomeTokenRevocationSerializer
+    OutcomeTokenRevocationSerializer, OutcomeAssignmentEventSerializer,
+    WinningsRedemptionSerializer, OwnerReplacementSerializer,
+    OutcomeAssignmentOracleSerializer
 )
 
 from celery.utils.log import get_task_logger
@@ -82,8 +84,17 @@ class MarketOrderReceiver(AbstractEventReceiver):
 # contract instances
 class CentralizedOracleInstanceReceiver(AbstractEventReceiver):
 
-    def save(self, decoded_event, block_info):
-        serializer = CentralizedOracleInstanceSerializer(data=decoded_event, block=block_info)
+    events = {
+        'OwnerReplacement': OwnerReplacementSerializer,
+        'OutcomeAssignment': OutcomeAssignmentOracleSerializer
+    }
+
+    def save(self, decoded_event, block_info=None):
+        if block_info:
+            serializer = self.events.get(decoded_event.get('name'))(data=decoded_event, block=block_info)
+        else:
+            serializer = self.events.get(decoded_event.get('name'))(data=decoded_event)
+
         if serializer.is_valid():
             serializer.save()
             logger.info('Centralized Oracle Instance Added: {}'.format(dumps(decoded_event)))
@@ -98,7 +109,9 @@ class EventInstanceReceiver(AbstractEventReceiver):
     events = {
         'Issuance': OutcomeTokenIssuanceSerializer, # sum to totalSupply, update data
         'Revocation': OutcomeTokenRevocationSerializer, # subtract from total Supply, update data
-        'OutcomeTokenCreation': OutcomeTokenInstanceSerializer
+        'OutcomeTokenCreation': OutcomeTokenInstanceSerializer,
+        'OutcomeAssignment': OutcomeAssignmentEventSerializer,
+        'WinningsRedemption': WinningsRedemptionSerializer
     }
 
     def save(self, decoded_event, block_info=None):

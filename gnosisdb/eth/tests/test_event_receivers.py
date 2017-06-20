@@ -4,11 +4,12 @@ from django.test import TestCase
 from json import loads
 from eth.event_receiver import (
     CentralizedOracleFactoryReceiver, UltimateOracleFactoryReceiver, EventFactoryReceiver, MarketFactoryReceiver,
-    EventInstanceReceiver
+    CentralizedOracleInstanceReceiver, EventInstanceReceiver
 )
 
 from relationaldb.models import (
-    CentralizedOracle, UltimateOracle, ScalarEvent, CategoricalEvent, Market, OutcomeToken
+    CentralizedOracle, UltimateOracle, ScalarEvent, CategoricalEvent, Market, OutcomeToken,
+    Event
 )
 
 from relationaldb.factories import (
@@ -434,5 +435,76 @@ class TestEventReceiver(TestCase):
         outcome_token = OutcomeToken.objects.get(address= outcome_token_factory.address)
         self.assertIsNotNone(outcome_token.pk)
         self.assertEquals(outcome_token_factory.total_supply, outcome_token.total_supply)
+
+    def test_event_instance_outcome_assignment_receiver(self):
+        event_factory = EventFactory()
+        assignment_event = {
+            'name': 'OutcomeAssignment',
+            'address': event_factory.address,
+            'params': [{
+                'name': 'outcome',
+                'value': 1,
+            }]
+        }
+
+        EventInstanceReceiver().save(assignment_event)
+        event = Event.objects.get(address=event_factory.address)
+        self.assertTrue(event.is_winning_outcome_set)
+
+    def test_event_instance_winnings_redemption_receiver(self):
+        event_factory = EventFactory()
+        redemption_event = {
+            'name': 'WinningsRedemption',
+            'address': event_factory.address,
+            'params': [
+                {
+                    'name': 'receiver',
+                    'value': event_factory.creator[0:-7] + 'GIACOMO',
+                },
+                {
+                    'name': 'winnings',
+                    'value': 1
+                }
+            ]
+        }
+
+        EventInstanceReceiver().save(redemption_event)
+        event = Event.objects.get(address=event_factory.address)
+        self.assertEquals(event.redeemed_winnings, event_factory.redeemed_winnings+1)
+
+    def test_centralized_oracle_instance_owner_replacement_receiver(self):
+        oracle_factory = CentralizedOracleFactory()
+        new_owner = oracle_factory.address[0:-7] + 'GIACOMO'
+        change_owner_event = {
+            'name': 'OwnerReplacement',
+            'address': oracle_factory.address,
+            'params': [
+                {
+                    'name': 'newOwner',
+                    'value': new_owner
+                }
+            ]
+        }
+
+        CentralizedOracleInstanceReceiver().save(change_owner_event)
+        centralized_oracle = CentralizedOracle.objects.get(address=oracle_factory.address)
+        self.assertEquals(centralized_oracle.owner, new_owner)
+
+    def test_centralized_oracle_instance_outcome_assignment_receiver(self):
+        oracle_factory = CentralizedOracleFactory()
+        assignment_event = {
+            'name': 'OutcomeAssignment',
+            'address': oracle_factory.address,
+            'params': [{
+                'name': 'outcome',
+                'value': 1,
+            }]
+        }
+
+        CentralizedOracleInstanceReceiver().save(assignment_event)
+        centralized_oracle = CentralizedOracle.objects.get(address=oracle_factory.address)
+        self.assertTrue(centralized_oracle.is_outcome_set)
+        self.assertEqual(centralized_oracle.outcome, 1)
+
 
 
