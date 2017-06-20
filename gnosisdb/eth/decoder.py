@@ -43,11 +43,11 @@ class Decoder(Singleton):
         decoded = []
         for log in logs:
             method_id = log[u'topics'][0][2:]
-            logger.info('method_id {}'.format(method_id))
-            logger.info('methods {}'.format(self.methods))
+            # logger.info('method_id {}'.format(method_id))
+            # logger.info('methods {}'.format(self.methods))
             if self.methods.get(method_id):
                 method = self.methods[method_id]
-                logger.info('method {}'.format(method))
+                # logger.info('method {}'.format(method))
                 decoded_params = []
                 data_i = 0
                 topics_i = 1
@@ -64,7 +64,7 @@ class Decoder(Singleton):
                     decoded_p = {
                         u'name': param[u'name']
                     }
-                    logger.info('param: {} {}'.format(param, decoded_p))
+                    # logger.info('param: {} {}'.format(param, decoded_p))
                     if param[u'indexed']:
                         decoded_p[u'value'] = log[u'topics'][topics_i]
                         topics_i += 1
@@ -83,7 +83,7 @@ class Decoder(Singleton):
                         decoded_p[u'value'] = long(decoded_p[u'value'])
                     elif u'address' == param[u'type']:
                         address = remove_0x_head(decoded_p[u'value'])
-                        logger.info('address, length {}'.format(len(address)))
+                        # logger.info('address, length {}'.format(len(address)))
                         if len(address) == 40:
                             decoded_p[u'value'] = address
                         elif len(address) == 64:

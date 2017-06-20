@@ -109,7 +109,7 @@ class TestDaemonExec(TestCase):
                 'NAME': 'Centralized Oracle Factory',
                 'EVENT_ABI': self.abi_loader.centralized_oracle_factory(),
                 'EVENT_DATA_RECEIVER': 'eth.event_receiver.CentralizedOracleFactoryReceiver',
-                'ADDRESSES': [self.centralized_oracle_factory_address]
+                'ADDRESSES': [self.centralized_oracle_factory_address[2::]]
             }
             # {
             #     'NAME': 'Ultimate Oracle Factory',

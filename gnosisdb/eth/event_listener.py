@@ -7,6 +7,7 @@ from django.utils.module_loading import import_string
 from celery.utils.log import get_task_logger
 from eth.models import Daemon
 from settings_utils.address_getter import addresses_getter
+from ethereum.utils import remove_0x_head
 
 logger = get_task_logger(__name__)
 
@@ -84,7 +85,8 @@ class EventListener(Singleton):
 
                 # Filter logs by address and decode
                 for log in logs:
-                    if log['address'] in addresses:
+                    logger.info('log_address {} {}'.format(remove_0x_head(log['address']), dumps(log)))
+                    if remove_0x_head(log['address']) in addresses:
                         # try to decode it
                         decoded = self.decoder.decode_logs([log])
 
