@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.shortcuts import get_object_or_404
 from rest_framework import generics
 from rest_framework.decorators import api_view
@@ -69,5 +70,19 @@ class MarketFetchView(generics.RetrieveAPIView):
 
 @api_view(['GET'])
 def factories_view(request):
-    # TODO Populate monitored factory addresses from django settings
-    return Response()
+    factories = {}
+    for contract in settings.GNOSISDB_CONTRACTS:
+        if 'PUBLISH' not in contract or not contract['PUBLISH']:
+            continue
+        address = contract['ADDRESSES'][0]
+        index = contract['NAME']
+        if 'PUBLISH_UNDER' in contract:
+            pub_index = contract['PUBLISH_UNDER']
+            if pub_index in factories:
+                factories[pub_index][index] = address
+            else:
+                factories[pub_index] = {index: address}
+        else:
+            factories[index] = address
+
+    return Response(factories)
