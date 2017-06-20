@@ -111,13 +111,13 @@ class EventInstanceReceiver(AbstractEventReceiver):
 
 
 # TODO remove
-class OutcomeTokenReceiver(AbstractEventReceiver):
-
-    def save(self, decoded_event, block_info):
-        serializer = OutcomeTokenInstanceSerializer(data=decoded_event, block=block_info)
-        if serializer.is_valid():
-            serializer.save()
-            logger.info('Outcome Token Added: {}'.format(dumps(decoded_event)))
-        else:
-            logger.warning('INVALID Outcome Token: {}'.format(dumps(decoded_event)))
-            logger.warning(serializer.errors)
+# class OutcomeTokenReceiver(AbstractEventReceiver):
+#
+#     def save(self, decoded_event, block_info):
+#         serializer = OutcomeTokenInstanceSerializer(data=decoded_event)
+#         if serializer.is_valid():
+#             serializer.save()
+#             logger.info('Outcome Token Added: {}'.format(dumps(decoded_event)))
+#         else:
+#             logger.warning('INVALID Outcome Token: {}'.format(dumps(decoded_event)))
+#             logger.warning(serializer.errors)

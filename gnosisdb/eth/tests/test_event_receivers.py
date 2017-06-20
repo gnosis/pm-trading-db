@@ -4,7 +4,7 @@ from django.test import TestCase
 from json import loads
 from eth.event_receiver import (
     CentralizedOracleFactoryReceiver, UltimateOracleFactoryReceiver, EventFactoryReceiver, MarketFactoryReceiver,
-    OutcomeTokenReceiver
+    EventInstanceReceiver
 )
 
 from relationaldb.models import (
@@ -306,12 +306,10 @@ class TestEventReceiver(TestCase):
     #     created_oracle = CentralizedOracle.objects.get(address=oracle_address)
     #     self.assertIsNotNone(created_oracle.pk)
 
-    def test_outcometoken_instance_receiver(self):
+    def test_event_instance_receiver(self):
         outcome_token_factory = OutcomeTokenFactory()
-        outcome_token = None
         oracle_factory = OracleFactory()
         event_factory = EventFactory()
-        event = None
         event_address = event_factory.address[0:-7] + 'GIACOMO'
 
         block = {
@@ -362,7 +360,8 @@ class TestEventReceiver(TestCase):
             'timestamp': mktime(oracle_factory.creation_date_time.timetuple())
         }
         outcome_token_address = oracle_factory.address[1:-8] + 'INSTANCE'
-        oracle_event = {
+        outcome_event = {
+            'name': 'OutcomeTokenCreation',
             'address': oracle_factory.factory[0:-7] + 'GIACOMO',
             'params': [
                 {
@@ -383,5 +382,5 @@ class TestEventReceiver(TestCase):
                 }
             ]
         }
-        outcome_token = OutcomeTokenReceiver().save(oracle_event, block)
+        EventInstanceReceiver().save(outcome_event, block)
         self.assertIsNotNone(OutcomeToken.objects.get(address=outcome_token_address))

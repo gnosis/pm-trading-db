@@ -47,6 +47,26 @@ class ContractCreatedByFactorySerializer(BlockTimestampedSerializer, ContractSer
         self.initial_data = new_data
 
 
+class ContractNotTimestampted(ContractSerializer):
+    class Meta:
+        fields = ContractSerializer.Meta.fields
+
+    def __init__(self, *args, **kwargs):
+        if kwargs.get('block'):
+            self.block = kwargs.pop('block')
+        super(ContractNotTimestampted, self).__init__(*args, **kwargs)
+        data = kwargs.pop('data')
+        # Event params moved to root object
+        new_data = {
+            'address': data[u'address']
+        }
+
+        for param in data.get('params'):
+            new_data[param[u'name']] = param[u'value']
+
+        self.initial_data = new_data
+
+
 class IpfsHashField(CharField):
 
     def __init__(self, **kwargs):
@@ -266,7 +286,7 @@ class IPFSEventDescriptionDeserializer(serializers.ModelSerializer):
 
 # Instance Serializers
 
-class OutcomeTokenInstanceSerializer(ContractSerializer, serializers.ModelSerializer):
+class OutcomeTokenInstanceSerializer(ContractNotTimestampted, serializers.ModelSerializer):
     class Meta:
         model = models.OutcomeToken
         fields = ContractSerializer.Meta.fields + ('address', 'index', 'outcomeToken',)
@@ -274,20 +294,6 @@ class OutcomeTokenInstanceSerializer(ContractSerializer, serializers.ModelSerial
     address = EventField(source='event')
     outcomeToken = CharField(max_length=40, source='address')
     index = serializers.IntegerField(min_value=0)
-
-    def __init__(self, *args, **kwargs):
-        self.block = kwargs.pop('block')
-        super(OutcomeTokenInstanceSerializer, self).__init__(*args, **kwargs)
-        data = kwargs.pop('data')
-        new_data = {
-            'address': data.get('address'),
-            'creation_date_time': datetime.fromtimestamp(self.block.get('timestamp')),
-            'creation_block': self.block.get('number')
-        }
-        for param in data.get('params'):
-            new_data[param[u'name']] = param[u'value']
-
-        self.initial_data = new_data
 
 
 class CentralizedOracleInstanceSerializer(CentralizedOracleSerializer):
