@@ -49,7 +49,7 @@ class TestModuleLoader(unittest.TestCase):
         self.assertFalse(inspect.isclass(func))
 
     def test_getting_addresses_utils_function(self):
-        clazz_addresses = addresses_getter(self.class_path).get_addresses()
+        clazz_addresses = addresses_getter(self.class_path)
         # invalid_clazz_addresses = addresses_getter(self.invalid_class_path)
         func_addresses = addresses_getter(self.func_path)
 

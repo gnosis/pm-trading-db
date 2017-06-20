@@ -72,9 +72,9 @@ class EventListener(Singleton):
 
                 # Get addresses watching
                 addresses = None
-                if contract['ADDRESSES']:
+                if contract.get('ADDRESSES'):
                     addresses = contract['ADDRESSES']
-                elif contract['ADDRESSES_GETTER']:
+                elif contract.get('ADDRESSES_GETTER'):
                     try:
                         addresses = addresses_getter(str(contract['ADDRESSES_GETTER']))
                         logger.info('ADDRESS GETTER: {}'.format(addresses))
