@@ -5,7 +5,10 @@ from ipfs.ipfs import Ipfs
 from datetime import datetime
 from ipfsapi.exceptions import ErrorResponse
 from time import mktime
+from celery.utils.log import get_task_logger
 
+
+logger = get_task_logger(__name__)
 
 class BlockTimestampedSerializer(serializers.BaseSerializer):
     class Meta:
@@ -308,6 +311,7 @@ class OutcomeTokenIssuanceSerializer(ContractNotTimestampted, serializers.ModelS
     address = serializers.CharField(max_length=40, source='outcome_token')
 
     def create(self, validated_data):
+        logger.info('++++++++++++++++++> {}'.format(validated_data))
         outcome_token = None
         outcome_token_balance = None
         try:

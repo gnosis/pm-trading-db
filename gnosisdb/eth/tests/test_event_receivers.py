@@ -4,7 +4,7 @@ from django.test import TestCase
 from json import loads
 from eth.event_receiver import (
     CentralizedOracleFactoryReceiver, UltimateOracleFactoryReceiver, EventFactoryReceiver, MarketFactoryReceiver,
-    CentralizedOracleInstanceReceiver, EventInstanceReceiver, UltimateOracleInstanceReceiver
+    CentralizedOracleInstanceReceiver, EventInstanceReceiver, UltimateOracleInstanceReceiver, OutcomeTokenInstanceReceiver
 )
 
 from relationaldb.models import (
@@ -403,7 +403,7 @@ class TestEventReceiver(TestCase):
             ]
         }
 
-        EventInstanceReceiver().save(event)
+        OutcomeTokenInstanceReceiver().save(event)
         outcome_token = OutcomeToken.objects.get(address= outcome_token_factory.address)
         self.assertIsNotNone(outcome_token.pk)
         self.assertEquals(outcome_token_factory.total_supply + 1000, outcome_token.total_supply)
@@ -429,9 +429,9 @@ class TestEventReceiver(TestCase):
         issuance_event.update({'name': 'Issuance'})
 
         # do issuance
-        EventInstanceReceiver().save(issuance_event)
+        OutcomeTokenInstanceReceiver().save(issuance_event)
         # do revocation
-        EventInstanceReceiver().save(revocation_event)
+        OutcomeTokenInstanceReceiver().save(revocation_event)
         outcome_token = OutcomeToken.objects.get(address= outcome_token_factory.address)
         self.assertIsNotNone(outcome_token.pk)
         self.assertEquals(outcome_token_factory.total_supply, outcome_token.total_supply)

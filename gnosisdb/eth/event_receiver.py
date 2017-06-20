@@ -127,10 +127,7 @@ class UltimateOracleInstanceReceiver(AbstractEventReceiver):
 
 class EventInstanceReceiver(AbstractEventReceiver):
 
-    # TODO, develop serializers
     events = {
-        'Issuance': OutcomeTokenIssuanceSerializer, # sum to totalSupply, update data
-        'Revocation': OutcomeTokenRevocationSerializer, # subtract from total Supply, update data
         'OutcomeTokenCreation': OutcomeTokenInstanceSerializer,
         'OutcomeAssignment': OutcomeAssignmentEventSerializer,
         'WinningsRedemption': WinningsRedemptionSerializer
@@ -150,14 +147,18 @@ class EventInstanceReceiver(AbstractEventReceiver):
             logger.warning(serializer.errors)
 
 
-# TODO remove
-# class OutcomeTokenReceiver(AbstractEventReceiver):
-#
-#     def save(self, decoded_event, block_info):
-#         serializer = OutcomeTokenInstanceSerializer(data=decoded_event)
-#         if serializer.is_valid():
-#             serializer.save()
-#             logger.info('Outcome Token Added: {}'.format(dumps(decoded_event)))
-#         else:
-#             logger.warning('INVALID Outcome Token: {}'.format(dumps(decoded_event)))
-#             logger.warning(serializer.errors)
+class OutcomeTokenInstanceReceiver(AbstractEventReceiver):
+    events = {
+        'Issuance': OutcomeTokenIssuanceSerializer,  # sum to totalSupply, update data
+        'Revocation': OutcomeTokenRevocationSerializer,  # subtract from total Supply, update data
+    }
+
+    def save(self, decoded_event, block_info=None):
+        logger.info('-----------------> {}'.format(decoded_event.get('name')))
+        serializer = self.events.get(decoded_event.get('name'))(data=decoded_event)
+        if serializer.is_valid():
+            serializer.save()
+            logger.info('Outcome Token Added: {}'.format(dumps(decoded_event)))
+        else:
+            logger.warning('INVALID Outcome Token: {}'.format(dumps(decoded_event)))
+            logger.warning(serializer.errors)
