@@ -70,49 +70,50 @@ class TestEventReceiver(TestCase):
         self.assertIsNotNone(created_oracle.pk)
 
     def test_ultimate_oracle_receiver(self):
-        oracle = UltimateOracleFactory()
+        forwarded_oracle = CentralizedOracleFactory()
+        ultimate_oracle = UltimateOracleFactory()
 
         block = {
-            'number': oracle.creation_block,
-            'timestamp': self.to_timestamp(oracle.creation_date_time)
+            'number': ultimate_oracle.creation_block,
+            'timestamp': mktime(ultimate_oracle.creation_date_time.timetuple())
         }
 
-        oracle_address = oracle.address[0:33] + 'GIACOMO'
+        oracle_address = ultimate_oracle.address[0:7] + 'another'
 
         oracle_event = {
-            'address': oracle.factory,
+            'address': ultimate_oracle.factory[0:7] + 'another',
             'params': [
                 {
                     'name': 'creator',
-                    'value': oracle.creator
+                    'value': ultimate_oracle.creator
                 },
                 {
                     'name': 'ultimateOracle',
-                    'value': oracle_address
+                    'value': oracle_address,
                 },
                 {
                     'name': 'oracle',
-                    'value': oracle_address
+                    'value': forwarded_oracle.address
                 },
                 {
                     'name': 'collateralToken',
-                    'value': oracle.collateral_token
+                    'value': ultimate_oracle.collateral_token
                 },
                 {
                     'name': 'spreadMultiplier',
-                    'value': oracle.spread_multiplier
+                    'value': ultimate_oracle.spread_multiplier
                 },
                 {
                     'name': 'challengePeriod',
-                    'value': oracle.challenge_period
+                    'value': ultimate_oracle.challenge_period
                 },
                 {
                     'name': 'challengeAmount',
-                    'value': oracle.challenge_amount
+                    'value': ultimate_oracle.challenge_amount
                 },
                 {
                     'name': 'frontRunnerPeriod',
-                    'value': oracle.front_runner_period
+                    'value': ultimate_oracle.front_runner_period
                 }
             ]
         }
