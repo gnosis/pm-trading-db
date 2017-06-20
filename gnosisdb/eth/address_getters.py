@@ -1,6 +1,6 @@
 from django.core.exceptions import ObjectDoesNotExist
 from settings_utils.address_getter import AbstractAddressesGetter
-from relationaldb.models import Contract, Market, Event, OutcomeToken
+from relationaldb.models import Contract, Market, Event, OutcomeToken, CentralizedOracle, UltimateOracle
 
 
 class ContractAddressGetter(AbstractAddressesGetter):
@@ -31,3 +31,13 @@ class EventAddressGetter(ContractAddressGetter):
 class OutcomeTokenGetter(ContractAddressGetter):
     class Meta:
         model = OutcomeToken
+
+
+class CentralizedOracleGetter(ContractAddressGetter):
+    class Meta:
+        model = CentralizedOracle
+
+
+class UltimateOracleGetter(ContractAddressGetter):
+    class Meta:
+        model = UltimateOracle
