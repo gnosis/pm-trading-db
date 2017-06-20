@@ -276,18 +276,52 @@ class OutcomeTokenInstanceSerializer(ContractSerializer, serializers.ModelSerial
     index = serializers.IntegerField(min_value=0)
 
     def __init__(self, *args, **kwargs):
-        self.block = kwargs.pop('block')
+        # self.block = kwargs.pop('block')
         super(OutcomeTokenInstanceSerializer, self).__init__(*args, **kwargs)
         data = kwargs.pop('data')
         new_data = {
             'address': data.get('address'),
-            'creation_date_time': datetime.fromtimestamp(self.block.get('timestamp')),
-            'creation_block': self.block.get('number')
+            # 'creation_date_time': datetime.fromtimestamp(self.block.get('timestamp')),
+            # 'creation_block': self.block.get('number')
         }
         for param in data.get('params'):
             new_data[param[u'name']] = param[u'value']
 
         self.initial_data = new_data
+
+
+class OutcomeTokenIssuanceSerializer(serializers.BaseSerializer):
+
+    owner = serializers.CharField(max_length=40)
+    amount = serializers.IntegerField()
+
+    def create(self, validated_data):
+        outcome_token = None
+        outcome_token_balance = None
+        balance = None
+        try:
+            outcome_token_balance = models.OutcomeTokenBalance.objects.get(owner=validated_data.get('owner'))
+            balance = outcome_token_balance.balance
+            balance += validated_data.get('amount')
+            outcome_token_balance.outcome_token.total_supply += validated_data.get('amount')
+            outcome_token_balance.save()
+        except models.OutcomeTokenBalance.DoesNotExist:
+            outcome_token = models.OutcomeToken.objects.get(address=validated_data.get('owner'))
+            outcome_token.total_supply += validated_data.get('amount')
+            outcome_token.save()
+
+            outcome_token_balance = models.OutcomeTokenBalance()
+            outcome_token_balance.balance = validated_data.get('amount')
+            outcome_token_balance.outcome_token = outcome_token
+            outcome_token_balance.save()
+
+        # balances[_for] = balances[_for].add(outcomeTokenCount);
+        # totalTokens = totalTokens.add(outcomeTokenCount);
+        # Issuance(_for, outcomeTokenCount);
+
+
+class OutcomeTokenRevocationSerializer():
+    pass
 
 
 class CentralizedOracleInstanceSerializer(CentralizedOracleSerializer):

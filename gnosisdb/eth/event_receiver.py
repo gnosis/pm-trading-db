@@ -2,7 +2,7 @@ from abc import ABCMeta, abstractmethod
 from relationaldb.serializers import (
     CentralizedOracleSerializer, ScalarEventSerializer, CategoricalEventSerializer,
     UltimateOracleSerializer, MarketSerializer, OutcomeTokenInstanceSerializer,
-    CentralizedOracleInstanceSerializer
+    CentralizedOracleInstanceSerializer, OutcomeTokenIssuanceSerializer
 )
 
 from celery.utils.log import get_task_logger
@@ -95,7 +95,7 @@ class EventInstanceReceiver(AbstractEventReceiver):
 
     # TODO, develop serializers
     events = {
-        'Issuance': '', # sum to totalSupply, update data
+        'Issuance': OutcomeTokenIssuanceSerializer, # sum to totalSupply, update data
         'Revocation': '', # subtract from total Supply, update data
         'OutcomeTokenCreation': OutcomeTokenInstanceSerializer
     }
