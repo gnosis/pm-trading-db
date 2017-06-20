@@ -4,7 +4,7 @@ from django.test import TestCase
 from json import loads
 from eth.event_receiver import (
     CentralizedOracleFactoryReceiver, UltimateOracleFactoryReceiver, EventFactoryReceiver, MarketFactoryReceiver,
-    OutcomeTokenReceiver, EventInstanceReceiver
+    EventInstanceReceiver
 )
 
 from relationaldb.models import (
@@ -306,12 +306,10 @@ class TestEventReceiver(TestCase):
     #     created_oracle = CentralizedOracle.objects.get(address=oracle_address)
     #     self.assertIsNotNone(created_oracle.pk)
 
-    def test_outcometoken_instance_receiver(self):
+    def test_event_instance_receiver(self):
         outcome_token_factory = OutcomeTokenFactory()
-        outcome_token = None
         oracle_factory = OracleFactory()
         event_factory = EventFactory()
-        event = None
         event_address = event_factory.address[0:-7] + 'GIACOMO'
 
         block = {
@@ -362,7 +360,8 @@ class TestEventReceiver(TestCase):
             'timestamp': mktime(oracle_factory.creation_date_time.timetuple())
         }
         outcome_token_address = oracle_factory.address[1:-8] + 'INSTANCE'
-        oracle_event = {
+        outcome_event = {
+            'name': 'OutcomeTokenCreation',
             'address': oracle_factory.factory[0:-7] + 'GIACOMO',
             'params': [
                 {
@@ -383,16 +382,57 @@ class TestEventReceiver(TestCase):
                 }
             ]
         }
-        outcome_token = OutcomeTokenReceiver().save(oracle_event, block)
+        EventInstanceReceiver().save(outcome_event, block)
         self.assertIsNotNone(OutcomeToken.objects.get(address=outcome_token_address))
 
-    def test_event_instance_receiver(self):
+    def test_event_instance_issuance_receiver(self):
         outcome_token_factory = OutcomeTokenFactory()
         event = {
             'name': 'Issuance',
-            'owner': outcome_token_factory.address,
-            'amount': 1000
+            'address': outcome_token_factory.address,
+            'params': [
+                {
+                    'name': 'owner',
+                    'value': outcome_token_factory.address[0:-7] + 'GIACOMO'
+                },
+                {
+                    'name': 'amount',
+                    'value': 1000,
+                }
+            ]
         }
 
         EventInstanceReceiver().save(event)
+        outcome_token = OutcomeToken.objects.get(address= outcome_token_factory.address)
+        self.assertIsNotNone(outcome_token.pk)
+        self.assertEquals(outcome_token_factory.total_supply + 1000, outcome_token.total_supply)
+
+    def test_event_instance_revocation_receiver(self):
+        outcome_token_factory = OutcomeTokenFactory()
+        revocation_event = {
+            'name': 'Revocation',
+            'address': outcome_token_factory.address,
+            'params': [
+                {
+                    'name': 'owner',
+                    'value': outcome_token_factory.address[0:-7] + 'GIACOMO'
+                },
+                {
+                    'name': 'amount',
+                    'value': 1000,
+                }
+            ]
+        }
+
+        issuance_event = revocation_event.copy()
+        issuance_event.update({'name': 'Issuance'})
+
+        # do issuance
+        EventInstanceReceiver().save(issuance_event)
+        # do revocation
+        EventInstanceReceiver().save(revocation_event)
+        outcome_token = OutcomeToken.objects.get(address= outcome_token_factory.address)
+        self.assertIsNotNone(outcome_token.pk)
+        self.assertEquals(outcome_token_factory.total_supply, outcome_token.total_supply)
+
 

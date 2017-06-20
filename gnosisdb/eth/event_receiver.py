@@ -2,7 +2,8 @@ from abc import ABCMeta, abstractmethod
 from relationaldb.serializers import (
     CentralizedOracleSerializer, ScalarEventSerializer, CategoricalEventSerializer,
     UltimateOracleSerializer, MarketSerializer, OutcomeTokenInstanceSerializer,
-    CentralizedOracleInstanceSerializer, OutcomeTokenIssuanceSerializer
+    CentralizedOracleInstanceSerializer, OutcomeTokenIssuanceSerializer,
+    OutcomeTokenRevocationSerializer
 )
 
 from celery.utils.log import get_task_logger
@@ -96,12 +97,16 @@ class EventInstanceReceiver(AbstractEventReceiver):
     # TODO, develop serializers
     events = {
         'Issuance': OutcomeTokenIssuanceSerializer, # sum to totalSupply, update data
-        'Revocation': '', # subtract from total Supply, update data
+        'Revocation': OutcomeTokenRevocationSerializer, # subtract from total Supply, update data
         'OutcomeTokenCreation': OutcomeTokenInstanceSerializer
     }
 
-    def save(self, decoded_event, block_info):
-        serializer = self.events.get(decoded_event.get('name'))(data=decoded_event, block=block_info)
+    def save(self, decoded_event, block_info=None):
+        if block_info:
+            serializer = self.events.get(decoded_event.get('name'))(data=decoded_event, block=block_info)
+        else:
+            serializer = self.events.get(decoded_event.get('name'))(data=decoded_event)
+
         if serializer.is_valid():
             serializer.save()
             logger.info('Event Instance Added: {}'.format(dumps(decoded_event)))
@@ -111,13 +116,13 @@ class EventInstanceReceiver(AbstractEventReceiver):
 
 
 # TODO remove
-class OutcomeTokenReceiver(AbstractEventReceiver):
-
-    def save(self, decoded_event, block_info):
-        serializer = OutcomeTokenInstanceSerializer(data=decoded_event, block=block_info)
-        if serializer.is_valid():
-            serializer.save()
-            logger.info('Outcome Token Added: {}'.format(dumps(decoded_event)))
-        else:
-            logger.warning('INVALID Outcome Token: {}'.format(dumps(decoded_event)))
-            logger.warning(serializer.errors)
+# class OutcomeTokenReceiver(AbstractEventReceiver):
+#
+#     def save(self, decoded_event, block_info):
+#         serializer = OutcomeTokenInstanceSerializer(data=decoded_event)
+#         if serializer.is_valid():
+#             serializer.save()
+#             logger.info('Outcome Token Added: {}'.format(dumps(decoded_event)))
+#         else:
+#             logger.warning('INVALID Outcome Token: {}'.format(dumps(decoded_event)))
+#             logger.warning(serializer.errors)
