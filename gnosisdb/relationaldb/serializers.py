@@ -19,6 +19,29 @@ class BlockTimestampedSerializer(serializers.BaseSerializer):
     creation_block = serializers.IntegerField()
 
 
+class ContractEventTimestamped(BlockTimestampedSerializer):
+    class Meta:
+        fields = BlockTimestampedSerializer.Meta.fields + ('address',)
+
+    address = serializers.CharField(max_length=40)
+
+    def __init__(self, *args, **kwargs):
+        self.block = kwargs.pop('block')
+        super(ContractEventTimestamped, self).__init__(*args, **kwargs)
+        data = kwargs.pop('data')
+        # Event params moved to root object
+        new_data = {
+            'address': data.get('address'),
+            'creation_date_time': datetime.fromtimestamp(self.block.get('timestamp')),
+            'creation_block': self.block.get('number')
+        }
+
+        for param in data.get('params'):
+            new_data[param[u'name']] = param[u'value']
+
+        self.initial_data = new_data
+
+
 # Declare basic fields, join params on root object and
 class ContractSerializer(serializers.BaseSerializer):
     class Meta:
@@ -70,6 +93,7 @@ class ContractNotTimestampted(ContractSerializer):
             new_data[param[u'name']] = param[u'value']
 
         self.initial_data = new_data
+
 
 
 class IpfsHashField(CharField):
@@ -593,3 +617,114 @@ class WithdrawalSerializer(ContractNotTimestampted, serializers.ModelSerializer)
             raise serializers.ValidationError('OutcomeVoteBalance of UltimateOracle %s does not exist for '
                                               'sender address %s'
                                               .format(validated_data.get('address'), validated_data.get('sender')))
+
+
+class OutcomeTokenPurchaseSerializer(ContractEventTimestamped, serializers.ModelSerializer):
+
+    class Meta:
+        model = models.BuyOrder
+        fields = ContractEventTimestamped.Meta.fields + ('buyer', 'outcomeTokenIndex', 'outcomeTokenCount', 'cost',)
+
+    address = serializers.CharField(max_length=40)
+    buyer = serializers.CharField(max_length=40)
+    outcomeTokenIndex = serializers.IntegerField()
+    outcomeTokenCount = serializers.IntegerField()
+    cost = serializers.IntegerField()
+
+    def create(self, validated_data):
+        try:
+            market = models.Market.objects.get(address=validated_data.get('address'))
+            # Create Order
+            order = models.BuyOrder()
+            order.creation_date_time = validated_data['creation_date_time']
+            order.creation_block = validated_data['creation_block']
+            order.market = market
+            order.sender = validated_data.get('buyer')
+            order.outcome_token_index = validated_data.get('outcomeTokenIndex')
+            order.outcome_token_count = validated_data.get('outcomeTokenCount')
+            order.cost = validated_data.get('cost')
+            # Update token sale statistics
+            # logger.info('Market Net Sold: {}'.format(market.net_outcome_tokens_sold))
+            # TODO Update target token net amounts
+            # market.net_outcome_tokens_sold[validated_data.get('outcome_token_index')] += validated_data.get('outcome_token_count')
+            # order.net_outcome_tokens_sold = market.net_outcome_tokens_sold
+            # Save order successfully, then save market changes
+            order.save()
+            # market.save()
+            return order
+        except models.Market.DoesNotExist:
+            raise serializers.ValidationError('Market with address %s does not exist.' % validated_data.get('address'))
+
+
+class OutcomeTokenSaleSerializer(ContractEventTimestamped, serializers.ModelSerializer):
+
+    class Meta:
+        model = models.SellOrder
+        fields = ContractEventTimestamped.Meta.fields + ('seller', 'outcomeTokenIndex', 'outcomeTokenCount', 'profit',)
+
+    address = serializers.CharField(max_length=40)
+    seller = serializers.CharField(max_length=40)
+    outcomeTokenIndex = serializers.IntegerField()
+    outcomeTokenCount = serializers.IntegerField()
+    profit = serializers.IntegerField()
+
+    def create(self, validated_data):
+        try:
+            market = models.Market.objects.get(address=validated_data.get('address'))
+            # Create Order
+            order = models.SellOrder()
+            order.creation_date_time = validated_data['creation_date_time']
+            order.creation_block = validated_data['creation_block']
+            order.market = market
+            order.sender = validated_data.get('seller')
+            order.outcome_token_index = validated_data.get('outcomeTokenIndex')
+            order.outcome_token_count = validated_data.get('outcomeTokenCount')
+            order.profit = validated_data.get('profit')
+            # Update token sale statistics
+            # logger.info('Market Net Sold: {}'.format(market.net_outcome_tokens_sold))
+            # TODO Update target token net amounts
+            # market.net_outcome_tokens_sold[validated_data.get('outcome_token_index')] += validated_data.get('outcome_token_count')
+            # order.net_outcome_tokens_sold = market.net_outcome_tokens_sold
+            # Save order successfully, then save market changes
+            order.save()
+            # market.save()
+            return order
+        except models.Market.DoesNotExist:
+            raise serializers.ValidationError('Market with address %s does not exist.' % validated_data.get('address'))
+
+
+class OutcomeTokenShortSaleOrderSerializer(ContractEventTimestamped, serializers.ModelSerializer):
+
+    class Meta:
+        model = models.ShortSellOrder
+        fields = ContractEventTimestamped.Meta.fields + ('buyer', 'outcomeTokenIndex', 'outcomeTokenCount', 'cost',)
+
+    address = serializers.CharField(max_length=40)
+    buyer = serializers.CharField(max_length=40)
+    outcomeTokenIndex = serializers.IntegerField()
+    outcomeTokenCount = serializers.IntegerField()
+    cost = serializers.IntegerField()
+
+    def create(self, validated_data):
+        try:
+            market = models.Market.objects.get(address=validated_data.get('address'))
+            # Create Order
+            order = models.ShortSellOrder()
+            order.creation_date_time = validated_data['creation_date_time']
+            order.creation_block = validated_data['creation_block']
+            order.market = market
+            order.sender = validated_data.get('buyer')
+            order.outcome_token_index = validated_data.get('outcomeTokenIndex')
+            order.outcome_token_count = validated_data.get('outcomeTokenCount')
+            order.cost = validated_data.get('cost')
+            # Update token sale statistics
+            # logger.info('Market Net Sold: {}'.format(market.net_outcome_tokens_sold))
+            # TODO Update target token net amounts
+            # market.net_outcome_tokens_sold[validated_data.get('outcome_token_index')] += validated_data.get('outcome_token_count')
+            # order.net_outcome_tokens_sold = market.net_outcome_tokens_sold
+            # Save order successfully, then save market changes
+            order.save()
+            # market.save()
+            return order
+        except models.Market.DoesNotExist:
+            raise serializers.ValidationError('Market with address %s does not exist.' % validated_data.get('address'))

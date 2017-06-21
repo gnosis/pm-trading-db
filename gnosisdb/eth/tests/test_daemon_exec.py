@@ -127,7 +127,7 @@ class TestDaemonExec(TestCase):
             #     'ADDRESSES': [],
             #     'ADDRESSES_GETTER': 'eth.address_getters.MarketAddressGetter',
             #     'EVENT_ABI': self.abi_loader.standard_market(),
-            #     'EVENT_DATA_RECEIVER': 'eth.event_receiver.MarketOrderReceiver',
+            #     'EVENT_DATA_RECEIVER': 'eth.event_receiver.MarketInstanceReceiver',
             #     'NAME': 'Standard Markets Buy/Sell/Short Receiver'
             # }
         ]

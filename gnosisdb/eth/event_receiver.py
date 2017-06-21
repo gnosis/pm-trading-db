@@ -6,7 +6,8 @@ from relationaldb.serializers import (
     OutcomeTokenRevocationSerializer, OutcomeAssignmentEventSerializer,
     WinningsRedemptionSerializer, OwnerReplacementSerializer,
     OutcomeAssignmentOracleSerializer, ForwardedOracleOutcomeAssignmentSerializer,
-    OutcomeChallengeSerializer, OutcomeVoteSerializer, WithdrawalSerializer, OutcomeTokenTransferSerializer
+    OutcomeChallengeSerializer, OutcomeVoteSerializer, WithdrawalSerializer, OutcomeTokenTransferSerializer,
+    OutcomeTokenPurchaseSerializer, OutcomeTokenSaleSerializer, OutcomeTokenShortSaleOrderSerializer
 )
 
 from celery.utils.log import get_task_logger
@@ -77,9 +78,27 @@ class MarketFactoryReceiver(AbstractEventReceiver):
             logger.warning(serializer.errors)
 
 
-class MarketOrderReceiver(AbstractEventReceiver):
+class MarketInstanceReceiver(AbstractEventReceiver):
+
+    events = {
+        'OutcomeTokenPurchase': OutcomeTokenPurchaseSerializer,
+        'OutcomeTokenSale': OutcomeTokenSaleSerializer,
+        'OutcomeTokenShortSale': OutcomeTokenShortSaleOrderSerializer,
+    }
+
     def save(self, decoded_event, block_info):
-        logger.info("Market Order Captured: {}".format(dumps(decoded_event)))
+        if block_info:
+            serializer = self.events.get(decoded_event.get('name'))(data=decoded_event, block=block_info)
+        else:
+            serializer = self.events.get(decoded_event.get('name'))(data=decoded_event)
+
+        if serializer.is_valid():
+            serializer.save()
+            logger.info('Market Instance Added: {}'.format(dumps(decoded_event)))
+        else:
+            logger.warning('INVALID Market Instance: {}'.format(dumps(decoded_event)))
+            logger.warning(serializer.errors)
+
 
 
 # contract instances
