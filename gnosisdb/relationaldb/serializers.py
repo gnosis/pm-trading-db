@@ -10,6 +10,7 @@ from celery.utils.log import get_task_logger
 
 logger = get_task_logger(__name__)
 
+
 class BlockTimestampedSerializer(serializers.BaseSerializer):
     class Meta:
         fields = ('creation_date_time', 'creation_block', )
@@ -28,7 +29,7 @@ class ContractSerializer(serializers.BaseSerializer):
 
 class ContractCreatedByFactorySerializer(BlockTimestampedSerializer, ContractSerializer):
     class Meta:
-        fields = BlockTimestampedSerializer.Meta.fields + ContractSerializer.Meta.fields + ('factory', 'creator',)
+        fields = BlockTimestampedSerializer.Meta.fields + ContractSerializer.Meta.fields + ('factory', 'creator')
 
     factory = serializers.CharField(max_length=40)  # included prefix
     creator = serializers.CharField(max_length=40)
