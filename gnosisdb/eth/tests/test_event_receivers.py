@@ -9,12 +9,13 @@ from eth.event_receiver import (
 
 from relationaldb.models import (
     CentralizedOracle, UltimateOracle, ScalarEvent, CategoricalEvent, Market, OutcomeToken,
-    Event
+    Event, OutcomeVoteBalance
 )
 
 from relationaldb.factories import (
     UltimateOracleFactory, CentralizedOracleFactory,
-    OracleFactory, EventFactory, MarketFactory, OutcomeTokenFactory
+    OracleFactory, EventFactory, MarketFactory, OutcomeTokenFactory,
+    OutcomeVoteBalanceFactory
 )
 from datetime import datetime
 from time import mktime
@@ -538,5 +539,53 @@ class TestEventReceiver(TestCase):
         self.assertEqual(ultimate_oracle.total_amount, oracle_factory.challenge_amount)
         self.assertEqual(ultimate_oracle.front_runner, 1)
 
+    def test_ultimate_oracle_instance_outcome_vote_receiver(self):
+        balance_factory = OutcomeVoteBalanceFactory()
+        assignment_event = {
+            'name': 'OutcomeVote',
+            'address': balance_factory.ultimate_oracle.address,
+            'params': [
+                {
+                    'name': 'outcome',
+                    'value': balance_factory.ultimate_oracle.front_runner+1,
+                },
+                {
+                    'name': 'amount',
+                    'value': 1,
+                },
+                {
+                    'name': 'sender',
+                    'value': balance_factory.address,
+                },
+            ]
+        }
+
+        UltimateOracleInstanceReceiver().save(assignment_event)
+        ultimate_oracle = UltimateOracle.objects.get(address=balance_factory.ultimate_oracle.address)
+        outcome_vote_balance = OutcomeVoteBalance.objects.get(address= balance_factory.address)
+        self.assertEquals(ultimate_oracle.total_amount, balance_factory.ultimate_oracle.total_amount+1)
+        self.assertEquals(ultimate_oracle.front_runner, balance_factory.ultimate_oracle.front_runner+1)
+        self.assertEquals(outcome_vote_balance.balance, 1)
+
+    def test_ultimate_oracle_instance_withdrawal_receiver(self):
+        balance_factory = OutcomeVoteBalanceFactory()
+        assignment_event = {
+            'name': 'Withdrawal',
+            'address': balance_factory.ultimate_oracle.address,
+            'params': [
+                {
+                    'name': 'amount',
+                    'value': 1,
+                },
+                {
+                    'name': 'sender',
+                    'value': balance_factory.address,
+                },
+            ]
+        }
+
+        UltimateOracleInstanceReceiver().save(assignment_event)
+        outcome_vote_balance = OutcomeVoteBalance.objects.get(address= balance_factory.address)
+        self.assertEquals(outcome_vote_balance.balance, balance_factory.balance-1)
 
 

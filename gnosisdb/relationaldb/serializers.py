@@ -491,3 +491,61 @@ class OutcomeChallengeSerializer(ContractNotTimestampted, serializers.ModelSeria
             return ultimate_oracle
         except models.UltimateOracle.DoesNotExist:
             raise serializers.ValidationError('UltimateOracle %s does not exist'.format(validated_data.get('address')))
+
+
+class OutcomeVoteSerializer(ContractNotTimestampted, serializers.ModelSerializer):
+
+    class Meta:
+        model = models.UltimateOracle
+        fields = ('address', 'sender', 'outcome', 'amount',)
+
+    address = serializers.CharField(max_length=40)
+    sender = serializers.CharField(max_length=40)
+    outcome = serializers.IntegerField()
+    amount = serializers.IntegerField()
+
+    def create(self, validated_data):
+        try:
+            outcome_vote_balance = models.OutcomeVoteBalance.objects.get(address=validated_data.get('sender'),
+                                                                         ultimate_oracle__address=validated_data.get('address'))
+            outcome_vote_balance.balance += validated_data.get('amount')
+            outcome_vote_balance.save()
+
+            ultimate_oracle = models.UltimateOracle.objects.get(address=validated_data.get('address'))
+            ultimate_oracle.total_amount += validated_data.get('amount')
+            if validated_data.get('outcome') != ultimate_oracle.front_runner and \
+                    ultimate_oracle.total_amount > ultimate_oracle.front_runner:
+                ultimate_oracle.front_runner = validated_data.get('outcome')
+                ultimate_oracle.front_runner_set_at_timestamp = mktime(datetime.now().timetuple())
+
+            ultimate_oracle.save()
+            return ultimate_oracle
+        except models.OutcomeVoteBalance.DoesNotExist:
+            raise serializers.ValidationError('OutcomeVoteBalance of UltimateOracle %s does not exist for '
+                                              'sender address %s'
+                                              .format(validated_data.get('address'), validated_data.get('sender')))
+        except models.UltimateOracle.DoesNotExist:
+            raise serializers.ValidationError('UltimateOracle %s does not exist'.format(validated_data.get('address')))
+
+
+class WithdrawalSerializer(ContractNotTimestampted, serializers.ModelSerializer):
+
+    class Meta:
+        model = models.OutcomeVoteBalance
+        fields = ('address', 'sender', 'amount',)
+
+    address = serializers.CharField(max_length=40)
+    sender = serializers.CharField(max_length=40)
+    amount = serializers.IntegerField()
+
+    def create(self, validated_data):
+        try:
+            outcome_vote_balance = models.OutcomeVoteBalance.objects.get(address=validated_data.get('sender'),
+                                                                         ultimate_oracle__address=validated_data.get('address'))
+            outcome_vote_balance.balance -= validated_data.get('amount')
+            outcome_vote_balance.save()
+            return outcome_vote_balance
+        except models.OutcomeVoteBalance.DoesNotExist:
+            raise serializers.ValidationError('OutcomeVoteBalance of UltimateOracle %s does not exist for '
+                                              'sender address %s'
+                                              .format(validated_data.get('address'), validated_data.get('sender')))

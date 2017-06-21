@@ -6,7 +6,7 @@ from relationaldb.serializers import (
     OutcomeTokenRevocationSerializer, OutcomeAssignmentEventSerializer,
     WinningsRedemptionSerializer, OwnerReplacementSerializer,
     OutcomeAssignmentOracleSerializer, ForwardedOracleOutcomeAssignmentSerializer,
-    OutcomeChallengeSerializer
+    OutcomeChallengeSerializer, OutcomeVoteSerializer, WithdrawalSerializer
 )
 
 from celery.utils.log import get_task_logger
@@ -108,7 +108,9 @@ class UltimateOracleInstanceReceiver(AbstractEventReceiver):
 
     events = {
         'ForwardedOracleOutcomeAssignment': ForwardedOracleOutcomeAssignmentSerializer,
-        'OutcomeChallenge': OutcomeChallengeSerializer
+        'OutcomeChallenge': OutcomeChallengeSerializer,
+        'OutcomeVote': OutcomeVoteSerializer,
+        'Withdrawal': WithdrawalSerializer
     }
 
     def save(self, decoded_event, block_info=None):

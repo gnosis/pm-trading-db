@@ -114,6 +114,16 @@ class UltimateOracleFactory(OracleFactory):
     total_amount = factory_boy.Sequence(lambda n: n)
 
 
+class OutcomeVoteBalanceFactory(factory_boy.DjangoModelFactory):
+
+    class Meta:
+        model = models.OutcomeVoteBalance
+
+    ultimate_oracle = factory_boy.SubFactory(UltimateOracleFactory)
+    address = factory_boy.Sequence(lambda n: '{:040d}'.format(n))
+    balance = factory_boy.Sequence(lambda n: n)
+
+
 class MarketFactory(ContractCreatedByFactory):
 
     class Meta:

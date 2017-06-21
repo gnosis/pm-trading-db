@@ -105,7 +105,7 @@ class UltimateOracle(Oracle):
 
 class OutcomeVoteBalance(models.Model):
     ultimate_oracle = models.ForeignKey(UltimateOracle, related_name='outcome_vote_balance_ultimate_oracle')
-    address = models.CharField(max_length=40)
+    address = models.CharField(max_length=40) # sender
     balance = models.BigIntegerField()
 
 
