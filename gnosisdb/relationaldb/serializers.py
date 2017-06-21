@@ -320,6 +320,7 @@ class OutcomeTokenIssuanceSerializer(ContractNotTimestampted, serializers.ModelS
             outcome_token_balance.balance += validated_data.get('amount')
             outcome_token_balance.outcome_token.total_supply += validated_data.get('amount')
             outcome_token_balance.save()
+            return outcome_token_balance.outcome_token
         except models.OutcomeTokenBalance.DoesNotExist:
             outcome_token = models.OutcomeToken.objects.get(address=validated_data.get('outcome_token'))
             outcome_token.total_supply += validated_data.get('amount')
@@ -331,8 +332,7 @@ class OutcomeTokenIssuanceSerializer(ContractNotTimestampted, serializers.ModelS
             outcome_token_balance.owner = validated_data.get('owner')
             outcome_token_balance.outcome_token = outcome_token
             outcome_token_balance.save()
-
-        return outcome_token
+            return outcome_token
 
 
 class OutcomeTokenRevocationSerializer(ContractNotTimestampted, serializers.ModelSerializer):
