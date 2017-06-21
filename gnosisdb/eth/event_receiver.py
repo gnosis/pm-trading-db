@@ -6,7 +6,7 @@ from relationaldb.serializers import (
     OutcomeTokenRevocationSerializer, OutcomeAssignmentEventSerializer,
     WinningsRedemptionSerializer, OwnerReplacementSerializer,
     OutcomeAssignmentOracleSerializer, ForwardedOracleOutcomeAssignmentSerializer,
-    OutcomeChallengeSerializer, OutcomeVoteSerializer, WithdrawalSerializer
+    OutcomeChallengeSerializer, OutcomeVoteSerializer, WithdrawalSerializer, OutcomeTokenTransferSerializer
 )
 
 from celery.utils.log import get_task_logger
@@ -152,7 +152,8 @@ class EventInstanceReceiver(AbstractEventReceiver):
 class OutcomeTokenInstanceReceiver(AbstractEventReceiver):
     events = {
         'Issuance': OutcomeTokenIssuanceSerializer,  # sum to totalSupply, update data
-        'Revocation': OutcomeTokenRevocationSerializer,  # subtract from total Supply, update data
+        'Revocation': OutcomeTokenRevocationSerializer,  # subtract from total Supply, update data,
+        'Transfer': OutcomeTokenTransferSerializer # moves balance between owners
     }
 
     def save(self, decoded_event, block_info=None):
