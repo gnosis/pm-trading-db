@@ -22,7 +22,7 @@ class Contract(models.Model):
 
 
 class ContractCreatedByFactory(Contract, BlockTimeStamped):
-    factory = models.CharField(max_length=40) # factory contract creating the contract
+    factory = models.CharField(max_length=40)  # factory contract creating the contract
     creator = models.CharField(max_length=40)
 
     class Meta:
