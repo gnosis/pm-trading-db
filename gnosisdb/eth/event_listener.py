@@ -78,14 +78,13 @@ class EventListener(Singleton):
                 elif contract.get('ADDRESSES_GETTER'):
                     try:
                         addresses = addresses_getter(str(contract['ADDRESSES_GETTER']))
-                        logger.info('ADDRESS GETTER: {}'.format(addresses))
                     except Exception as e:
                         logger.error(e)
                         return
 
                 # Filter logs by address and decode
                 for log in logs:
-                    logger.info('log_address {} {}'.format(remove_0x_head(log['address']), dumps(log)))
+                    # logger.info('log_address {} {}'.format(remove_0x_head(log['address']), dumps(log)))
                     if remove_0x_head(log['address']) in addresses:
                         # try to decode it
                         decoded = self.decoder.decode_logs([log])
@@ -94,8 +93,8 @@ class EventListener(Singleton):
                             # save decoded event with event receiver
                             for log_json in decoded:
                                 try:
-                                    logger.info('LOG JSON: {}'.format(dumps(log_json)))
-                                    logger.info('BLOCK JSON: {}'.format(dumps(block_info)))
+                                    # logger.info('LOG JSON: {}'.format(dumps(log_json)))
+                                    # logger.info('BLOCK JSON: {}'.format(dumps(block_info)))
 
                                     # load event receiver and save
                                     event_receiver = import_string(contract['EVENT_DATA_RECEIVER'])
