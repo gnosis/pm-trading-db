@@ -70,6 +70,16 @@ class OutcomeTokenFactory(ContractFactory):
     total_supply = factory_boy.Sequence(lambda n: n)
 
 
+class OutcomeTokenBalanceFactory(factory_boy.DjangoModelFactory):
+
+    class Meta:
+        model = models.OutcomeTokenBalance
+
+    outcome_token = factory_boy.SubFactory(OutcomeTokenFactory)
+    balance = factory_boy.Sequence(lambda n: n)
+    owner = factory_boy.Sequence(lambda n: '{:040d}'.format(n))
+
+
 class EventDescriptionFactory(factory_boy.DjangoModelFactory):
     class Meta:
         model = models.EventDescription

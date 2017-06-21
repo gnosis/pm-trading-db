@@ -1,13 +1,15 @@
 from unittest import TestCase
 from relationaldb.factories import (
     OracleFactory, CentralizedOracleFactory, UltimateOracleFactory, EventFactory,
-    MarketFactory, EventDescriptionFactory, OutcomeTokenFactory
+    MarketFactory, EventDescriptionFactory, OutcomeTokenFactory, OutcomeTokenBalanceFactory
 )
 from relationaldb.serializers import (
-    CentralizedOracleSerializer, EventSerializer, ScalarEventSerializer, UltimateOracleSerializer,
+    OutcomeTokenIssuanceSerializer, ScalarEventSerializer, UltimateOracleSerializer, OutcomeTokenRevocationSerializer,
     CategoricalEventSerializer, MarketSerializer, IPFSEventDescriptionDeserializer,
-    CentralizedOracleInstanceSerializer, OutcomeTokenInstanceSerializer
+    CentralizedOracleInstanceSerializer, OutcomeTokenInstanceSerializer, OutcomeTokenTransferSerializer
 )
+
+from relationaldb.models import OutcomeTokenBalance, OutcomeToken
 
 from ipfs.ipfs import Ipfs
 from time import mktime
@@ -554,3 +556,97 @@ class TestSerializers(TestCase):
         self.assertTrue(s.is_valid(), s.errors)
         instance = s.save()
         self.assertIsNotNone(instance)
+
+    def test_issuance_outcome_token(self):
+        outcome_token = OutcomeTokenFactory()
+        event = EventFactory()
+
+        issuance_event = {
+            'name': 'Issuance',
+            'address': outcome_token.address,
+            'params': [
+                {
+                    'name': 'owner',
+                    'value': event.address
+                },
+                {
+                    'name': 'amount',
+                    'value': 20,
+                }
+            ]
+        }
+
+        s = OutcomeTokenIssuanceSerializer(data=issuance_event)
+        self.assertTrue(s.is_valid(), s.errors)
+        instance = s.save()
+
+        balance = OutcomeTokenBalance.objects.get(owner=event.address)
+        self.assertEqual(balance.balance, 20)
+        self.assertIsNotNone(instance)
+
+        self.assertEqual(OutcomeToken.objects.get(address=outcome_token.address).total_supply,
+                         outcome_token.total_supply + 20)
+
+    def test_revocation_outcome_token(self):
+        balance = OutcomeTokenBalanceFactory()
+        balance.balance = 20
+        balance.save()
+
+        issuance_event = {
+            'name': 'Revocation',
+            'address': balance.outcome_token.address,
+            'params': [
+                {
+                    'name': 'owner',
+                    'value': balance.owner
+                },
+                {
+                    'name': 'amount',
+                    'value': 20,
+                }
+            ]
+        }
+
+        s = OutcomeTokenRevocationSerializer(data=issuance_event)
+        self.assertTrue(s.is_valid(), s.errors)
+        instance = s.save()
+
+        self.assertEqual(OutcomeTokenBalance.objects.get(owner=balance.owner).balance, 0)
+        self.assertIsNotNone(instance)
+
+        self.assertEqual(OutcomeToken.objects.get(address=balance.outcome_token.address).total_supply,
+                         balance.outcome_token.total_supply - 20)
+
+    def test_transfer_outcome_token(self):
+        outcome_token_balance = OutcomeTokenBalanceFactory()
+        event = EventFactory()
+        outcome_token_balance.balance = 20
+        outcome_token_balance.save()
+
+        transfer_event = {
+            'name': 'Transfer',
+            'address': outcome_token_balance.outcome_token.address,
+            'params': [
+                {
+                    'name': 'from',
+                    'value': outcome_token_balance.owner
+                },
+                {
+                    'name': 'to',
+                    'value': event.address
+                },
+                {
+                    'name': 'value',
+                    'value': outcome_token_balance.balance,
+                }
+            ]
+        }
+
+        s = OutcomeTokenTransferSerializer(data=transfer_event)
+        self.assertTrue(s.is_valid(), s.errors)
+        instance = s.save()
+
+        self.assertEqual(OutcomeTokenBalance.objects.get(owner=outcome_token_balance.owner).balance, 0)
+        self.assertIsNotNone(instance)
+        self.assertEqual(instance.owner, event.address)
+        self.assertEqual(instance.balance, 20)

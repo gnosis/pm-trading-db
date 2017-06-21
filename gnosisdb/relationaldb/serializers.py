@@ -382,6 +382,42 @@ class OutcomeAssignmentEventSerializer(ContractNotTimestampted, serializers.Mode
             raise serializers.ValidationError('Event %s does not exist'.format(validated_data.get('address')))
 
 
+class OutcomeTokenTransferSerializer(ContractNotTimestampted, serializers.ModelSerializer):
+
+    class Meta:
+        model = models.OutcomeTokenBalance
+        fields = ('from_address', 'to', 'value', 'address',)
+
+    def __init__(self, *args, **kwargs):
+        super(OutcomeTokenTransferSerializer, self).__init__(*args, **kwargs)
+        self.initial_data['from_address'] = self.initial_data.pop('from')
+
+    value = serializers.IntegerField(min_value=0)
+    address = serializers.CharField(max_length=40, source="outcome_token")
+    from_address = serializers.CharField(max_length=40)
+    to = serializers.CharField(max_length=40)
+
+    def create(self, validated_data):
+        # Substract balance from Outcome Token Balance
+        from_balance = models.OutcomeTokenBalance.objects.get(owner=validated_data['from_address'],
+                                                              outcome_token__address=validated_data['outcome_token'])
+        from_balance.balance -= validated_data['value']
+        from_balance.save()
+
+        # Add balance to receiver
+        to_balance = None
+        try:
+            to_balance = models.OutcomeTokenBalance.objects.get(owner=validated_data['to'],
+                                                                outcome_token__address=validated_data['outcome_token'])
+        except models.OutcomeTokenBalance.DoesNotExist:
+            to_balance = models.OutcomeTokenBalance.objects.create(owner=validated_data['to'],
+                                                                   outcome_token=from_balance.outcome_token)
+        to_balance.balance += validated_data['value']
+        to_balance.save()
+
+        return to_balance
+
+
 class WinningsRedemptionSerializer(ContractNotTimestampted, serializers.ModelSerializer):
 
     class Meta:
