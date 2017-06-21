@@ -94,8 +94,8 @@ class EventListener(Singleton):
                             # save decoded event with event receiver
                             for log_json in decoded:
                                 try:
-                                    # logger.info('LOG JSON: {}'.format(dumps(log_json)))
-                                    # logger.info('BLOCK JSON: {}'.format(dumps(block_info)))
+                                    logger.info('LOG JSON: {}'.format(dumps(log_json)))
+                                    logger.info('BLOCK JSON: {}'.format(dumps(block_info)))
 
                                     # load event receiver and save
                                     event_receiver = import_string(contract['EVENT_DATA_RECEIVER'])
