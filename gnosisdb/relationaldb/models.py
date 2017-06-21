@@ -1,8 +1,9 @@
 from __future__ import unicode_literals
 
 from django.db import models
-from django.core.validators import validate_comma_separated_integer_list
+from .validators import validate_numeric_dictionary
 from django.contrib.postgres.fields import ArrayField
+import json
 
 
 class BlockTimeStamped(models.Model):
@@ -121,11 +122,24 @@ class Market(ContractCreatedByFactory):
     market_maker = models.CharField(max_length=40)
     fee = models.PositiveIntegerField()
     funding = models.BigIntegerField(null=True)
-    net_outcome_tokens_sold = models.TextField(validators=[validate_comma_separated_integer_list], null=True)
+    net_outcome_tokens_sold = models.TextField(validators=[validate_numeric_dictionary], null=True)
     withdrawn_fees = models.BigIntegerField(default=0)
     stage = models.PositiveIntegerField(choices=stages, default=0)
     revenue = models.BigIntegerField()
     collected_fees = models.BigIntegerField()
+
+    def net_sold_tokens_copy_with_delta(self, index, delta):
+        if self.net_outcome_tokens_sold is None:
+            dictionary = {}
+        else:
+            dictionary = json.loads(self.net_outcome_tokens_sold)
+
+        if index not in dictionary:
+            dictionary[index] = 0
+
+        dictionary[index] += delta
+
+        return json.dumps(dictionary)
 
 
 class Order(BlockTimeStamped):
@@ -133,7 +147,7 @@ class Order(BlockTimeStamped):
     sender = models.CharField(max_length=40)
     outcome_token_index = models.PositiveIntegerField()
     outcome_token_count = models.BigIntegerField()
-    net_outcome_tokens_sold = models.TextField(validators=[validate_comma_separated_integer_list], null=True)
+    net_outcome_tokens_sold = models.TextField(validators=[validate_numeric_dictionary], null=True)
 
 
 class BuyOrder(Order):
