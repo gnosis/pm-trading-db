@@ -340,20 +340,19 @@ class OutcomeTokenIssuanceSerializer(ContractNotTimestampted, serializers.ModelS
         outcome_token = None
         outcome_token_balance = None
         try:
-            outcome_token_balance = models.OutcomeTokenBalance.objects.get(owner=validated_data.get('owner'))
-            outcome_token_balance.balance += validated_data.get('amount')
-            outcome_token_balance.outcome_token.total_supply += validated_data.get('amount')
+            outcome_token_balance = models.OutcomeTokenBalance.objects.get(owner=validated_data['owner'])
+            outcome_token_balance.balance += validated_data['amount']
+            outcome_token_balance.outcome_token.total_supply += validated_data['amount']
             outcome_token_balance.save()
             return outcome_token_balance.outcome_token
         except models.OutcomeTokenBalance.DoesNotExist:
-            outcome_token = models.OutcomeToken.objects.get(address=validated_data.get('outcome_token'))
-            outcome_token.total_supply += validated_data.get('amount')
-            outcome_token.address = validated_data.get('outcome_token')
+            outcome_token = models.OutcomeToken.objects.get(address=validated_data['outcome_token'])
+            outcome_token.total_supply += validated_data['amount']
             outcome_token.save()
 
             outcome_token_balance = models.OutcomeTokenBalance()
-            outcome_token_balance.balance = validated_data.get('amount')
-            outcome_token_balance.owner = validated_data.get('owner')
+            outcome_token_balance.balance = validated_data['amount']
+            outcome_token_balance.owner = validated_data['owner']
             outcome_token_balance.outcome_token = outcome_token
             outcome_token_balance.save()
             return outcome_token
