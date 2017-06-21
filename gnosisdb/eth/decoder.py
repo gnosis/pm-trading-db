@@ -74,13 +74,13 @@ class Decoder(Singleton):
 
                     if u'[]' in param[u'type']:
                         if u'int' in param[u'type']:
-                            decoded_p[u'value'] = list([long(account, 16) for account in decoded_p[u'value']])
+                            decoded_p[u'value'] = list([int(remove_0x_head(account), 16) for account in decoded_p[u'value']])
                         elif u'address' in param[u'type']:
                             decoded_p[u'value'] = list([remove_0x_head(account) for account in decoded_p[u'value']])
                         else:
                             decoded_p[u'value'] = list(decoded_p[u'value'])
                     elif u'int' in param[u'type']:
-                        decoded_p[u'value'] = long(decoded_p[u'value'])
+                        decoded_p[u'value'] = int(remove_0x_head(decoded_p[u'value']), 16)
                     elif u'address' == param[u'type']:
                         address = remove_0x_head(decoded_p[u'value'])
                         # logger.info('address, length {}'.format(len(address)))
