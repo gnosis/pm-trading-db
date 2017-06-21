@@ -112,8 +112,8 @@ REST_FRAMEWORK = {
 
 # Celery
 INSTALLED_APPS += ('kombu.transport.django',)
-ETHEREUM_NODE_HOST='192.168.0.103'
-# ETHEREUM_NODE_HOST='172.17.0.1'
+# ETHEREUM_NODE_HOST='192.168.0.103'
+ETHEREUM_NODE_HOST='172.17.0.1'
 ETHEREUM_NODE_PORT = 8545
 ETHEREUM_NODE_SSL = 0
 
@@ -164,7 +164,7 @@ IPFS_PORT = 5001
 # GnosisDB Contract Addresses
 GNOSISDB_CONTRACTS = [
     {
-        'ADDRESSES': ['0xc89ce4735882c9f0f0fe26686c53074e09b0d550'],
+        'ADDRESSES': ['254dffcd3277c0b1660f6d42efbb754edababc2b'],
         'ADDRESSES_GETTER': '',
         'EVENT_ABI': AbiLoader().centralized_oracle_factory(),
         'EVENT_DATA_RECEIVER': 'eth.event_receiver.CentralizedOracleFactoryReceiver',
@@ -172,7 +172,7 @@ GNOSISDB_CONTRACTS = [
         'PUBLISH': True,
     },
     {
-        'ADDRESSES': ['0xd833215cbcc3f914bd1c9ece3ee7bf8b14f841bb'],
+        'ADDRESSES': ['c89ce4735882c9f0f0fe26686c53074e09b0d550'],
         'ADDRESSES_GETTER': '',
         'EVENT_ABI': AbiLoader().ultimate_oracle_factory(),
         'EVENT_DATA_RECEIVER': 'eth.event_receiver.UltimateOracleFactoryReceiver',
@@ -180,7 +180,7 @@ GNOSISDB_CONTRACTS = [
         'PUBLISH': True,
     },
     {
-        'ADDRESSES': ['0xcfeb869f69431e42cdb54a4f4f105c19c080a601'],
+        'ADDRESSES': ['5b1869d9a4c187f2eaa108f3062412ecf0526b24'],
         'ADDRESSES_GETTER': '',
         'EVENT_ABI': AbiLoader().event_factory(),
         'EVENT_DATA_RECEIVER': 'eth.event_receiver.EventFactoryReceiver',
@@ -188,7 +188,7 @@ GNOSISDB_CONTRACTS = [
         'PUBLISH': True,
     },
     {
-        'ADDRESSES': ['0xe982e462b094850f12af94d21d470e21be9d0e9c'],
+        'ADDRESSES': ['9561c133dd8580860b6b7e504bc5aa500f0f06a7'],
         'ADDRESSES_GETTER': '',
         'EVENT_ABI': AbiLoader().standard_market_factory(),
         'EVENT_DATA_RECEIVER': 'eth.event_receiver.MarketFactoryReceiver',
@@ -200,7 +200,7 @@ GNOSISDB_CONTRACTS = [
         'ADDRESSES': [],
         'ADDRESSES_GETTER': 'eth.address_getters.MarketAddressGetter',
         'EVENT_ABI': AbiLoader().standard_market(),
-        'EVENT_DATA_RECEIVER': 'eth.event_receiver.MarketOrderReceiver',
+        'EVENT_DATA_RECEIVER': 'eth.event_receiver.MarketInstanceReceiver',
         'NAME': 'Standard Markets Buy/Sell/Short Receiver'
     },
 ]
