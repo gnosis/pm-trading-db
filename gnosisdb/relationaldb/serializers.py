@@ -340,10 +340,14 @@ class OutcomeTokenIssuanceSerializer(ContractNotTimestampted, serializers.ModelS
         outcome_token = None
         outcome_token_balance = None
         try:
-            outcome_token_balance = models.OutcomeTokenBalance.objects.get(owner=validated_data['owner'])
+            outcome_token_balance = models.OutcomeTokenBalance.objects.get(owner=validated_data['owner'],
+                                                                           outcome_token__address=validated_data['outcome_token'])
             outcome_token_balance.balance += validated_data['amount']
             outcome_token_balance.outcome_token.total_supply += validated_data['amount']
+            outcome_token_balance.outcome_token.save()
             outcome_token_balance.save()
+            logger.info('Increased issuance : {}'.format(outcome_token_balance.outcome_token.total_supply))
+            logger.info('Outcome token Owner : {}'.format(outcome_token_balance.owner))
             return outcome_token_balance.outcome_token
         except models.OutcomeTokenBalance.DoesNotExist:
             outcome_token = models.OutcomeToken.objects.get(address=validated_data['outcome_token'])
@@ -355,6 +359,10 @@ class OutcomeTokenIssuanceSerializer(ContractNotTimestampted, serializers.ModelS
             outcome_token_balance.owner = validated_data['owner']
             outcome_token_balance.outcome_token = outcome_token
             outcome_token_balance.save()
+
+            logger.info('Created issuance issuance : {}'.format(outcome_token_balance.outcome_token.total_supply))
+            logger.info('Outcome token Owner : {}'.format(outcome_token_balance.owner))
+
             return outcome_token
 
 
@@ -626,25 +634,26 @@ class OutcomeTokenPurchaseSerializer(ContractEventTimestamped, serializers.Model
     def create(self, validated_data):
         try:
             market = models.Market.objects.get(address=validated_data.get('address'))
+            token_index = validated_data.get('outcomeTokenIndex')
+            token_count = validated_data.get('outcomeTokenCount')
             # Create Order
             order = models.BuyOrder()
             order.creation_date_time = validated_data['creation_date_time']
             order.creation_block = validated_data['creation_block']
             order.market = market
             order.sender = validated_data.get('buyer')
-            order.outcome_token_index = validated_data.get('outcomeTokenIndex')
-            order.outcome_token_count = validated_data.get('outcomeTokenCount')
+            order.outcome_token_index = token_index
+            order.outcome_token_count = token_count
             order.cost = validated_data.get('cost')
             # Update token sale statistics
             logger.info('Market Net Sold: {}'.format(market.net_outcome_tokens_sold))
-            net_sold_stats = market.net_outcome_tokens_sold
-            if net_sold_stats is None:
-                net_sold_stats
-            # market.net_outcome_tokens_sold[validated_data.get('outcome_token_index')] += validated_data.get('outcome_token_count')
-            # order.net_outcome_tokens_sold = market.net_outcome_tokens_sold
+            # Update token sale statistics
+            new_net_tokens_sold_stats = market.net_sold_tokens_copy_with_delta(index=token_index, delta=token_count)
+            market.net_outcome_tokens_sold = new_net_tokens_sold_stats
+            order.net_outcome_tokens_sold = new_net_tokens_sold_stats
             # Save order successfully, then save market changes
             order.save()
-            # market.save()
+            market.save()
             return order
         except models.Market.DoesNotExist:
             raise serializers.ValidationError('Market with address %s does not exist.' % validated_data.get('address'))
@@ -676,13 +685,10 @@ class OutcomeTokenSaleSerializer(ContractEventTimestamped, serializers.ModelSeri
             order.outcome_token_index = token_index
             order.outcome_token_count = token_count
             order.profit = validated_data.get('profit')
-            # Update token sale statistics
-            new_net_tokens_sold_stats = market.net_sold_tokens_copy_with_delta(index=token_index, delta = token_count)
-            market.net_outcome_tokens_sold = new_net_tokens_sold_stats
-            order.net_outcome_tokens_sold = new_net_tokens_sold_stats
+            # TODO Update target token net amounts
             # Save order successfully, then save market changes
             order.save()
-            market.save()
+            # market.save()
             return order
         except models.Market.DoesNotExist:
             raise serializers.ValidationError('Market with address %s does not exist.' % validated_data.get('address'))
@@ -712,12 +718,8 @@ class OutcomeTokenShortSaleOrderSerializer(ContractEventTimestamped, serializers
             order.outcome_token_index = validated_data.get('outcomeTokenIndex')
             order.outcome_token_count = validated_data.get('outcomeTokenCount')
             order.cost = validated_data.get('cost')
-            # Update token sale statistics
-            # logger.info('Market Net Sold: {}'.format(market.net_outcome_tokens_sold))
             # TODO Update target token net amounts
-            # market.net_outcome_tokens_sold[validated_data.get('outcome_token_index')] += validated_data.get('outcome_token_count')
-            # order.net_outcome_tokens_sold = market.net_outcome_tokens_sold
-            # Save order successfully, then save market changes
+            # Update token sale statistics
             order.save()
             # market.save()
             return order
