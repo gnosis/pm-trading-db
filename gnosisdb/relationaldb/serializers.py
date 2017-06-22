@@ -231,27 +231,28 @@ class ScalarEventSerializer(EventSerializer, serializers.ModelSerializer):
 class CategoricalEventSerializer(EventSerializer, serializers.ModelSerializer):
     class Meta:
         model = models.CategoricalEvent
-        fields = EventSerializer.Meta.fields + ('categoricalEvent',)
+        fields = EventSerializer.Meta.fields + ('categoricalEvent', 'outcomeCount',)
 
     categoricalEvent = serializers.CharField(source='address', max_length=40)
+    outcomeCount = serializers.IntegerField()
 
     def validate(self, attrs):
         attrs = super(CategoricalEventSerializer, self).validate(attrs=attrs)
         centralized_oracle = None
 
         try:
-            centralized_oracle = models.CentralizedOracle.objects.get(id=attrs['oracle'])
+            centralized_oracle = models.CentralizedOracle.objects.get(address=attrs['oracle'].address)
         except models.CentralizedOracle.DoesNotExist:
             pass
 
         try:
-            ultimate_oracle = models.UltimateOracle.objects.get(id=attrs['oracle'])
+            ultimate_oracle = models.UltimateOracle.objects.get(address=attrs['oracle'].address)
             while True:
                 try:
-                    forwarded_ultimate_oracle = models.UltimateOracle.objects.get(id=ultimate_oracle.forwarded_oracle)
+                    forwarded_ultimate_oracle = models.UltimateOracle.objects.get(address=ultimate_oracle.forwarded_oracle.address)
                     ultimate_oracle = forwarded_ultimate_oracle
                 except models.UltimateOracle.DoesNotExist:
-                    centralized_oracle = models.CentralizedOracle.objects.get(id=ultimate_oracle.forwarded_oracle)
+                    centralized_oracle = models.CentralizedOracle.objects.get(address=ultimate_oracle.forwarded_oracle.address)
                     break
         except models.UltimateOracle.DoesNotExist:
             pass
@@ -260,7 +261,7 @@ class CategoricalEventSerializer(EventSerializer, serializers.ModelSerializer):
             raise serializers.ValidationError("Oracle field does not point to an existing oracle.")
 
         try:
-            description = models.CategoricalEventDescription.objects.get(id=centralized_oracle.event_description)
+            description = models.CategoricalEventDescription.objects.get(ipfs_hash=centralized_oracle.event_description.ipfs_hash)
             if len(description.outcomes) != attrs['outcomeCount']:
                 raise serializers.ValidationError("Field outcomeCount does not match number of outcomes specified "
                                                   "in the event description.")
@@ -268,6 +269,10 @@ class CategoricalEventSerializer(EventSerializer, serializers.ModelSerializer):
             pass
 
         return attrs
+
+    def create(self, validated_data):
+        del validated_data['outcomeCount']
+        return super(CategoricalEventSerializer, self).create(validated_data)
 
 
 class MarketSerializer(ContractCreatedByFactorySerializer, serializers.ModelSerializer):
