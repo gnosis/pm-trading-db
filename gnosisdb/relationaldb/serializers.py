@@ -235,39 +235,39 @@ class CategoricalEventSerializer(EventSerializer, serializers.ModelSerializer):
 
     categoricalEvent = serializers.CharField(source='address', max_length=40)
 
-    def validate(self, attrs):
-        attrs = super(CategoricalEventSerializer, self).validate(attrs=attrs)
-        centralized_oracle = None
-
-        try:
-            centralized_oracle = models.CentralizedOracle.objects.get(id=attrs['oracle'])
-        except models.CentralizedOracle.DoesNotExist:
-            pass
-
-        try:
-            ultimate_oracle = models.UltimateOracle.objects.get(id=attrs['oracle'])
-            while True:
-                try:
-                    forwarded_ultimate_oracle = models.UltimateOracle.objects.get(id=ultimate_oracle.forwarded_oracle)
-                    ultimate_oracle = forwarded_ultimate_oracle
-                except models.UltimateOracle.DoesNotExist:
-                    centralized_oracle = models.CentralizedOracle.objects.get(id=ultimate_oracle.forwarded_oracle)
-                    break
-        except models.UltimateOracle.DoesNotExist:
-            pass
-
-        if centralized_oracle is None:
-            raise serializers.ValidationError("Oracle field does not point to an existing oracle.")
-
-        try:
-            description = models.CategoricalEventDescription.objects.get(id=centralized_oracle.event_description)
-            if len(description.outcomes) != attrs['outcomeCount']:
-                raise serializers.ValidationError("Field outcomeCount does not match number of outcomes specified "
-                                                  "in the event description.")
-        except models.CategoricalEventDescription.DoesNotExist:
-            pass
-
-        return attrs
+    # def validate(self, attrs):
+    #     attrs = super(CategoricalEventSerializer, self).validate(attrs=attrs)
+    #     centralized_oracle = None
+    #
+    #     try:
+    #         centralized_oracle = models.CentralizedOracle.objects.get(address=attrs['oracle'])
+    #     except models.CentralizedOracle.DoesNotExist:
+    #         pass
+    #
+    #     try:
+    #         ultimate_oracle = models.UltimateOracle.objects.get(address=attrs['oracle'])
+    #         while True:
+    #             try:
+    #                 forwarded_ultimate_oracle = models.UltimateOracle.objects.get(address=ultimate_oracle.forwarded_oracle)
+    #                 ultimate_oracle = forwarded_ultimate_oracle
+    #             except models.UltimateOracle.DoesNotExist:
+    #                 centralized_oracle = models.CentralizedOracle.objects.get(address=ultimate_oracle.forwarded_oracle)
+    #                 break
+    #     except models.UltimateOracle.DoesNotExist:
+    #         pass
+    #
+    #     if centralized_oracle is None:
+    #         raise serializers.ValidationError("Oracle field does not point to an existing oracle.")
+    #
+    #     try:
+    #         description = models.CategoricalEventDescription.objects.get(id=centralized_oracle.event_description)
+    #         if len(description.outcomes) != attrs['outcomeCount']:
+    #             raise serializers.ValidationError("Field outcomeCount does not match number of outcomes specified "
+    #                                               "in the event description.")
+    #     except models.CategoricalEventDescription.DoesNotExist:
+    #         pass
+    #
+    #     return attrs
 
 
 class MarketSerializer(ContractCreatedByFactorySerializer, serializers.ModelSerializer):
@@ -743,7 +743,6 @@ class OutcomeTokenSaleSerializer(ContractEventTimestamped, serializers.ModelSeri
             order.outcome_token_count = token_count
             order.profit = validated_data.get('profit')
             order.net_outcome_tokens_sold = market.net_outcome_tokens_sold
-            # TODO Update target token net amounts
             # Save order successfully, then save market changes
             order.save()
             market.save()
@@ -776,11 +775,7 @@ class OutcomeTokenShortSaleOrderSerializer(ContractEventTimestamped, serializers
             order.outcome_token_index = validated_data.get('outcomeTokenIndex')
             order.outcome_token_count = validated_data.get('outcomeTokenCount')
             order.cost = validated_data.get('cost')
-            # TODO Update target token net amounts
-            # for outcome in market.net_outcome_tokens_sold:
-            #    if outcome != order.outcome_token_index:
-            #        pass
-
+            order.net_outcome_tokens_sold = market.net_outcome_tokens_sold
             # Update token sale statistics
             order.save()
             # market.save()
