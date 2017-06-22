@@ -520,23 +520,29 @@ class TestEventReceiver(TestCase):
 
         UltimateOracleInstanceReceiver().save(assignment_event)
         ultimate_oracle = UltimateOracle.objects.get(address=oracle_factory.address)
-        self.assertTrue(ultimate_oracle.forwarded_oracle.is_outcome_set)
-        self.assertEqual(ultimate_oracle.forwarded_oracle.outcome, 1)
+        self.assertTrue(ultimate_oracle.is_outcome_set)
+        self.assertEqual(ultimate_oracle.forwarded_outcome, 1)
 
     def test_ultimate_oracle_instance_outcome_challenge_receiver(self):
-        oracle_factory = UltimateOracleFactory()
+        oracle = UltimateOracleFactory()
         assignment_event = {
             'name': 'OutcomeChallenge',
-            'address': oracle_factory.address,
-            'params': [{
-                'name': 'outcome',
-                'value': 1,
-            }]
+            'address': oracle.address,
+            'params': [
+                {
+                    'name': 'sender',
+                    'value': oracle.creator
+                },
+                {
+                    'name': 'outcome',
+                    'value': 1
+                }
+            ]
         }
 
         UltimateOracleInstanceReceiver().save(assignment_event)
-        ultimate_oracle = UltimateOracle.objects.get(address=oracle_factory.address)
-        self.assertEqual(ultimate_oracle.total_amount, oracle_factory.challenge_amount)
+        ultimate_oracle = UltimateOracle.objects.get(address=oracle.address)
+        self.assertEqual(ultimate_oracle.total_amount, oracle.challenge_amount)
         self.assertEqual(ultimate_oracle.front_runner, 1)
 
     def test_ultimate_oracle_instance_outcome_vote_receiver(self):
