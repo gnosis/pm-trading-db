@@ -235,6 +235,40 @@ class CategoricalEventSerializer(EventSerializer, serializers.ModelSerializer):
 
     categoricalEvent = serializers.CharField(source='address', max_length=40)
 
+    def validate(self, attrs):
+        attrs = super(CategoricalEventSerializer, self).validate(attrs=attrs)
+        centralized_oracle = None
+
+        try:
+            centralized_oracle = models.CentralizedOracle.objects.get(id=attrs['oracle'])
+        except models.CentralizedOracle.DoesNotExist:
+            pass
+
+        try:
+            ultimate_oracle = models.UltimateOracle.objects.get(id=attrs['oracle'])
+            while True:
+                try:
+                    forwarded_ultimate_oracle = models.UltimateOracle.objects.get(id=ultimate_oracle.forwarded_oracle)
+                    ultimate_oracle = forwarded_ultimate_oracle
+                except models.UltimateOracle.DoesNotExist:
+                    centralized_oracle = models.CentralizedOracle.objects.get(id=ultimate_oracle.forwarded_oracle)
+                    break
+        except models.UltimateOracle.DoesNotExist:
+            pass
+
+        if centralized_oracle is None:
+            raise serializers.ValidationError("Oracle field does not point to an existing oracle.")
+
+        try:
+            description = models.CategoricalEventDescription.objects.get(id=centralized_oracle.event_description)
+            if len(description.outcomes) != attrs['outcomeCount']:
+                raise serializers.ValidationError("Field outcomeCount does not match number of outcomes specified "
+                                                  "in the event description.")
+        except models.CategoricalEventDescription.DoesNotExist:
+            pass
+
+        return attrs
+
 
 class MarketSerializer(ContractCreatedByFactorySerializer, serializers.ModelSerializer):
 
