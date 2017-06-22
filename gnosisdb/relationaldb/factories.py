@@ -143,7 +143,7 @@ class MarketFactory(ContractCreatedByFactory):
     market_maker = factory_boy.Sequence(lambda _: faker.name())
     fee = factory_boy.Sequence(lambda n: n)
     funding = factory_boy.Sequence(lambda n: n)
-    net_outcome_tokens_sold = factory_boy.Sequence(lambda n: n)
+    net_outcome_tokens_sold = [0, 0]
     withdrawn_fees = 0
     # outcome_probabilities = factory.Sequence(lambda n: n)
     stage = 0

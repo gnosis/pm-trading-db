@@ -641,4 +641,4 @@ class TestEventReceiver(TestCase):
         MarketInstanceReceiver().save(withdraw_event)
         market = Market.objects.get(address=market_factory.address)
         self.assertEquals(market.stage, 3)
-        self.assertEquals(market.withdrawn_fees, 10)
+        self.assertEquals(market.withdrawn_fees, market_factory.withdrawn_fees+10)
