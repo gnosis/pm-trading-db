@@ -4,7 +4,8 @@ from django.test import TestCase
 from json import loads
 from eth.event_receiver import (
     CentralizedOracleFactoryReceiver, UltimateOracleFactoryReceiver, EventFactoryReceiver, MarketFactoryReceiver,
-    CentralizedOracleInstanceReceiver, EventInstanceReceiver, UltimateOracleInstanceReceiver, OutcomeTokenInstanceReceiver
+    CentralizedOracleInstanceReceiver, EventInstanceReceiver, UltimateOracleInstanceReceiver, OutcomeTokenInstanceReceiver,
+    MarketInstanceReceiver
 )
 
 from relationaldb.models import (
@@ -594,4 +595,50 @@ class TestEventReceiver(TestCase):
         outcome_vote_balance = OutcomeVoteBalance.objects.get(address= balance_factory.address)
         self.assertEquals(outcome_vote_balance.balance, balance_factory.balance-1)
 
+    def test_market_funding_receiver(self):
+        market_factory = MarketFactory()
+        funding_event = {
+            'name': 'MarketFunding',
+            'address': market_factory.address,
+            'params': [
+                {
+                    'name': 'funding',
+                    'value': 100
+                }
+            ]
+        }
 
+        MarketInstanceReceiver().save(funding_event)
+        market = Market.objects.get(address=market_factory.address)
+        self.assertEquals(market.stage, 1)
+        self.assertEquals(market.funding, 100)
+
+    def test_market_closing_receiver(self):
+        market_factory = MarketFactory()
+        closing_event = {
+            'name': 'MarketClosing',
+            'address': market_factory.address,
+            'params': []
+        }
+
+        MarketInstanceReceiver().save(closing_event)
+        market = Market.objects.get(address=market_factory.address)
+        self.assertEquals(market.stage, 2)
+
+    def test_market_fee_withdrawal_receiver(self):
+        market_factory = MarketFactory()
+        withdraw_event = {
+            'name': 'FeeWithdrawal',
+            'address': market_factory.address,
+            'params': [
+                {
+                    'name': 'fees',
+                    'value': 10
+                }
+            ]
+        }
+
+        MarketInstanceReceiver().save(withdraw_event)
+        market = Market.objects.get(address=market_factory.address)
+        self.assertEquals(market.stage, 3)
+        self.assertEquals(market.withdrawn_fees, 10)

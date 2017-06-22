@@ -95,7 +95,6 @@ class ContractNotTimestampted(ContractSerializer):
         self.initial_data = new_data
 
 
-
 class IpfsHashField(CharField):
 
     def __init__(self, **kwargs):
@@ -730,5 +729,62 @@ class OutcomeTokenShortSaleOrderSerializer(ContractEventTimestamped, serializers
             order.save()
             # market.save()
             return order
+        except models.Market.DoesNotExist:
+            raise serializers.ValidationError('Market with address {} does not exist.' % validated_data.get('address'))
+
+
+class MarketFundingSerializer(ContractNotTimestampted, serializers.ModelSerializer):
+
+    class Meta:
+        model = models.Market
+        fields = ('address', 'funding',)
+
+    address = serializers.CharField(max_length=40)
+    funding = serializers.IntegerField()
+
+    def create(self, validated_data):
+        try:
+            market = models.Market.objects.get(address=validated_data.get('address'))
+            market.funding = validated_data.get('funding')
+            market.stage = market.stages[1][0] # MarketFunded
+            market.save()
+            return market
+        except models.Market.DoesNotExist:
+            raise serializers.ValidationError('Market with address {} does not exist.' % validated_data.get('address'))
+
+
+class MarketClosingSerializer(ContractNotTimestampted, serializers.ModelSerializer):
+
+    class Meta:
+        model = models.Market
+        fields = ('address',)
+
+    address = serializers.CharField(max_length=40)
+
+    def create(self, validated_data):
+        try:
+            market = models.Market.objects.get(address=validated_data.get('address'))
+            market.stage = market.stages[2][0] # MarketClosed
+            market.save()
+            return market
+        except models.Market.DoesNotExist:
+            raise serializers.ValidationError('Market with address {} does not exist.' % validated_data.get('address'))
+
+
+class FeeWithdrawalSerializer(ContractNotTimestampted, serializers.ModelSerializer):
+
+    class Meta:
+        model = models.Market
+        fields = ('address', 'fees',)
+
+    address = serializers.CharField(max_length=40)
+    fees = serializers.IntegerField()
+
+    def create(self, validated_data):
+        try:
+            market = models.Market.objects.get(address=validated_data.get('address'))
+            market.withdrawn_fees = validated_data.get('fees')
+            market.save()
+            return market
         except models.Market.DoesNotExist:
             raise serializers.ValidationError('Market with address {} does not exist.' % validated_data.get('address'))

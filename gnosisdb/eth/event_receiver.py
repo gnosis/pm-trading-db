@@ -7,7 +7,8 @@ from relationaldb.serializers import (
     WinningsRedemptionSerializer, OwnerReplacementSerializer,
     OutcomeAssignmentOracleSerializer, ForwardedOracleOutcomeAssignmentSerializer,
     OutcomeChallengeSerializer, OutcomeVoteSerializer, WithdrawalSerializer, OutcomeTokenTransferSerializer,
-    OutcomeTokenPurchaseSerializer, OutcomeTokenSaleSerializer, OutcomeTokenShortSaleOrderSerializer
+    OutcomeTokenPurchaseSerializer, OutcomeTokenSaleSerializer, OutcomeTokenShortSaleOrderSerializer,
+    MarketFundingSerializer, MarketClosingSerializer, FeeWithdrawalSerializer
 )
 
 from celery.utils.log import get_task_logger
@@ -84,9 +85,12 @@ class MarketInstanceReceiver(AbstractEventReceiver):
         'OutcomeTokenPurchase': OutcomeTokenPurchaseSerializer,
         'OutcomeTokenSale': OutcomeTokenSaleSerializer,
         'OutcomeTokenShortSale': OutcomeTokenShortSaleOrderSerializer,
+        'MarketFunding': MarketFundingSerializer,
+        'MarketClosing': MarketClosingSerializer,
+        'FeeWithdrawal': FeeWithdrawalSerializer
     }
 
-    def save(self, decoded_event, block_info):
+    def save(self, decoded_event, block_info=None):
         if block_info:
             serializer = self.events.get(decoded_event.get('name'))(data=decoded_event, block=block_info)
         else:
@@ -98,7 +102,6 @@ class MarketInstanceReceiver(AbstractEventReceiver):
         else:
             logger.warning('INVALID Market Instance: {}'.format(dumps(decoded_event)))
             logger.warning(serializer.errors)
-
 
 
 # contract instances
