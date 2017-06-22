@@ -122,24 +122,27 @@ class Market(ContractCreatedByFactory):
     market_maker = models.CharField(max_length=40)
     fee = models.PositiveIntegerField()
     funding = models.BigIntegerField(null=True)
-    net_outcome_tokens_sold = models.TextField(validators=[validate_numeric_dictionary], null=True)
+    # net_outcome_tokens_sold = models.TextField(validators=[validate_numeric_dictionary], null=True)
+    net_outcome_tokens_sold = ArrayField(models.BigIntegerField(), null=False)
     withdrawn_fees = models.BigIntegerField(default=0)
     stage = models.PositiveIntegerField(choices=stages, default=0)
     revenue = models.BigIntegerField()
     collected_fees = models.BigIntegerField()
 
-    def net_sold_tokens_copy_with_delta(self, index, delta):
-        if self.net_outcome_tokens_sold is None:
-            dictionary = {}
-        else:
-            dictionary = json.loads(self.net_outcome_tokens_sold)
-
-        if index not in dictionary:
-            dictionary[index] = 0
-
-        dictionary[index] += delta
-
-        return json.dumps(dictionary)
+    # def net_sold_tokens_copy_with_delta(self, index, delta):
+    #     # check whether the event is 'categorical' or 'scalar'
+    #     #
+    #     if self.net_outcome_tokens_sold is None:
+    #         dictionary = {}
+    #     else:
+    #         dictionary = json.loads(self.net_outcome_tokens_sold)
+    #
+    #     if index not in dictionary:
+    #         dictionary[index] = 0
+    #
+    #     dictionary[index] += delta
+    #
+    #     return json.dumps(dictionary)
 
 
 class Order(BlockTimeStamped):
@@ -147,7 +150,7 @@ class Order(BlockTimeStamped):
     sender = models.CharField(max_length=40)
     outcome_token_index = models.PositiveIntegerField()
     outcome_token_count = models.BigIntegerField()
-    net_outcome_tokens_sold = models.TextField(validators=[validate_numeric_dictionary], null=True)
+    net_outcome_tokens_sold = ArrayField(models.BigIntegerField()) # models.TextField(validators=[validate_numeric_dictionary], null=True)
 
 
 class BuyOrder(Order):

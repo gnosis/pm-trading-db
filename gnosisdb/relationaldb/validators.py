@@ -1,6 +1,7 @@
 from django.core.exceptions import ValidationError
 from json import loads
 
+
 def validate_numeric_dictionary(value):
     if value is None or len(value) == 0:
         return
