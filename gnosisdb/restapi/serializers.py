@@ -104,18 +104,13 @@ class EventSerializer(serializers.ModelSerializer):
         fields = ('contract', 'collateral_token', 'oracle', 'is_winning_outcome_set', 'outcome')
 
 
-class IntegerCSVSerializer(serializers.BaseSerializer):
-    def to_representation(self, instance):
-        return map(int, instance.split(','))
-
-
 class MarketSerializer(serializers.ModelSerializer):
     contract = ContractSerializer(source='*', many=False, read_only=True)
     event = EventSerializer(many=False, read_only=True)
     market_maker = serializers.CharField()
     fee = serializers.IntegerField()
     funding = serializers.DecimalField(max_digits=80, decimal_places=0)
-    net_outcome_tokens_sold = IntegerCSVSerializer(many=False, read_only=True)
+    net_outcome_tokens_sold = serializers.ListField(read_only=True)
     stage = serializers.IntegerField()
 
     class Meta:
