@@ -1,11 +1,12 @@
 from unittest import TestCase
 from relationaldb.factories import (
     OracleFactory, CentralizedOracleFactory, UltimateOracleFactory, EventFactory,
-    MarketFactory, EventDescriptionFactory, OutcomeTokenFactory, OutcomeTokenBalanceFactory
+    MarketFactory, EventDescriptionFactory, OutcomeTokenFactory, OutcomeTokenBalanceFactory,
+    ScalarEventDescriptionFactory
 )
 from relationaldb.serializers import (
     OutcomeTokenIssuanceSerializer, ScalarEventSerializer, UltimateOracleSerializer, OutcomeTokenRevocationSerializer,
-    CategoricalEventSerializer, MarketSerializer, IPFSEventDescriptionDeserializer,
+    CategoricalEventSerializer, MarketSerializer, IPFSEventDescriptionDeserializer, CentralizedOracleSerializer,
     CentralizedOracleInstanceSerializer, OutcomeTokenInstanceSerializer, OutcomeTokenTransferSerializer
 )
 
@@ -19,35 +20,6 @@ class TestSerializers(TestCase):
 
     def setUp(self):
         self.ipfs = Ipfs()
-    """
-    def test_deserialize_centralized_oracle(self):
-        oracle = CentralizedOracleFactory()
-
-        block = {
-            'number': oracle.creation_block,
-            'timestamp': mktime(oracle.creation_date_time.timetuple())
-        }
-
-        oracle_event = {
-            'address': oracle.factory,
-            'params': [
-                {
-                    'name': 'creator',
-                    'value': oracle.creator
-                },
-                {
-                    'name': 'centralizedOracle',
-                    'value': oracle.address
-                },
-                {
-                    'name': 'ipfsHash',
-                    'value': oracle.event_description.ipfs_hash
-                }
-            ]
-        }
-
-        s = CentralizedOracleSerializer(data=oracle_event, block=block)
-        self.assertTrue(s.is_valid(), s.errors)
 
     def test_create_centralized_oracle(self):
         oracle = CentralizedOracleFactory()
@@ -96,6 +68,106 @@ class TestSerializers(TestCase):
         instance = s.save()
         self.assertIsNotNone(instance)
 
+    def test_event_description_different_outcomes(self):
+
+        oracle = CentralizedOracleFactory()
+
+        oracle.event_description.outcomes = ['Yes', 'No', 'Third']
+        oracle.event_description.save()
+
+        # Categorical Event with different outcomes
+
+        block = {
+            'number': oracle.creation_block,
+            'timestamp': mktime(oracle.creation_date_time.timetuple())
+        }
+
+        categorical_event = {
+            'address': oracle.factory,
+            'params': [
+                {
+                    'name': 'creator',
+                    'value': oracle.creator
+                },
+                {
+                    'name': 'collateralToken',
+                    'value': oracle.creator
+                },
+                {
+                    'name': 'oracle',
+                    'value': oracle.address
+                },
+                {
+                    'name': 'outcomeCount',
+                    'value': 2
+                },
+                {
+                    'name': 'categoricalEvent',
+                    'value': oracle.factory[1:-11] + 'CATEGORICAL',
+                }
+            ]
+        }
+
+        s = CategoricalEventSerializer(data=categorical_event, block=block)
+        self.assertFalse(s.is_valid())
+        categorical_event['params'][3]['value'] = 3
+        s2 = CategoricalEventSerializer(data=categorical_event, block=block)
+        self.assertTrue(s2.is_valid(), s.errors)
+        instance = s2.save()
+        self.assertIsNotNone(instance)
+
+    def test_create_scalar_with_categorical_description(self):
+
+        oracle = CentralizedOracleFactory()
+
+        # Categorical Event with different outcomes
+
+        block = {
+            'number': oracle.creation_block,
+            'timestamp': mktime(oracle.creation_date_time.timetuple())
+        }
+
+        scalar_event = {
+            'address': oracle.factory,
+            'params': [
+                {
+                    'name': 'creator',
+                    'value': oracle.creator
+                },
+                {
+                    'name': 'collateralToken',
+                    'value': oracle.creator
+                },
+                {
+                    'name': 'oracle',
+                    'value': oracle.address
+                },
+                {
+                    'name': 'upperBound',
+                    'value': 1
+                },
+                {
+                    'name': 'lowerBound',
+                    'value': 0
+                },
+                {
+                    'name': 'scalarEvent',
+                    'value': oracle.factory[1:-6] + 'SCALAR',
+                }
+            ]
+        }
+
+        s = ScalarEventSerializer(data=scalar_event, block=block)
+        self.assertFalse(s.is_valid())
+        scalar_event['params'][3]['value'] = 3
+        scalar_descripion = ScalarEventDescriptionFactory()
+        oracle.event_description = scalar_descripion
+        oracle.save()
+        s2 = ScalarEventSerializer(data=scalar_event, block=block)
+        self.assertTrue(s2.is_valid(), s.errors)
+        instance = s2.save()
+        self.assertIsNotNone(instance)
+
     def test_deserialize_ultimate_oracle(self):
         forwarded_oracle = CentralizedOracleFactory()
         ultimate_oracle = UltimateOracleFactory()
@@ -106,7 +178,7 @@ class TestSerializers(TestCase):
         }
 
         oracle_event = {
-            'address': ultimate_oracle.factory,
+            'address': ultimate_oracle.factory[0:-7] + 'GIACOMO',
             'params': [
                 {
                     'name': 'creator',
@@ -145,7 +217,7 @@ class TestSerializers(TestCase):
 
         s = UltimateOracleSerializer(data=oracle_event, block=block)
         self.assertTrue(s.is_valid(), s.errors)
-    """
+
     def test_create_ultimate_oracle(self):
         forwarded_oracle = CentralizedOracleFactory()
         ultimate_oracle = UltimateOracleFactory()
@@ -276,10 +348,6 @@ class TestSerializers(TestCase):
                 {
                     'name': 'oracle',
                     'value': oracle.address
-                },
-                {
-                    'name': 'outcomeCount',
-                    'value': 1
                 },
                 {
                     'name': 'upperBound',
