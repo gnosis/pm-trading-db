@@ -2,9 +2,8 @@ from abc import ABCMeta, abstractmethod
 from relationaldb.serializers import (
     CentralizedOracleSerializer, ScalarEventSerializer, CategoricalEventSerializer,
     UltimateOracleSerializer, MarketSerializer, OutcomeTokenInstanceSerializer,
-    CentralizedOracleInstanceSerializer, OutcomeTokenIssuanceSerializer,
     OutcomeTokenRevocationSerializer, OutcomeAssignmentEventSerializer,
-    WinningsRedemptionSerializer, OwnerReplacementSerializer,
+    WinningsRedemptionSerializer, OwnerReplacementSerializer, OutcomeTokenIssuanceSerializer,
     OutcomeAssignmentOracleSerializer, ForwardedOracleOutcomeAssignmentSerializer,
     OutcomeChallengeSerializer, OutcomeVoteSerializer, WithdrawalSerializer, OutcomeTokenTransferSerializer,
     OutcomeTokenPurchaseSerializer, OutcomeTokenSaleSerializer, OutcomeTokenShortSaleOrderSerializer,

@@ -227,6 +227,19 @@ class ScalarEventSerializer(EventSerializer, serializers.ModelSerializer):
     upperBound = serializers.IntegerField(source='upper_bound')
     scalarEvent = serializers.CharField(source='address', max_length=40)
 
+    def validate(self, attrs):
+        attrs = super(CategoricalEventSerializer, self).validate(attrs=attrs)
+        centralized_oracle = None
+        try:
+            centralized_oracle = models.CentralizedOracle.objects.get(address=attrs['oracle'].address)
+            description = models.ScalarEventDescription.objects.get(ipfs_hash=centralized_oracle.event_description.ipfs_hash)
+        except models.CentralizedOracle.DoesNotExist:
+            pass
+        except models.ScalarEventDescription.DoesNotExist:
+            raise serializers.ValidationError("Not existing ScalarEventDescription with oracle {}".format(attrs['oracle']))
+
+        return attrs
+
 
 class CategoricalEventSerializer(EventSerializer, serializers.ModelSerializer):
     class Meta:
@@ -300,7 +313,6 @@ class MarketSerializer(ContractCreatedByFactorySerializer, serializers.ModelSeri
             net_outcome_tokens_sold = [0, 0]
 
         validated_data.update({'net_outcome_tokens_sold': net_outcome_tokens_sold})
-        logger.info('-----------> Creating Market')
         market = models.Market.objects.create(**validated_data)
         return market
 
@@ -574,7 +586,6 @@ class ForwardedOracleOutcomeAssignmentSerializer(ContractNotTimestampted, serial
     def create(self, validated_data):
         ultimate_oracle = None
         try:
-            logger.info('++++++++++++++++++> ForwardedOracleOutcomeAssignmentSerializer {}'.format(validated_data))
             ultimate_oracle = models.UltimateOracle.objects.get(address=validated_data.get('address'))
             ultimate_oracle.outcome_set_at_timestamp = mktime(datetime.now().timetuple())
             ultimate_oracle.forwarded_outcome = validated_data.get('outcome')
@@ -706,11 +717,6 @@ class OutcomeTokenPurchaseSerializer(ContractEventTimestamped, serializers.Model
             order.outcome_token_index = token_index
             order.outcome_token_count = token_count
             order.cost = validated_data.get('cost')
-            # Update token sale statistics
-            logger.info('Market Net Sold: {}'.format(market.net_outcome_tokens_sold))
-            # Update token sale statistics
-            # market.net_sold_tokens_copy_with_delta(index=token_index, delta=token_count)
-            # market.net_outcome_tokens_sold = new_net_tokens_sold_stats
             order.net_outcome_tokens_sold = market.net_outcome_tokens_sold
             # Save order successfully, then save market changes
             order.save()
