@@ -27,7 +27,8 @@ INSTALLED_APPS = (
     'restapi',
     'eth',
     'settings_utils',
-    'compiled_contracts'
+    'compiled_contracts',
+    'rest_framework_swagger'
 )
 
 MIDDLEWARE_CLASSES = [

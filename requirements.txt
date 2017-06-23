@@ -20,3 +20,4 @@ web3[tester]==3.7.1
 djangorestframework-camel-case==0.2.0
 ipfsapi==0.4.1
 six==1.10.0
+django-rest-swagger==2.1.2

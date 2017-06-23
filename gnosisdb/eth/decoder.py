@@ -9,10 +9,20 @@ logger = get_task_logger(__name__)
 
 
 class Decoder(Singleton):
+    """
+    This module allows to decode ethereum logs (hexadecimal) into readable dictionaries, by using
+    Contract's ABIs
+    """
 
     methods = {}
 
     def add_abi(self, abi):
+        """
+        Add ABI array into the decoder collection, in this step the method id is generated from:
+        sha3(function_name + '(' + param_type1 + ... + param_typeN + ')')
+        :param abi: Array of dictionaries
+        :return: Integer (items added)
+        """
         added = 0
         for item in abi:
             if item.get(u'name'):
@@ -30,6 +40,11 @@ class Decoder(Singleton):
         return added
 
     def remove_abi(self, abis):
+        """
+        For testing purposes, we won't sometimes to remove the ABI methods from the decoder
+        :param abis: Array of Ethereum address
+        :return: None
+        """
         for item in abis:
             if item.get(u'name'):
                 # Generate methodID and link it with the abi
@@ -40,14 +55,20 @@ class Decoder(Singleton):
                     del self.methods[method_id]
 
     def decode_logs(self, logs):
+        """
+        Processes and array of ethereum logs and returns an array of dictionaries of logs that could be decoded
+        from the ABIs loaded
+        :param logs: array of ethereum logs
+        :return: array of dictionaries
+        """
         decoded = []
         for log in logs:
+            # topics[0] of the Log Item represents the methodID we generated on add_abi function
             method_id = log[u'topics'][0][2:]
-            # logger.info('method_id {}'.format(method_id))
-            # logger.info('methods {}'.format(self.methods))
+
             if self.methods.get(method_id):
+                # method item has the event name, inputs and types
                 method = self.methods[method_id]
-                # logger.info('method {}'.format(method))
                 decoded_params = []
                 data_i = 0
                 topics_i = 1

@@ -20,19 +20,23 @@ class EventListener(Singleton):
 
     def __init__(self, contract_map=settings.GNOSISDB_CONTRACTS):
         super(EventListener, self).__init__()
-        self.decoder = Decoder()
-        self.web3 = Web3Service().web3
-        self.contract_map = contract_map
+        self.decoder = Decoder()  # Decodes ethereum logs
+        self.web3 = Web3Service().web3  # Gets transaction and block info from ethereum
+        self.contract_map = contract_map  # Taken from settings, it's the contracts we listen to
 
     def next_block(self):
         return Daemon.get_solo().block_number
 
     def update_and_next_block(self):
+        """
+        Increases ethereum block saved on database to current one and returns the block numbers of
+        blocks mined since last event_listener execution
+        :return: [int]
+        """
         daemon = Daemon.get_solo()
         current = self.web3.eth.blockNumber
         if daemon.block_number < current:
             blocks_to_update = range(daemon.block_number+1, current+1)
-            # logger.info("block range {}-{} {}".format(daemon.block_number, current, blocks_to_update))
             daemon.block_number = current
             daemon.save()
             return blocks_to_update
@@ -40,14 +44,19 @@ class EventListener(Singleton):
             return []
 
     def get_logs(self, block_number):
+        """
+        By a given block number returns a pair logs, block_info
+        logs it's an array of decoded ethereum log dictionaries
+        and block info it's a dic
+        :param block_number:
+        :return:
+        """
         block = self.web3.eth.getBlock(block_number)
         logs = []
 
         if block and block.get(u'hash'):
-            # logger.info('block hash {}'.format(block.get('hash')))
             for tx in block[u'transactions']:
                 receipt = self.web3.eth.getTransactionReceipt(tx)
-                # logger.info('receipt: {}'.format(dumps(receipt)))
                 if receipt.get('logs'):
                     logs.extend(receipt[u'logs'])
             return logs, block
@@ -98,7 +107,7 @@ class EventListener(Singleton):
 
                                     # load event receiver and save
                                     event_receiver = import_string(contract['EVENT_DATA_RECEIVER'])
-                                    logger.info('EVENT RECEIVER: {}'.format(event_receiver))
+                                    # logger.info('EVENT RECEIVER: {}'.format(event_receiver))
                                     event_receiver().save(decoded_event=log_json, block_info=block_info)
                                 except Exception as e:
                                     logger.error(e)
