@@ -228,15 +228,17 @@ class ScalarEventSerializer(EventSerializer, serializers.ModelSerializer):
     scalarEvent = serializers.CharField(source='address', max_length=40)
 
     def validate(self, attrs):
-        attrs = super(CategoricalEventSerializer, self).validate(attrs=attrs)
-        centralized_oracle = None
+        attrs = super(ScalarEventSerializer, self).validate(attrs=attrs)
+
+
         try:
             centralized_oracle = models.CentralizedOracle.objects.get(address=attrs['oracle'].address)
-            description = models.ScalarEventDescription.objects.get(ipfs_hash=centralized_oracle.event_description.ipfs_hash)
+            description = models.ScalarEventDescription.objects.get(
+                ipfs_hash=centralized_oracle.event_description.ipfs_hash)
+        except models.ScalarEventDescription.DoesNotExist:
+            raise serializers.ValidationError("Not existing ScalarEventDescription with oracle {}".format(attrs['oracle'].address))
         except models.CentralizedOracle.DoesNotExist:
             pass
-        except models.ScalarEventDescription.DoesNotExist:
-            raise serializers.ValidationError("Not existing ScalarEventDescription with oracle {}".format(attrs['oracle']))
 
         return attrs
 
@@ -251,34 +253,17 @@ class CategoricalEventSerializer(EventSerializer, serializers.ModelSerializer):
 
     def validate(self, attrs):
         attrs = super(CategoricalEventSerializer, self).validate(attrs=attrs)
-        centralized_oracle = None
 
         try:
             centralized_oracle = models.CentralizedOracle.objects.get(address=attrs['oracle'].address)
-        except models.CentralizedOracle.DoesNotExist:
-            pass
-
-        try:
-            ultimate_oracle = models.UltimateOracle.objects.get(address=attrs['oracle'].address)
-            while True:
-                try:
-                    forwarded_ultimate_oracle = models.UltimateOracle.objects.get(address=ultimate_oracle.forwarded_oracle.address)
-                    ultimate_oracle = forwarded_ultimate_oracle
-                except models.UltimateOracle.DoesNotExist:
-                    centralized_oracle = models.CentralizedOracle.objects.get(address=ultimate_oracle.forwarded_oracle.address)
-                    break
-        except models.UltimateOracle.DoesNotExist:
-            pass
-
-        if centralized_oracle is None:
-            raise serializers.ValidationError("Oracle field does not point to an existing oracle.")
-
-        try:
             description = models.CategoricalEventDescription.objects.get(ipfs_hash=centralized_oracle.event_description.ipfs_hash)
             if len(description.outcomes) != attrs['outcomeCount']:
                 raise serializers.ValidationError("Field outcomeCount does not match number of outcomes specified "
                                                   "in the event description.")
-        except models.CategoricalEventDescription.DoesNotExist:
+        except models.ScalarEventDescription.DoesNotExist:
+            raise serializers.ValidationError(
+                "Not existing CategoricalEventDescription with oracle {}".format(attrs['oracle'].address))
+        except models.CentralizedOracle.DoesNotExist:
             pass
 
         return attrs

@@ -97,6 +97,14 @@ class CategoricalEventDescriptionFactory(EventDescriptionFactory):
     outcomes = [factory_boy.Sequence(lambda _: faker.words(2)), factory_boy.Sequence(lambda _: faker.words(2))]
 
 
+class ScalarEventDescriptionFactory(EventDescriptionFactory):
+    class Meta:
+        model = models.ScalarEventDescription
+
+    unit = factory_boy.Sequence(lambda _: faker.words(1))
+    decimals = factory_boy.Sequence(lambda n: n)
+
+
 class CentralizedOracleFactory(OracleFactory):
 
     class Meta:
