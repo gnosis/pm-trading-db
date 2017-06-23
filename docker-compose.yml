@@ -36,7 +36,7 @@ services:
       - ipfs
       - db
     working_dir: /gnosisdb/gnosisdb
-    command: python manage.py runserver 0.0.0.0:8000
+    command: sh ../run_django.sh
     ports:
       - "8000:8000"
       - "27017"
