@@ -103,7 +103,7 @@ class EventListener(Singleton):
                 elif contract.get('ADDRESSES_GETTER'):
                     try:
                         addresses_getter = import_string(contract['ADDRESSES_GETTER'])
-                        addresses = addresses_getter.get_addresses()
+                        addresses = addresses_getter().get_addresses()
                     except Exception as e:
                         logger.error(e)
                         return

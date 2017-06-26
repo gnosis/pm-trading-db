@@ -97,7 +97,7 @@ class CentralizedOracle(Oracle):
 class UltimateOracle(Oracle):
 
     class Meta:
-        unique_together = ('forwarded_oracle', 'collateral_token',)
+        index_together = ['forwarded_oracle', 'collateral_token',]
 
     forwarded_oracle = models.ForeignKey(Oracle, related_name='ultimate_oracle_forwarded_oracle', null=True)
     collateral_token = models.CharField(max_length=40)
