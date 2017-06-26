@@ -40,6 +40,8 @@ The execution will furnish all the contracts' addesses. Now open /settings/local
 * Standard Market Factory
 * Ultimate Oracle Factory
 
+Make sure that ETHEREUM_NODE_HOST variable in settings.local points to your wlan ip address serving testrpc.
+
 Run `docker-compose build` to apply the code changes and then `docker-compose up` to get GNOSISDB up and running.
 Open your browser and go to http://localhost:8000/admin, provide your superuser username and password.
 You should now see something like this:
