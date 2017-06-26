@@ -8,6 +8,7 @@ from celery.utils.log import get_task_logger
 from eth.models import Daemon
 from settings_utils.address_getter import addresses_getter
 from ethereum.utils import remove_0x_head
+from threading import Lock
 
 logger = get_task_logger(__name__)
 
@@ -23,11 +24,28 @@ class EventListener(Singleton):
         self.decoder = Decoder()  # Decodes ethereum logs
         self.web3 = Web3Service().web3  # Gets transaction and block info from ethereum
         self.contract_map = contract_map  # Taken from settings, it's the contracts we listen to
+        self.mutex = Lock()
+
+    def get_logs(self, block_number):
+        with self.mutex:
+            return self.__get_logs(block_number)
+
+    def execute(self):
+        with self.mutex:
+            return self.__execute()
 
     def next_block(self):
-        return Daemon.get_solo().block_number
+        with self.mutex:
+            return self.__next_block()
 
     def update_and_next_block(self):
+        with self.mutex:
+            return self.__update_and_next_block()
+
+    def __next_block(self):
+        return Daemon.get_solo().block_number
+
+    def __update_and_next_block(self):
         """
         Increases ethereum block saved on database to current one and returns the block numbers of
         blocks mined since last event_listener execution
@@ -43,7 +61,7 @@ class EventListener(Singleton):
         else:
             return []
 
-    def get_logs(self, block_number):
+    def __get_logs(self, block_number):
         """
         By a given block number returns a pair logs, block_info
         logs it's an array of decoded ethereum log dictionaries
@@ -63,7 +81,7 @@ class EventListener(Singleton):
         else:
             raise UnknownBlock
 
-    def execute(self):
+    def __execute(self):
         # update block number
         # get blocks and decode logs
         for block in self.update_and_next_block():
