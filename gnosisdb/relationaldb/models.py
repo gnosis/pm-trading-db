@@ -31,6 +31,10 @@ class ContractCreatedByFactory(Contract, BlockTimeStamped):
 
 
 class Oracle(ContractCreatedByFactory):
+
+    class Meta:
+        unique_together = ('factory', 'creator',)
+
     is_outcome_set = models.BooleanField(default=False)
     outcome = models.BigIntegerField(blank=True, null=True)
 
@@ -91,6 +95,10 @@ class CentralizedOracle(Oracle):
 
 
 class UltimateOracle(Oracle):
+
+    class Meta:
+        unique_together = ('forwarded_oracle', 'collateral_token',)
+
     forwarded_oracle = models.ForeignKey(Oracle, related_name='ultimate_oracle_forwarded_oracle', null=True)
     collateral_token = models.CharField(max_length=40)
     spread_multiplier = models.PositiveIntegerField()
@@ -105,6 +113,10 @@ class UltimateOracle(Oracle):
 
 
 class OutcomeVoteBalance(models.Model):
+
+    class Meta:
+        unique_together = ('ultimate_oracle', 'address',)
+
     ultimate_oracle = models.ForeignKey(UltimateOracle, related_name='outcome_vote_balance_ultimate_oracle')
     address = models.CharField(max_length=40) # sender
     balance = models.BigIntegerField()
@@ -112,6 +124,10 @@ class OutcomeVoteBalance(models.Model):
 
 # Market
 class Market(ContractCreatedByFactory):
+
+    class Meta:
+        unique_together = ('event', 'market_maker', 'creator',)
+
     stages = (
         (0, 'MarketCreated'),
         (1, 'MarketFunded'),
@@ -129,23 +145,12 @@ class Market(ContractCreatedByFactory):
     revenue = models.BigIntegerField()
     collected_fees = models.BigIntegerField()
 
-    # def net_sold_tokens_copy_with_delta(self, index, delta):
-    #     # check whether the event is 'categorical' or 'scalar'
-    #     #
-    #     if self.net_outcome_tokens_sold is None:
-    #         dictionary = {}
-    #     else:
-    #         dictionary = json.loads(self.net_outcome_tokens_sold)
-    #
-    #     if index not in dictionary:
-    #         dictionary[index] = 0
-    #
-    #     dictionary[index] += delta
-    #
-    #     return json.dumps(dictionary)
-
 
 class Order(BlockTimeStamped):
+
+    class Meta:
+        unique_together = ('sender', 'creation_block',)
+
     market = models.ForeignKey(Market)
     sender = models.CharField(max_length=40)
     outcome_token_index = models.PositiveIntegerField()

@@ -267,48 +267,6 @@ class TestEventReceiver(TestCase):
     #
     # contract instances
     #
-
-    # def test_centralized_oracle_instance_receiver(self):
-    #     oracle_factory = CentralizedOracleFactory()
-    #     oracle_address = oracle_factory.address[1:-7] + 'GIACOMO'
-    #     # oracle.event_description
-    #     event_description_json = {
-    #         'title': oracle_factory.event_description.title,
-    #         'description': oracle_factory.event_description.description,
-    #         'resolution_date': oracle_factory.event_description.resolution_date.isoformat(),
-    #         'outcomes': ['Yes', 'No']
-    #     }
-    #
-    #     # save event_description to IPFS
-    #     ipfs_hash = self.ipfs_api.post(event_description_json)
-    #
-    #     block = {
-    #         'number': oracle_factory.creation_block,
-    #         'timestamp': mktime(oracle_factory.creation_date_time.timetuple())
-    #     }
-    #
-    #     oracle_event = {
-    #         'address': oracle_factory.factory[0:-7] + 'GIACOMO',
-    #         'params': [
-    #             {
-    #                 'name': 'creator',
-    #                 'value': oracle_factory.address
-    #             },
-    #             {
-    #                 'name': 'centralizedOracle',
-    #                 'value': oracle_factory.address[1:-8] + 'INSTANCE',
-    #             },
-    #             {
-    #                 'name': 'ipfsHash',
-    #                 'value': ipfs_hash
-    #             }
-    #         ]
-    #     }
-    #
-    #     CentralizedOracleInstanceReceiver().save(oracle_event, block)
-    #     created_oracle = CentralizedOracle.objects.get(address=oracle_address)
-    #     self.assertIsNotNone(created_oracle.pk)
-
     def test_event_instance_receiver(self):
         outcome_token_factory = OutcomeTokenFactory()
         oracle_factory = OracleFactory()
