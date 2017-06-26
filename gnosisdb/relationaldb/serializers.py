@@ -12,6 +12,9 @@ logger = get_task_logger(__name__)
 
 
 class BlockTimestampedSerializer(serializers.BaseSerializer):
+    """
+    Serializes the block informations
+    """
     class Meta:
         fields = ('creation_date_time', 'creation_block', )
 
@@ -26,6 +29,15 @@ class ContractEventTimestamped(BlockTimestampedSerializer):
     address = serializers.CharField(max_length=40)
 
     def __init__(self, *args, **kwargs):
+        """
+        Gets the kwargs passed to the serializer and produces a new data dictionary with:
+            address: string
+            creation_date_time: datetime
+            creation_block: int
+
+        In addition, all parameters contained in kwargs['data']['params'] are re-elaborated and added to
+        the final data dictionary
+        """
         self.block = kwargs.pop('block')
         super(ContractEventTimestamped, self).__init__(*args, **kwargs)
         data = kwargs.pop('data')
@@ -42,8 +54,10 @@ class ContractEventTimestamped(BlockTimestampedSerializer):
         self.initial_data = new_data
 
 
-# Declare basic fields, join params on root object and
 class ContractSerializer(serializers.BaseSerializer):
+    """
+    Serializes a Contract entity
+    """
     class Meta:
         fields = ('address', )
 
@@ -51,6 +65,9 @@ class ContractSerializer(serializers.BaseSerializer):
 
 
 class ContractCreatedByFactorySerializer(BlockTimestampedSerializer, ContractSerializer):
+    """
+    Serializes a Contract Factory
+    """
     class Meta:
         fields = BlockTimestampedSerializer.Meta.fields + ContractSerializer.Meta.fields + ('factory', 'creator')
 
@@ -76,10 +93,16 @@ class ContractCreatedByFactorySerializer(BlockTimestampedSerializer, ContractSer
 
 
 class ContractNotTimestampted(ContractSerializer):
+    """
+    Serializes a Contract with no block information
+    """
     class Meta:
         fields = ContractSerializer.Meta.fields
 
     def __init__(self, *args, **kwargs):
+        """
+        Deletes block information from kwargs
+        """
         if kwargs.get('block'):
             self.block = kwargs.pop('block')
         super(ContractNotTimestampted, self).__init__(*args, **kwargs)
@@ -94,6 +117,10 @@ class ContractNotTimestampted(ContractSerializer):
 
         self.initial_data = new_data
 
+
+# ========================================================
+#                 Custom Fields
+# ========================================================
 
 class IpfsHashField(CharField):
 
@@ -169,6 +196,9 @@ class EventField(CharField):
 
 
 class OracleSerializer(ContractCreatedByFactorySerializer):
+    """
+    Serializes an Oracle
+    """
     class Meta:
         fields = ContractCreatedByFactorySerializer.Meta.fields + ('is_outcome_set', 'outcome')
 
@@ -177,7 +207,9 @@ class OracleSerializer(ContractCreatedByFactorySerializer):
 
 
 class CentralizedOracleSerializer(OracleSerializer, serializers.ModelSerializer):
-
+    """
+    Serializes a Centralized Oracle
+    """
     class Meta:
         model = models.CentralizedOracle
         fields = OracleSerializer.Meta.fields + ('ipfsHash', 'centralizedOracle')
@@ -191,7 +223,9 @@ class CentralizedOracleSerializer(OracleSerializer, serializers.ModelSerializer)
 
 
 class UltimateOracleSerializer(OracleSerializer, serializers.ModelSerializer):
-
+    """
+    Serializes an Ultimate Oracle
+    """
     class Meta:
         model = models.UltimateOracle
         fields = OracleSerializer.Meta.fields + ('ultimateOracle', 'oracle', 'collateralToken',
@@ -207,7 +241,9 @@ class UltimateOracleSerializer(OracleSerializer, serializers.ModelSerializer):
 
 
 class EventSerializer(ContractCreatedByFactorySerializer, serializers.ModelSerializer):
-
+    """
+    Serializes an Event
+    """
     class Meta:
         models = models.Event
         fields = ContractCreatedByFactorySerializer.Meta.fields + ('collateralToken', 'creator', 'oracle',)
@@ -218,7 +254,9 @@ class EventSerializer(ContractCreatedByFactorySerializer, serializers.ModelSeria
 
 
 class ScalarEventSerializer(EventSerializer, serializers.ModelSerializer):
-
+    """
+    Serializes a Scalar Event
+    """
     class Meta:
         model = models.ScalarEvent
         fields = EventSerializer.Meta.fields + ('lowerBound', 'upperBound', 'scalarEvent')
@@ -228,9 +266,9 @@ class ScalarEventSerializer(EventSerializer, serializers.ModelSerializer):
     scalarEvent = serializers.CharField(source='address', max_length=40)
 
     def validate(self, attrs):
+        # Verify whether the attrs['oracle'] is a CentralizedOracle,
+        # if so, check its event_description is a ScalarEventDescription
         attrs = super(ScalarEventSerializer, self).validate(attrs=attrs)
-
-
         try:
             centralized_oracle = models.CentralizedOracle.objects.get(address=attrs['oracle'].address)
             description = models.ScalarEventDescription.objects.get(
@@ -244,6 +282,9 @@ class ScalarEventSerializer(EventSerializer, serializers.ModelSerializer):
 
 
 class CategoricalEventSerializer(EventSerializer, serializers.ModelSerializer):
+    """
+    Serializes a Categorical Event
+    """
     class Meta:
         model = models.CategoricalEvent
         fields = EventSerializer.Meta.fields + ('categoricalEvent', 'outcomeCount',)
@@ -252,8 +293,9 @@ class CategoricalEventSerializer(EventSerializer, serializers.ModelSerializer):
     outcomeCount = serializers.IntegerField()
 
     def validate(self, attrs):
+        # Verify whether attrs['oracle'] is a CentralizedOracle,
+        # if so, check its event_description is a CategoricalEventDescription
         attrs = super(CategoricalEventSerializer, self).validate(attrs=attrs)
-
         try:
             centralized_oracle = models.CentralizedOracle.objects.get(address=attrs['oracle'].address)
             description = models.CategoricalEventDescription.objects.get(ipfs_hash=centralized_oracle.event_description.ipfs_hash)
@@ -274,7 +316,9 @@ class CategoricalEventSerializer(EventSerializer, serializers.ModelSerializer):
 
 
 class MarketSerializer(ContractCreatedByFactorySerializer, serializers.ModelSerializer):
-
+    """
+    Serializes a Market
+    """
     class Meta:
         model = models.Market
         fields = ContractCreatedByFactorySerializer.Meta.fields + ('eventContract', 'marketMaker', 'fee',
@@ -303,18 +347,27 @@ class MarketSerializer(ContractCreatedByFactorySerializer, serializers.ModelSeri
 
 
 class ScalarEventDescriptionSerializer(serializers.ModelSerializer):
+    """
+    Serializes a Scalar Event Description
+    """
     class Meta:
         model = models.ScalarEventDescription
         exclude = ('id',)
 
 
 class CategoricalEventDescriptionSerializer(serializers.ModelSerializer):
+    """
+    Serializes a Categorical Event Description
+    """
     class Meta:
         model = models.CategoricalEventDescription
         exclude = ('id',)
 
 
 class IPFSEventDescriptionDeserializer(serializers.ModelSerializer):
+    """
+    Deserialize an IPFS object by passing its ipfs_hash
+    """
     basic_fields = ('ipfs_hash', 'title', 'description', 'resolution_date',)
     scalar_fields = basic_fields + ('unit', 'decimals',)
     categorical_fields = basic_fields + ('outcomes',)
@@ -363,9 +416,14 @@ class IPFSEventDescriptionDeserializer(serializers.ModelSerializer):
         return result
 
 
-# Instance Serializers
+# ========================================================
+#             Contract Instance serializers
+# ========================================================
 
 class OutcomeTokenInstanceSerializer(ContractNotTimestampted, serializers.ModelSerializer):
+    """
+    Serializes an Outcome Token contract instance
+    """
     class Meta:
         model = models.OutcomeToken
         fields = ContractSerializer.Meta.fields + ('address', 'index', 'outcomeToken',)
@@ -376,7 +434,9 @@ class OutcomeTokenInstanceSerializer(ContractNotTimestampted, serializers.ModelS
 
 
 class OutcomeTokenIssuanceSerializer(ContractNotTimestampted, serializers.ModelSerializer):
-
+    """
+    Serializes the Outcome Token issuance event
+    """
     class Meta:
         model = models.OutcomeToken
         fields = ('owner', 'amount', 'address',)
@@ -386,6 +446,8 @@ class OutcomeTokenIssuanceSerializer(ContractNotTimestampted, serializers.ModelS
     address = serializers.CharField(max_length=40, source='outcome_token')
 
     def create(self, validated_data):
+        # Creates or updates an outcome token balance for the given outcome_token.
+        # Returns the outcome_token
         outcome_token = None
         outcome_token_balance = None
         try:
@@ -410,7 +472,9 @@ class OutcomeTokenIssuanceSerializer(ContractNotTimestampted, serializers.ModelS
 
 
 class OutcomeTokenRevocationSerializer(ContractNotTimestampted, serializers.ModelSerializer):
-
+    """
+    Serializes the Outcome TOken revocation event
+    """
     class Meta:
         model = models.OutcomeToken
         fields = ('owner', 'amount', 'address',)
@@ -427,8 +491,9 @@ class OutcomeTokenRevocationSerializer(ContractNotTimestampted, serializers.Mode
                                                                            outcome_token__address=validated_data.get('outcome_token'))
             outcome_token_balance.balance -= validated_data.get('amount')
             outcome_token_balance.outcome_token.total_supply -= validated_data.get('amount')
-            # TODO check if exists a better solution to automatically update related models
+            # save the outcome_token
             outcome_token_balance.outcome_token.save()
+            # save the outcome_token_balance
             outcome_token_balance.save()
         except models.OutcomeTokenBalance.DoesNotExist:
             pass
@@ -437,7 +502,9 @@ class OutcomeTokenRevocationSerializer(ContractNotTimestampted, serializers.Mode
 
 
 class OutcomeAssignmentEventSerializer(ContractNotTimestampted, serializers.ModelSerializer):
-
+    """
+    Serializes the OutcomeAssignment event
+    """
     class Meta:
         model = models.Event
         fields = ('outcome', 'address',)
@@ -446,6 +513,7 @@ class OutcomeAssignmentEventSerializer(ContractNotTimestampted, serializers.Mode
     address = serializers.CharField(max_length=40)
 
     def create(self, validated_data):
+        # Updates the event outcome
         event = None
         try:
             event = models.Event.objects.get(address=validated_data.get('address'))
@@ -458,7 +526,9 @@ class OutcomeAssignmentEventSerializer(ContractNotTimestampted, serializers.Mode
 
 
 class OutcomeTokenTransferSerializer(ContractNotTimestampted, serializers.ModelSerializer):
-
+    """
+    Serializes the Outcome Token transfer event
+    """
     class Meta:
         model = models.OutcomeTokenBalance
         fields = ('from_address', 'to', 'value', 'address',)
@@ -494,7 +564,9 @@ class OutcomeTokenTransferSerializer(ContractNotTimestampted, serializers.ModelS
 
 
 class WinningsRedemptionSerializer(ContractNotTimestampted, serializers.ModelSerializer):
-
+    """
+    Serializes the WinningsRedemption event
+    """
     class Meta:
         model = models.Event
         fields = ('address', 'receiver', 'winnings',)
@@ -504,6 +576,7 @@ class WinningsRedemptionSerializer(ContractNotTimestampted, serializers.ModelSer
     winnings = serializers.IntegerField()
 
     def create(self, validated_data):
+        # Sums the given winnings to the event redeemed_winnings
         event = None
         try:
             event = models.Event.objects.get(address=validated_data.get('address'))
@@ -519,7 +592,9 @@ class CentralizedOracleInstanceSerializer(CentralizedOracleSerializer):
 
 
 class OwnerReplacementSerializer(ContractNotTimestampted, serializers.ModelSerializer):
-
+    """
+    Serializes the Centralized Oracle OwnerReplacement event
+    """
     class Meta:
         model = models.CentralizedOracle
         fields = ('address', 'newOwner',)
@@ -528,6 +603,7 @@ class OwnerReplacementSerializer(ContractNotTimestampted, serializers.ModelSeria
     newOwner = serializers.CharField(max_length=40)
 
     def create(self, validated_data):
+        # Replaces the centralized oracle's owner if existing
         centralized_oracle = None
         try:
             centralized_oracle = models.CentralizedOracle.objects.get(address=validated_data.get('address'))
@@ -539,7 +615,9 @@ class OwnerReplacementSerializer(ContractNotTimestampted, serializers.ModelSeria
 
 
 class OutcomeAssignmentOracleSerializer(ContractNotTimestampted, serializers.ModelSerializer):
-
+    """
+    Serializes the OutcomeAssignment Oracle event
+    """
     class Meta:
         model = models.CentralizedOracle
         fields = ('address', 'outcome',)
@@ -548,6 +626,7 @@ class OutcomeAssignmentOracleSerializer(ContractNotTimestampted, serializers.Mod
     outcome = serializers.IntegerField()
 
     def create(self, validated_data):
+        # Updates the centralized_oracle outcome
         centralized_oracle = None
         try:
             centralized_oracle = models.CentralizedOracle.objects.get(address=validated_data.get('address'))
@@ -560,7 +639,9 @@ class OutcomeAssignmentOracleSerializer(ContractNotTimestampted, serializers.Mod
 
 
 class ForwardedOracleOutcomeAssignmentSerializer(ContractNotTimestampted, serializers.ModelSerializer):
-
+    """
+    Serializes the UltimateOracle ForwardedOracleOutcomeAssignment event
+    """
     class Meta:
         model = models.UltimateOracle
         fields = ('address', 'outcome',)
@@ -582,7 +663,9 @@ class ForwardedOracleOutcomeAssignmentSerializer(ContractNotTimestampted, serial
 
 
 class OutcomeChallengeSerializer(ContractNotTimestampted, serializers.ModelSerializer):
-
+    """
+    Serializes the UltimateOracle OutcomeChallenge event
+    """
     class Meta:
         model = models.UltimateOracle
         fields = ('address', 'sender', 'outcome',)
@@ -612,7 +695,9 @@ class OutcomeChallengeSerializer(ContractNotTimestampted, serializers.ModelSeria
 
 
 class OutcomeVoteSerializer(ContractNotTimestampted, serializers.ModelSerializer):
-
+    """
+    Serializes the UltimateOracle OutcomeVote event
+    """
     class Meta:
         model = models.UltimateOracle
         fields = ('address', 'sender', 'outcome', 'amount',)
@@ -651,7 +736,9 @@ class OutcomeVoteSerializer(ContractNotTimestampted, serializers.ModelSerializer
 
 
 class WithdrawalSerializer(ContractNotTimestampted, serializers.ModelSerializer):
-
+    """
+    Serializes the UltimateOracle Withdrawal event
+    """
     class Meta:
         model = models.OutcomeVoteBalance
         fields = ('address', 'sender', 'amount',)
@@ -664,8 +751,6 @@ class WithdrawalSerializer(ContractNotTimestampted, serializers.ModelSerializer)
         try:
             outcome_vote_balance = models.OutcomeVoteBalance.objects.get(address=validated_data.get('sender'),
                                                                          ultimate_oracle__address=validated_data.get('address'))
-            # outcome_vote_balance.ultimate_oracle.total_amount -= validated_data.get('amount')
-            # outcome_vote_balance.ultimate_oracle.save()
             outcome_vote_balance.balance = 0
             outcome_vote_balance.save()
             return outcome_vote_balance
@@ -676,7 +761,9 @@ class WithdrawalSerializer(ContractNotTimestampted, serializers.ModelSerializer)
 
 
 class OutcomeTokenPurchaseSerializer(ContractEventTimestamped, serializers.ModelSerializer):
-
+    """
+    Serializes the Market OutcomeTokenPurchase event
+    """
     class Meta:
         model = models.BuyOrder
         fields = ContractEventTimestamped.Meta.fields + ('buyer', 'outcomeTokenIndex', 'outcomeTokenCount', 'cost',)
@@ -712,7 +799,9 @@ class OutcomeTokenPurchaseSerializer(ContractEventTimestamped, serializers.Model
 
 
 class OutcomeTokenSaleSerializer(ContractEventTimestamped, serializers.ModelSerializer):
-
+    """
+    Serializes the Market OutcomeTokenSale event
+    """
     class Meta:
         model = models.SellOrder
         fields = ContractEventTimestamped.Meta.fields + ('seller', 'outcomeTokenIndex', 'outcomeTokenCount', 'profit',)
@@ -748,7 +837,9 @@ class OutcomeTokenSaleSerializer(ContractEventTimestamped, serializers.ModelSeri
 
 
 class OutcomeTokenShortSaleOrderSerializer(ContractEventTimestamped, serializers.ModelSerializer):
-
+    """
+    Serializes the Market OutcomeTokenShortSale event
+    """
     class Meta:
         model = models.ShortSellOrder
         fields = ContractEventTimestamped.Meta.fields + ('buyer', 'outcomeTokenIndex', 'outcomeTokenCount', 'cost',)
@@ -781,7 +872,9 @@ class OutcomeTokenShortSaleOrderSerializer(ContractEventTimestamped, serializers
 
 
 class MarketFundingSerializer(ContractNotTimestampted, serializers.ModelSerializer):
-
+    """
+    Serializes the Market MarketFunding event
+    """
     class Meta:
         model = models.Market
         fields = ('address', 'funding',)
@@ -801,7 +894,9 @@ class MarketFundingSerializer(ContractNotTimestampted, serializers.ModelSerializ
 
 
 class MarketClosingSerializer(ContractNotTimestampted, serializers.ModelSerializer):
-
+    """
+    Serializes the Market MarketClosing event
+    """
     class Meta:
         model = models.Market
         fields = ('address',)
@@ -819,7 +914,9 @@ class MarketClosingSerializer(ContractNotTimestampted, serializers.ModelSerializ
 
 
 class FeeWithdrawalSerializer(ContractNotTimestampted, serializers.ModelSerializer):
-
+    """
+    Serializes the Market FeeWithdrawal event
+    """
     class Meta:
         model = models.Market
         fields = ('address', 'fees',)

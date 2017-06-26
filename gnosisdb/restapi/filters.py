@@ -51,6 +51,7 @@ class UltimateOracleFilter(filters.FilterSet):
                   'forwarded_oracle_creation_date', 'forwarded_oracle_is_outcome_set', 'forwarded_oracle_factory',
                   'ordering')
 
+
 class EventFilter(filters.FilterSet):
     creator = filters.AllValuesMultipleFilter()
     creation_date = filters.DateTimeFromToRangeFilter()
