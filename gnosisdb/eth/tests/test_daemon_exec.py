@@ -10,7 +10,7 @@ from json import loads, dumps
 from relationaldb import models
 from ipfs.ipfs import Ipfs
 from relationaldb.factories import EventDescriptionFactory
-from compiled_contracts import AbiLoader
+from gnosisdb.eth.abis import load_json_file, abi_file_path
 import os
 
 
@@ -81,18 +81,16 @@ class TestDaemonExec(TestCase):
 
         self.tx_data = {'from': self.web3.eth.accounts[0], 'gas': 100000000}
 
-        self.abi_loader = AbiLoader()
-
         # create oracles
-        centralized_contract_factory = self.web3.eth.contract(abi=self.abi_loader.centralized_oracle_factory(), bytecode=centralized_oracle_bytecode)
+        centralized_contract_factory = self.web3.eth.contract(abi=load_json_file(abi_file_path('CentralizedOracleFactory.json')), bytecode=centralized_oracle_bytecode)
         tx_hash = centralized_contract_factory.deploy()
         self.centralized_oracle_factory_address = self.web3.eth.getTransactionReceipt(tx_hash).get('contractAddress')
-        self.centralized_oracle_factory = self.web3.eth.contract(self.centralized_oracle_factory_address, abi=self.abi_loader.centralized_oracle_factory())
+        self.centralized_oracle_factory = self.web3.eth.contract(self.centralized_oracle_factory_address, abi=load_json_file(abi_file_path('CentralizedOracleFactory.json')))
 
         self.contracts = [
             {
                 'NAME': 'Centralized Oracle Factory',
-                'EVENT_ABI': self.abi_loader.centralized_oracle_factory(),
+                'EVENT_ABI': load_json_file(abi_file_path('CentralizedOracleFactory.json')),
                 'EVENT_DATA_RECEIVER': 'eth.event_receiver.CentralizedOracleFactoryReceiver',
                 'ADDRESSES': [self.centralized_oracle_factory_address[2::]]
             }

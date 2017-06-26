@@ -27,7 +27,6 @@ INSTALLED_APPS = (
     'restapi',
     'eth',
     'settings_utils',
-    'compiled_contracts',
     'rest_framework_swagger'
 )
 
@@ -114,7 +113,7 @@ REST_FRAMEWORK = {
 # Celery
 INSTALLED_APPS += ('kombu.transport.django',)
 # ETHEREUM_NODE_HOST='192.168.0.103'
-ETHEREUM_NODE_HOST='172.17.0.1'
+ETHEREUM_NODE_HOST = '172.17.0.1'
 ETHEREUM_NODE_PORT = 8545
 ETHEREUM_NODE_SSL = 0
 
@@ -158,7 +157,7 @@ CELERYD_PREFETCH_MULTIPLIER = 1
 CELERYD_MAX_TASKS_PER_CHILD = 1000
 
 # IPFS
-IPFS_HOST = 'http://ipfs' # 'ipfs'
+IPFS_HOST = 'http://ipfs'  # 'ipfs'
 IPFS_PORT = 5001
 
 
