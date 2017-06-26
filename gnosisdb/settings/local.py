@@ -204,4 +204,28 @@ GNOSISDB_CONTRACTS = [
         'EVENT_DATA_RECEIVER': 'eth.event_receiver.MarketInstanceReceiver',
         'NAME': 'Standard Markets Buy/Sell/Short Receiver'
     },
+    {
+        'ADDRESSES_GETTER': 'eth.address_getters.EventAddressGetter',
+        'EVENT_ABI': AbiLoader().abstract_event(),
+        'EVENT_DATA_RECEIVER': 'eth.event_receiver.EventInstanceReceiver',
+        'NAME': 'Event Instances'
+    },
+    {
+        'ADDRESSES_GETTER': 'eth.address_getters.OutcomeTokenGetter',
+        'EVENT_ABI': AbiLoader().outcome_token(),
+        'EVENT_DATA_RECEIVER': 'eth.event_receiver.OutcomeTokenInstanceReceiver',
+        'NAME': 'Outcome Token Instances'
+    },
+    {
+        'ADDRESSES_GETTER': 'eth.address_getters.CentralizedOracleGetter',
+        'EVENT_ABI': AbiLoader().centralized_oracle(),
+        'EVENT_DATA_RECEIVER': 'eth.event_receiver.CentralizedOracleInstanceReceiver',
+        'NAME': 'Centralized Oracle Instances'
+    },
+    {
+        'ADDRESSES_GETTER': 'eth.address_getters.UltimateOracleGetter',
+        'EVENT_ABI': AbiLoader().ultimate_oracle(),
+        'EVENT_DATA_RECEIVER': 'eth.event_receiver.UltimateOracleInstanceReceiver',
+        'NAME': 'Ultimate Oracle Instances'
+    },
 ]

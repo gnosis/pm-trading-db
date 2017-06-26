@@ -34,6 +34,12 @@ class AbstractLoader(SingletonObject):
     def event_factory(self):
         return self.load('EventFactory')
 
+    def abstract_event(self):
+        return self.load('AbstractEvent')
+
+    def outcome_token(self):
+        return self.load('OutcomeToken')
+
 
 class AbiLoader(AbstractLoader):
     def load(self, abi):
