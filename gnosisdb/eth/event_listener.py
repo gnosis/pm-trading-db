@@ -8,7 +8,7 @@ from celery.utils.log import get_task_logger
 from eth.models import Daemon
 from settings_utils.address_getter import addresses_getter
 from ethereum.utils import remove_0x_head
-from threading import Lock
+from threading import RLock
 
 logger = get_task_logger(__name__)
 
@@ -24,7 +24,7 @@ class EventListener(Singleton):
         self.decoder = Decoder()  # Decodes ethereum logs
         self.web3 = Web3Service().web3  # Gets transaction and block info from ethereum
         self.contract_map = contract_map  # Taken from settings, it's the contracts we listen to
-        self.mutex = Lock()
+        self.mutex = RLock()
 
     def get_logs(self, block_number):
         with self.mutex:
