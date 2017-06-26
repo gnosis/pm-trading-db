@@ -44,11 +44,11 @@ Run `docker-compose build` to apply the code changes and then `docker-compose up
 Open your browser and go to http://localhost:8000/admin, provide your superuser username and password.
 You should now see something like this:
 
-![alt_text](https://github.com/gnosis/gnosisdb/blob/master/docs/django_admin_overview.png)
+![alt_text](https://github.com/gnosis/gnosisdb/blob/master/img/django_admin_overview.png)
 
 Create now a Celery periodic task.
 
-![alt text](https://github.com/gnosis/gnosisdb/blob/master/docs/django_celery.png)
+![alt text](https://github.com/gnosis/gnosisdb/blob/master/img/django_celery.png)
 
 A test script was created on gnosis-contracts/scripts. This emulates the creation of oracles, events and markets.
 Run it with:
