@@ -3,7 +3,7 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 from gnosisdb.settings.base import *
 import sys
-from gnosisdb.compiled_contracts import AbiLoader
+from gnosisdb.eth.abis import abi_file_path, load_json_file
 
 
 SECRET_KEY = 'testtest'
@@ -167,7 +167,7 @@ GNOSISDB_CONTRACTS = [
     {
         'ADDRESSES': ['254dffcd3277c0b1660f6d42efbb754edababc2b'],
         'ADDRESSES_GETTER': '',
-        'EVENT_ABI': AbiLoader().centralized_oracle_factory(),
+        'EVENT_ABI': load_json_file(abi_file_path('CentralizedOracleFactory.json')),
         'EVENT_DATA_RECEIVER': 'eth.event_receiver.CentralizedOracleFactoryReceiver',
         'NAME': 'centralizedOracleFactory',
         'PUBLISH': True,
@@ -175,7 +175,7 @@ GNOSISDB_CONTRACTS = [
     {
         'ADDRESSES': ['c89ce4735882c9f0f0fe26686c53074e09b0d550'],
         'ADDRESSES_GETTER': '',
-        'EVENT_ABI': AbiLoader().ultimate_oracle_factory(),
+        'EVENT_ABI': load_json_file(abi_file_path('UltimateOracleFactory.json')),
         'EVENT_DATA_RECEIVER': 'eth.event_receiver.UltimateOracleFactoryReceiver',
         'NAME': 'ultimateOracleFactory',
         'PUBLISH': True,
@@ -183,7 +183,7 @@ GNOSISDB_CONTRACTS = [
     {
         'ADDRESSES': ['5b1869d9a4c187f2eaa108f3062412ecf0526b24'],
         'ADDRESSES_GETTER': '',
-        'EVENT_ABI': AbiLoader().event_factory(),
+        'EVENT_ABI': load_json_file(abi_file_path('EventFactory.json')),
         'EVENT_DATA_RECEIVER': 'eth.event_receiver.EventFactoryReceiver',
         'NAME': 'eventFactory',
         'PUBLISH': True,
@@ -191,7 +191,7 @@ GNOSISDB_CONTRACTS = [
     {
         'ADDRESSES': ['9561c133dd8580860b6b7e504bc5aa500f0f06a7'],
         'ADDRESSES_GETTER': '',
-        'EVENT_ABI': AbiLoader().standard_market_factory(),
+        'EVENT_ABI': load_json_file(abi_file_path('StandardMarketFactory.json')),
         'EVENT_DATA_RECEIVER': 'eth.event_receiver.MarketFactoryReceiver',
         'NAME': 'standardMarketFactory',
         'PUBLISH': True,
@@ -200,31 +200,31 @@ GNOSISDB_CONTRACTS = [
     {
         'ADDRESSES': [],
         'ADDRESSES_GETTER': 'eth.address_getters.MarketAddressGetter',
-        'EVENT_ABI': AbiLoader().standard_market(),
+        'EVENT_ABI': load_json_file(abi_file_path('StandardMarket.json')),
         'EVENT_DATA_RECEIVER': 'eth.event_receiver.MarketInstanceReceiver',
         'NAME': 'Standard Markets Buy/Sell/Short Receiver'
     },
     {
         'ADDRESSES_GETTER': 'eth.address_getters.EventAddressGetter',
-        'EVENT_ABI': AbiLoader().abstract_event(),
+        'EVENT_ABI': load_json_file(abi_file_path('AbstractEvent.json')),
         'EVENT_DATA_RECEIVER': 'eth.event_receiver.EventInstanceReceiver',
         'NAME': 'Event Instances'
     },
     {
         'ADDRESSES_GETTER': 'eth.address_getters.OutcomeTokenGetter',
-        'EVENT_ABI': AbiLoader().outcome_token(),
+        'EVENT_ABI': load_json_file(abi_file_path('OutcomeToken.json')),
         'EVENT_DATA_RECEIVER': 'eth.event_receiver.OutcomeTokenInstanceReceiver',
         'NAME': 'Outcome Token Instances'
     },
     {
         'ADDRESSES_GETTER': 'eth.address_getters.CentralizedOracleGetter',
-        'EVENT_ABI': AbiLoader().centralized_oracle(),
+        'EVENT_ABI': load_json_file(abi_file_path('CentralizedOracle.json')),
         'EVENT_DATA_RECEIVER': 'eth.event_receiver.CentralizedOracleInstanceReceiver',
         'NAME': 'Centralized Oracle Instances'
     },
     {
         'ADDRESSES_GETTER': 'eth.address_getters.UltimateOracleGetter',
-        'EVENT_ABI': AbiLoader().ultimate_oracle(),
+        'EVENT_ABI': load_json_file(abi_file_path('UltimateOracle.json')),
         'EVENT_DATA_RECEIVER': 'eth.event_receiver.UltimateOracleInstanceReceiver',
         'NAME': 'Ultimate Oracle Instances'
     },
