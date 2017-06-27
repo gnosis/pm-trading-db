@@ -1,4 +1,4 @@
-from abc import ABCMeta, abstractmethod
+from eth.chainevent import AbstractEventReceiver
 from relationaldb.serializers import (
     CentralizedOracleSerializer, ScalarEventSerializer, CategoricalEventSerializer,
     UltimateOracleSerializer, MarketSerializer, OutcomeTokenInstanceSerializer,
@@ -14,14 +14,6 @@ from celery.utils.log import get_task_logger
 from json import dumps
 
 logger = get_task_logger(__name__)
-
-
-class AbstractEventReceiver(object):
-    """Abstract EventReceiver class."""
-    __metaclass__ = ABCMeta
-
-    @abstractmethod
-    def save(self, decoded_event, block_info): pass
 
 
 class CentralizedOracleFactoryReceiver(AbstractEventReceiver):
@@ -112,17 +104,18 @@ class CentralizedOracleInstanceReceiver(AbstractEventReceiver):
     }
 
     def save(self, decoded_event, block_info=None):
-        if block_info:
-            serializer = self.events.get(decoded_event.get('name'))(data=decoded_event, block=block_info)
-        else:
-            serializer = self.events.get(decoded_event.get('name'))(data=decoded_event)
+        if self.events.get(decoded_event.get('name')):
+            if block_info:
+                serializer = self.events.get(decoded_event.get('name'))(data=decoded_event, block=block_info)
+            else:
+                serializer = self.events.get(decoded_event.get('name'))(data=decoded_event)
 
-        if serializer.is_valid():
-            serializer.save()
-            logger.info('Centralized Oracle Instance Added: {}'.format(dumps(decoded_event)))
-        else:
-            logger.warning('INVALID Centralized Oracle Instance: {}'.format(dumps(decoded_event)))
-            logger.warning(serializer.errors)
+            if serializer.is_valid():
+                serializer.save()
+                logger.info('Centralized Oracle Instance Added: {}'.format(dumps(decoded_event)))
+            else:
+                logger.warning('INVALID Centralized Oracle Instance: {}'.format(dumps(decoded_event)))
+                logger.warning(serializer.errors)
 
 
 class UltimateOracleInstanceReceiver(AbstractEventReceiver):
@@ -135,17 +128,18 @@ class UltimateOracleInstanceReceiver(AbstractEventReceiver):
     }
 
     def save(self, decoded_event, block_info=None):
-        if block_info:
-            serializer = self.events.get(decoded_event.get('name'))(data=decoded_event, block=block_info)
-        else:
-            serializer = self.events.get(decoded_event.get('name'))(data=decoded_event)
+        if self.events.get(decoded_event.get('name')):
+            if block_info:
+                serializer = self.events.get(decoded_event.get('name'))(data=decoded_event, block=block_info)
+            else:
+                serializer = self.events.get(decoded_event.get('name'))(data=decoded_event)
 
-        if serializer.is_valid():
-            serializer.save()
-            logger.info('Ultimate Oracle Factory Result Added: {}'.format(dumps(decoded_event)))
-        else:
-            logger.warning('INVALID Ultimate Oracle Factory Result: {}'.format(dumps(decoded_event)))
-            logger.warning(serializer.errors)
+            if serializer.is_valid():
+                serializer.save()
+                logger.info('Ultimate Oracle Factory Result Added: {}'.format(dumps(decoded_event)))
+            else:
+                logger.warning('INVALID Ultimate Oracle Factory Result: {}'.format(dumps(decoded_event)))
+                logger.warning(serializer.errors)
 
 
 class EventInstanceReceiver(AbstractEventReceiver):
@@ -157,17 +151,18 @@ class EventInstanceReceiver(AbstractEventReceiver):
     }
 
     def save(self, decoded_event, block_info=None):
-        if block_info:
-            serializer = self.events.get(decoded_event.get('name'))(data=decoded_event, block=block_info)
-        else:
-            serializer = self.events.get(decoded_event.get('name'))(data=decoded_event)
+        if self.events.get(decoded_event.get('name')):
+            if block_info:
+                serializer = self.events.get(decoded_event.get('name'))(data=decoded_event, block=block_info)
+            else:
+                serializer = self.events.get(decoded_event.get('name'))(data=decoded_event)
 
-        if serializer.is_valid():
-            serializer.save()
-            logger.info('Event Instance Added: {}'.format(dumps(decoded_event)))
-        else:
-            logger.warning('INVALID Event Instance: {}'.format(dumps(decoded_event)))
-            logger.warning(serializer.errors)
+            if serializer.is_valid():
+                serializer.save()
+                logger.info('Event Instance Added: {}'.format(dumps(decoded_event)))
+            else:
+                logger.warning('INVALID Event Instance: {}'.format(dumps(decoded_event)))
+                logger.warning(serializer.errors)
 
 
 class OutcomeTokenInstanceReceiver(AbstractEventReceiver):
@@ -178,8 +173,9 @@ class OutcomeTokenInstanceReceiver(AbstractEventReceiver):
     }
 
     def save(self, decoded_event, block_info=None):
-        serializer = self.events.get(decoded_event.get('name'))(data=decoded_event)
-        if serializer.is_valid():
-            serializer.save()
-        else:
-            logger.warning(serializer.errors)
+        if self.events.get(decoded_event.get('name')):
+            serializer = self.events.get(decoded_event.get('name'))(data=decoded_event)
+            if serializer.is_valid():
+                serializer.save()
+            else:
+                logger.warning(serializer.errors)

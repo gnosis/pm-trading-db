@@ -1,9 +1,9 @@
-from ethereum.utils import sha3
-from settings_utils.singleton import Singleton
+from celery.utils.log import get_task_logger
 from eth_abi import decode_abi
 from ethereum.utils import remove_0x_head
-from celery.utils.log import get_task_logger
+from ethereum.utils import sha3
 
+from .singleton import Singleton
 
 logger = get_task_logger(__name__)
 

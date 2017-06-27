@@ -1,5 +1,5 @@
 from django.test import TestCase
-from eth.address_getters import MarketAddressGetter, EventAddressGetter
+from chainevents.address_getters import MarketAddressGetter, EventAddressGetter
 from relationaldb.factories import MarketFactory, EventFactory
 
 

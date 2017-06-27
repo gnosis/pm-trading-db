@@ -2,7 +2,7 @@
 from __future__ import unicode_literals
 from django.test import TestCase
 from json import loads
-from eth.event_receiver import (
+from chainevents.event_receivers import (
     CentralizedOracleFactoryReceiver, UltimateOracleFactoryReceiver, EventFactoryReceiver, MarketFactoryReceiver,
     CentralizedOracleInstanceReceiver, EventInstanceReceiver, UltimateOracleInstanceReceiver, OutcomeTokenInstanceReceiver,
     MarketInstanceReceiver

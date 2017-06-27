@@ -1,18 +1,6 @@
-from abc import abstractmethod
-from django.core.exceptions import ObjectDoesNotExist
 from relationaldb.models import Contract, Market, Event, OutcomeToken, CentralizedOracle, UltimateOracle
-from settings_utils.singleton import SingletonABCMeta
-
-
-class AbstractAddressesGetter(object):
-    """Abstract AddressesGetter class."""
-    __metaclass__ = SingletonABCMeta
-
-    @abstractmethod
-    def get_addresses(self): pass
-
-    @abstractmethod
-    def __contains__(self, address): pass
+from django.core.exceptions import ObjectDoesNotExist
+from eth.chainevent import AbstractAddressesGetter
 
 
 class ContractAddressGetter(AbstractAddressesGetter):
