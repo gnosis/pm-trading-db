@@ -41,10 +41,22 @@ class EventDescriptionSerializer(serializers.BaseSerializer):
 
 
 class OracleSerializer(serializers.ModelSerializer):
-    # TODO Dynamic way to display extra fields according to oracle type
     contract = ContractSerializer(source='*', many=False, read_only=True)
     is_outcome_set = serializers.BooleanField()
     outcome = serializers.IntegerField()
+
+    def to_representation(self, instance):
+        try:
+            centralized_oracle = CentralizedOracle.objects.get(address=instance.address)
+            return CentralizedOracleSerializer(centralized_oracle).to_representation(centralized_oracle)
+        except CentralizedOracle.DoesNotExist:
+            pass
+
+        try:
+            ultimate_oracle = UltimateOracle.objects.get(address=instance.address)
+            return UltimateOracleSerializer(ultimate_oracle).to_representation(ultimate_oracle)
+        except UltimateOracle.DoesNotExist:
+            return super(OracleSerializer, self).to_representation(instance)
 
     class Meta:
         model = Oracle
