@@ -105,7 +105,14 @@ class Decoder(Singleton):
                     decoded_p[u'value'] = decoded_p[u'value'][26::]
 
             decoded_params.append(decoded_p)
-        return decoded_params, method
+
+        decoded_event = {
+            u'params': decoded_params,
+            u'name': method[u'name'],
+            u'address': remove_0x_head(log[u'address'])
+        }
+
+        return decoded_event
 
     def decode_logs(self, logs):
         """
@@ -117,12 +124,7 @@ class Decoder(Singleton):
         decoded = []
         for log in logs:
             try:
-                decoded_params, method = self.decode_log(log)
-                decoded.append({
-                    u'params': decoded_params,
-                    u'name': method[u'name'],
-                    u'address': remove_0x_head(log[u'address'])
-                })
+                decoded.append(self.decode_log(log))
             except LookupError:
                 pass
 

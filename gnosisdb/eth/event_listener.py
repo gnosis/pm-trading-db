@@ -81,6 +81,24 @@ class EventListener(Singleton):
         else:
             raise UnknownBlock
 
+    def __get_watched_contract_addresses(self, contract):
+        addresses = None
+        try:
+            if contract.get('ADDRESSES'):
+                addresses = contract['ADDRESSES']
+            elif contract.get('ADDRESSES_GETTER'):
+                addresses_getter = import_string(contract['ADDRESSES_GETTER'])
+                addresses = addresses_getter().get_addresses()
+        except Exception as e:
+            logger.error(e)
+            raise LookupError("Could not retrieve watched addresses for contract {}".format(contract))
+        return addresses
+
+    def __save_events(self, contract, decoded_logs, block_info):
+        EventReceiver = import_string(contract['EVENT_DATA_RECEIVER'])
+        for decoded_log in decoded_logs:
+            EventReceiver().save(decoded_event=decoded_log, block_info=block_info)
+
     def __execute(self):
         # update block number
         # get blocks and decode logs
@@ -91,33 +109,18 @@ class EventListener(Singleton):
             ###########################
             # Decode logs #
             ###########################
-
             for contract in self.contract_map:
                 # Add ABI
                 self.decoder.add_abi(contract['EVENT_ABI'])
 
-                # Get addresses watching
-                addresses = None
-                if contract.get('ADDRESSES'):
-                    addresses = contract['ADDRESSES']
-                elif contract.get('ADDRESSES_GETTER'):
-                    try:
-                        addresses_getter = import_string(contract['ADDRESSES_GETTER'])
-                        addresses = addresses_getter().get_addresses()
-                    except Exception as e:
-                        logger.error(e)
-                        return
+                # Get watched contract addresses
+                watched_addresses = self.__get_watched_contract_addresses(contract)
 
-                # Filter logs by address and decode
-                for log in logs:
-                    if remove_0x_head(log['address']) in addresses:
-                        # try to decode it
-                        decoded = self.decoder.decode_logs([log])
+                # Filter logs by relevant addresses
+                target_logs = [log for log in logs if remove_0x_head(log['address']) in watched_addresses]
 
-                        if decoded:
-                            # save decoded event with event receiver
-                            for log_json in decoded:
-                                # load event receiver and save
-                                event_receiver = import_string(contract['EVENT_DATA_RECEIVER'])
-                                # logger.info('EVENT RECEIVER: {}'.format(event_receiver))
-                                event_receiver().save(decoded_event=log_json, block_info=block_info)
+                # Decode logs
+                decoded_logs = self.decoder.decode_logs(target_logs)
+
+                # Save events
+                self.__save_events(contract, decoded_logs, block_info)
