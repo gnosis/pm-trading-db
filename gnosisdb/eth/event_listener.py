@@ -6,7 +6,6 @@ from django.conf import settings
 from django.utils.module_loading import import_string
 from celery.utils.log import get_task_logger
 from eth.models import Daemon
-from settings_utils.address_getter import addresses_getter
 from ethereum.utils import remove_0x_head
 from threading import RLock
 
