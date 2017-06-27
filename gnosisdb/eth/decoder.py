@@ -54,62 +54,76 @@ class Decoder(Singleton):
                 if self.methods.get(method_id):
                     del self.methods[method_id]
 
+    def decode_log(self, log):
+        """
+        Decodes an ethereum log and returns the recovered parameters along with the method from the abi that was used
+        in decoding. Raises a LookupError if the log's topic is unknown,
+        :param log: ethereum log
+        :return: dictionary of decoded parameters, decoding method reference
+        """
+        method_id = log[u'topics'][0][2:]
+
+        if method_id not in self.methods:
+            raise LookupError("Unknown log topic.")
+
+        # method item has the event name, inputs and types
+        method = self.methods[method_id]
+        decoded_params = []
+        data_i = 0
+        topics_i = 1
+        data_types = []
+
+        # get param types from properties not indexed
+        for param in method[u'inputs']:
+            if not param[u'indexed']:
+                data_types.append(param[u'type'])
+
+        decoded_data = decode_abi(data_types, log[u'data'])
+
+        for param in method[u'inputs']:
+            decoded_p = {
+                u'name': param[u'name']
+            }
+            if param[u'indexed']:
+                decoded_p[u'value'] = log[u'topics'][topics_i]
+                topics_i += 1
+            else:
+                decoded_p[u'value'] = decoded_data[data_i]
+                data_i += 1
+
+            if u'[]' in param[u'type']:
+                if u'address' in param[u'type']:
+                    decoded_p[u'value'] = list([remove_0x_head(account) for account in decoded_p[u'value']])
+                else:
+                    decoded_p[u'value'] = list(decoded_p[u'value'])
+            elif u'address' == param[u'type']:
+                address = remove_0x_head(decoded_p[u'value'])
+                # logger.info('address, length {}'.format(len(address)))
+                if len(address) == 40:
+                    decoded_p[u'value'] = address
+                elif len(address) == 64:
+                    decoded_p[u'value'] = decoded_p[u'value'][26::]
+
+            decoded_params.append(decoded_p)
+        return decoded_params, method
+
     def decode_logs(self, logs):
         """
         Processes and array of ethereum logs and returns an array of dictionaries of logs that could be decoded
-        from the ABIs loaded
+        from the ABIs loaded. Logs that could not be decoded are omitted from the result.
         :param logs: array of ethereum logs
         :return: array of dictionaries
         """
         decoded = []
         for log in logs:
-            # topics[0] of the Log Item represents the methodID we generated on add_abi function
-            method_id = log[u'topics'][0][2:]
-
-            if self.methods.get(method_id):
-                # method item has the event name, inputs and types
-                method = self.methods[method_id]
-                decoded_params = []
-                data_i = 0
-                topics_i = 1
-                data_types = []
-
-                # get param types from properties not indexed
-                for param in method[u'inputs']:
-                    if not param[u'indexed']:
-                        data_types.append(param[u'type'])
-
-                decoded_data = decode_abi(data_types, log[u'data'])
-
-                for param in method[u'inputs']:
-                    decoded_p = {
-                        u'name': param[u'name']
-                    }
-                    if param[u'indexed']:
-                        decoded_p[u'value'] = log[u'topics'][topics_i]
-                        topics_i += 1
-                    else:
-                        decoded_p[u'value'] = decoded_data[data_i]
-                        data_i += 1
-
-                    if u'[]' in param[u'type']:
-                        if u'address' in param[u'type']:
-                            decoded_p[u'value'] = list([remove_0x_head(account) for account in decoded_p[u'value']])
-                        else:
-                            decoded_p[u'value'] = list(decoded_p[u'value'])
-                    elif u'address' == param[u'type']:
-                        address = remove_0x_head(decoded_p[u'value'])
-                        # logger.info('address, length {}'.format(len(address)))
-                        if len(address) == 40:
-                            decoded_p[u'value'] = address
-                        elif len(address) == 64:
-                            decoded_p[u'value'] = decoded_p[u'value'][26::]
-
-                    decoded_params.append(decoded_p)
+            try:
+                decoded_params, method = self.decode_log(log)
                 decoded.append({
                     u'params': decoded_params,
                     u'name': method[u'name'],
                     u'address': remove_0x_head(log[u'address'])
                 })
+            except LookupError:
+                pass
 
         return decoded
