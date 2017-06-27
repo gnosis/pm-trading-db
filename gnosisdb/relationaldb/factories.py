@@ -65,6 +65,14 @@ class CategoricalEventFactory(EventFactory):
         model = models.CategoricalEvent
 
 
+class ScalarEventFactory(EventFactory):
+    class Meta:
+        model = models.ScalarEvent
+
+    upper_bound = 1
+    lower_bound = 0
+
+
 class OutcomeTokenFactory(ContractFactory):
 
     class Meta:
