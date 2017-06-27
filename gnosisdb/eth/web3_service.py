@@ -1,6 +1,7 @@
-from settings_utils.singleton import Singleton
-from web3 import Web3, RPCProvider
 from django.conf import settings
+from web3 import Web3, RPCProvider
+
+from .singleton import Singleton
 
 
 class Web3Service(Singleton):
