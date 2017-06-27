@@ -1,4 +1,4 @@
-from abc import ABCMeta, abstractmethod
+from eth.chainevent import AbstractEventReceiver
 from relationaldb.serializers import (
     CentralizedOracleSerializer, ScalarEventSerializer, CategoricalEventSerializer,
     UltimateOracleSerializer, MarketSerializer, OutcomeTokenInstanceSerializer,
@@ -14,14 +14,6 @@ from celery.utils.log import get_task_logger
 from json import dumps
 
 logger = get_task_logger(__name__)
-
-
-class AbstractEventReceiver(object):
-    """Abstract EventReceiver class."""
-    __metaclass__ = ABCMeta
-
-    @abstractmethod
-    def save(self, decoded_event, block_info): pass
 
 
 class CentralizedOracleFactoryReceiver(AbstractEventReceiver):
