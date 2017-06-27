@@ -10,7 +10,7 @@ from json import loads, dumps
 from relationaldb import models
 from ipfs.ipfs import Ipfs
 from relationaldb.factories import EventDescriptionFactory
-from gnosisdb.eth.abis import load_json_file, abi_file_path
+from chainevents.abis import load_json_file, abi_file_path
 import os
 
 
@@ -91,7 +91,7 @@ class TestDaemonExec(TestCase):
             {
                 'NAME': 'Centralized Oracle Factory',
                 'EVENT_ABI': load_json_file(abi_file_path('CentralizedOracleFactory.json')),
-                'EVENT_DATA_RECEIVER': 'eth.event_receiver.CentralizedOracleFactoryReceiver',
+                'EVENT_DATA_RECEIVER': 'chainevents.event_receivers.CentralizedOracleFactoryReceiver',
                 'ADDRESSES': [self.centralized_oracle_factory_address[2::]]
             }
         ]
