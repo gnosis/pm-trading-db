@@ -8,7 +8,7 @@ class ContractSerializer(serializers.BaseSerializer):
     def to_representation(self, instance):
         return {
             'address': instance.address,
-            # 'factory_address': instance.factory_address,
+            'factory_address': instance.factory,
             'creator': instance.creator,
             'creation_date': instance.creation_date_time,
             'creation_block': instance.creation_block
@@ -40,10 +40,7 @@ class EventDescriptionSerializer(serializers.BaseSerializer):
         return result
 
 
-class OracleSerializer(serializers.ModelSerializer):
-    contract = ContractSerializer(source='*', many=False, read_only=True)
-    is_outcome_set = serializers.BooleanField()
-    outcome = serializers.IntegerField()
+class OracleSerializer(serializers.Serializer):
 
     def to_representation(self, instance):
         try:
@@ -57,10 +54,6 @@ class OracleSerializer(serializers.ModelSerializer):
             return UltimateOracleSerializer(ultimate_oracle).to_representation(ultimate_oracle)
         except UltimateOracle.DoesNotExist:
             return super(OracleSerializer, self).to_representation(instance)
-
-    class Meta:
-        model = Oracle
-        fields = ('contract', 'is_outcome_set', 'outcome')
 
 
 class CentralizedOracleSerializer(serializers.ModelSerializer):

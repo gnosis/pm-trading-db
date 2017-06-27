@@ -6,7 +6,7 @@ from rest_framework import status
 from relationaldb.factories import (
     CentralizedOracleFactory, UltimateOracleFactory,
     EventFactory, OutcomeTokenFactory, MarketFactory,
-    EventDescriptionFactory
+    EventDescriptionFactory, CategoricalEventFactory
 )
 from relationaldb.models import CentralizedOracle, UltimateOracle, Market
 from ipfs.ipfs import Ipfs
@@ -108,6 +108,36 @@ class TestViews(APITestCase):
         market_search_response = self.client.get(reverse('api:markets-by-name', kwargs={'addr': markets[0].address}), content_type='application/json')
         self.assertEquals(market_search_response.status_code, status.HTTP_200_OK)
         self.assertEquals(json.loads(market_search_response.content).get('contract').get('address'), markets[0].address)
+
+    def test_markets_with_event_description(self):
+        # test empty events response
+        empty_markets_response = self.client.get(reverse('api:markets'), content_type='application/json')
+        self.assertEquals(len(json.loads(empty_markets_response.content).get('results')), 0)
+
+        # create markets
+        oracle = CentralizedOracleFactory()
+        event = CategoricalEventFactory(oracle=oracle)
+        market = MarketFactory(event=event)
+
+        market_response_data = self.client.get(reverse('api:markets'), content_type='application/json')
+        self.assertEquals(market_response_data.status_code, status.HTTP_200_OK)
+        results = json.loads(market_response_data.content).get('results')
+        self.assertEquals(len(results), 1)
+
+        self.assertIsNotNone(results[0]['event']['oracle'].get('eventDescription'))
+        self.assertIsNotNone(results[0]['event']['oracle']['eventDescription'].get('ipfsHash'))
+        self.assertEqual(results[0]['event']['oracle']['eventDescription']['ipfsHash'], oracle.event_description.ipfs_hash)
+
+    def test_decimal_field_frontier_value(self):
+        market = MarketFactory()
+        market.funding = 2 ** 256
+        market.save()
+
+        market_response_data = self.client.get(reverse('api:markets'), content_type='application/json')
+        self.assertEquals(market_response_data.status_code, status.HTTP_200_OK)
+        self.assertEquals(len(json.loads(market_response_data.content).get('results')), 1)
+
+        self.assertEqual(str(market.funding), json.loads(market_response_data.content)['results'][0]['funding'])
 
     def test_factories(self):
         pass
