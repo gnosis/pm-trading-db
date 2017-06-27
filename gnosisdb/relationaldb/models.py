@@ -32,7 +32,7 @@ class ContractCreatedByFactory(Contract, BlockTimeStamped):
 
 class Oracle(ContractCreatedByFactory):
     is_outcome_set = models.BooleanField(default=False)
-    outcome = models.BigIntegerField(blank=True, null=True)
+    outcome = models.DecimalField(max_digits=80, decimal_places=0, blank=True, null=True)
 
 
 # Events
@@ -40,13 +40,13 @@ class Event(ContractCreatedByFactory):
     oracle = models.ForeignKey(Oracle, related_name='event_oracle')
     collateral_token = models.CharField(max_length=40, db_index=True)
     is_winning_outcome_set = models.BooleanField(default=False)
-    outcome = models.BigIntegerField(null=True)
-    redeemed_winnings = models.BigIntegerField(default=0)
+    outcome = models.DecimalField(max_digits=80, decimal_places=0, null=True)
+    redeemed_winnings = models.DecimalField(max_digits=80, decimal_places=0, default=0)
 
 
 class ScalarEvent(Event):
-    lower_bound = models.BigIntegerField()
-    upper_bound = models.BigIntegerField()
+    lower_bound = models.DecimalField(max_digits=80, decimal_places=0)
+    upper_bound = models.DecimalField(max_digits=80, decimal_places=0)
 
 
 class CategoricalEvent(Event):
@@ -57,13 +57,13 @@ class CategoricalEvent(Event):
 class OutcomeToken(Contract):
     event = models.ForeignKey(Event)
     index = models.PositiveIntegerField()
-    total_supply = models.BigIntegerField(default=0)
+    total_supply = models.DecimalField(max_digits=80, decimal_places=0, default=0)
 
 
 class OutcomeTokenBalance(models.Model):
     owner = models.CharField(max_length=40)
     outcome_token = models.ForeignKey(OutcomeToken)
-    balance = models.BigIntegerField(default=0)
+    balance = models.DecimalField(max_digits=80, decimal_places=0, default=0)
 
 
 # Event Descriptions
@@ -93,14 +93,14 @@ class UltimateOracle(Oracle):
     forwarded_oracle = models.ForeignKey(Oracle, related_name='ultimate_oracle_forwarded_oracle', null=True)
     collateral_token = models.CharField(max_length=40, db_index=True)
     spread_multiplier = models.PositiveIntegerField()
-    challenge_period = models.BigIntegerField()
-    challenge_amount = models.BigIntegerField()
-    front_runner_period = models.BigIntegerField()
-    forwarded_outcome = models.BigIntegerField(null=True)
-    outcome_set_at_timestamp = models.BigIntegerField(null=True)
-    front_runner = models.BigIntegerField(null=True)
-    front_runner_set_at_timestamp = models.BigIntegerField(null=True)
-    total_amount = models.BigIntegerField(null=True)
+    challenge_period = models.DecimalField(max_digits=80, decimal_places=0)
+    challenge_amount = models.DecimalField(max_digits=80, decimal_places=0)
+    front_runner_period = models.DecimalField(max_digits=80, decimal_places=0)
+    forwarded_outcome = models.DecimalField(max_digits=80, decimal_places=0, null=True)
+    outcome_set_at_timestamp = models.DecimalField(max_digits=80, decimal_places=0, null=True)
+    front_runner = models.DecimalField(max_digits=80, decimal_places=0, null=True)
+    front_runner_set_at_timestamp = models.DecimalField(max_digits=80, decimal_places=0, null=True)
+    total_amount = models.DecimalField(max_digits=80, decimal_places=0, null=True)
 
 
 class OutcomeVoteBalance(models.Model):
@@ -110,7 +110,7 @@ class OutcomeVoteBalance(models.Model):
 
     ultimate_oracle = models.ForeignKey(UltimateOracle, related_name='outcome_vote_balance_ultimate_oracle')
     address = models.CharField(max_length=40) # sender
-    balance = models.BigIntegerField()
+    balance = models.DecimalField(max_digits=80, decimal_places=0)
 
 
 # Market
@@ -124,31 +124,31 @@ class Market(ContractCreatedByFactory):
     event = models.ForeignKey(Event, related_name='market_oracle')
     market_maker = models.CharField(max_length=40, db_index=True)
     fee = models.PositiveIntegerField()
-    funding = models.BigIntegerField(null=True)
+    funding = models.DecimalField(max_digits=80, decimal_places=0, null=True)
     # net_outcome_tokens_sold = models.TextField(validators=[validate_numeric_dictionary], null=True)
-    net_outcome_tokens_sold = ArrayField(models.BigIntegerField(), null=False)
-    withdrawn_fees = models.BigIntegerField(default=0)
+    net_outcome_tokens_sold = ArrayField(models.DecimalField(max_digits=80, decimal_places=0), null=False)
+    withdrawn_fees = models.DecimalField(max_digits=80, decimal_places=0, default=0)
     stage = models.PositiveIntegerField(choices=stages, default=0)
-    revenue = models.BigIntegerField()
-    collected_fees = models.BigIntegerField()
+    revenue = models.DecimalField(max_digits=80, decimal_places=0)
+    collected_fees = models.DecimalField(max_digits=80, decimal_places=0)
 
 
 class Order(BlockTimeStamped):
     market = models.ForeignKey(Market)
     sender = models.CharField(max_length=40, db_index=True)
     outcome_token_index = models.PositiveIntegerField()
-    outcome_token_count = models.BigIntegerField()
-    net_outcome_tokens_sold = ArrayField(models.BigIntegerField()) # models.TextField(validators=[validate_numeric_dictionary], null=True)
+    outcome_token_count = models.DecimalField(max_digits=80, decimal_places=0)
+    net_outcome_tokens_sold = ArrayField(models.DecimalField(max_digits=80, decimal_places=0))
 
 
 class BuyOrder(Order):
-    cost = models.BigIntegerField()
+    cost = models.DecimalField(max_digits=80, decimal_places=0)
 
 
 class SellOrder(Order):
-    profit = models.BigIntegerField()
+    profit = models.DecimalField(max_digits=80, decimal_places=0)
 
 
 class ShortSellOrder(Order):
-    cost = models.BigIntegerField()
+    cost = models.DecimalField(max_digits=80, decimal_places=0)
 
