@@ -110,7 +110,7 @@ class MarketSerializer(serializers.ModelSerializer):
     market_maker = serializers.CharField()
     fee = serializers.IntegerField()
     funding = serializers.DecimalField(max_digits=80, decimal_places=0)
-    net_outcome_tokens_sold = serializers.ListField(read_only=True)
+    net_outcome_tokens_sold = serializers.ListField(serializers.DecimalField(max_digits=80, decimal_places=0, read_only=True))
     stage = serializers.IntegerField()
 
     class Meta:
