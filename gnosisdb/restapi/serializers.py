@@ -103,10 +103,17 @@ class EventSerializer(serializers.ModelSerializer):
     is_winning_outcome_set = serializers.BooleanField()
     outcome = serializers.IntegerField()
     # outcome_tokens = OutcomeTokenSerializer(many=True, read_only=True)
+    type = serializers.SerializerMethodField()
 
     class Meta:
         model = Event
-        fields = ('contract', 'collateral_token', 'oracle', 'is_winning_outcome_set', 'outcome')
+        fields = ('contract', 'collateral_token', 'oracle', 'is_winning_outcome_set', 'outcome', 'type',)
+
+    def get_type(self, obj):
+        if hasattr(obj, 'scalarevent'):
+            return 'SCALAR'
+        else:
+            return 'CATEGORICAL'
 
 
 class MarketSerializer(serializers.ModelSerializer):
