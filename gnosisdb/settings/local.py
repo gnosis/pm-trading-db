@@ -26,7 +26,6 @@ INSTALLED_APPS = (
     'rest_framework',
     'restapi',
     'eth',
-    'settings_utils',
     'rest_framework_swagger',
     'chainevents',
 )
