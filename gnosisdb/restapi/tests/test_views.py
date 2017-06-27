@@ -109,5 +109,16 @@ class TestViews(APITestCase):
         self.assertEquals(market_search_response.status_code, status.HTTP_200_OK)
         self.assertEquals(json.loads(market_search_response.content).get('contract').get('address'), markets[0].address)
 
+    def test_decimal_field_frontier_value(self):
+        market = MarketFactory()
+        market.funding = 2 ** 256
+        market.save()
+
+        market_response_data = self.client.get(reverse('api:markets'), content_type='application/json')
+        self.assertEquals(market_response_data.status_code, status.HTTP_200_OK)
+        self.assertEquals(len(json.loads(market_response_data.content).get('results')), 1)
+
+        self.assertEqual(str(market.funding), json.loads(market_response_data.content)['results'][0]['funding'])
+
     def test_factories(self):
         pass
