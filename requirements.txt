@@ -21,3 +21,5 @@ djangorestframework-camel-case==0.2.0
 ipfsapi==0.4.1
 six==1.10.0
 django-rest-swagger==2.1.2
+-e git+https://github.com/gnosis/django-eth-events#egg=django-eth-events
+

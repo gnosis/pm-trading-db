@@ -2,11 +2,10 @@
 from __future__ import unicode_literals
 from django.test import TestCase
 from web3 import Web3
-from eth.factories import DaemonFactory
-from eth.event_listener import EventListener
-from eth.web3_service import Web3Service
+from django_eth_events.factories import DaemonFactory
+from django_eth_events.event_listener import EventListener
+from django_eth_events.web3_service import Web3Service
 from web3 import TestRPCProvider
-from json import loads, dumps
 from relationaldb import models
 from ipfs.ipfs import Ipfs
 from relationaldb.factories import EventDescriptionFactory
@@ -124,9 +123,3 @@ class TestDaemonExec(TestCase):
         self.assertIsNotNone(tx_hash)
         self.listener_under_test.execute()
         self.assertEqual(len(models.CentralizedOracle.objects.all()), 1)
-
-    def test_market_sell_event(self):
-        pass
-
-    def test_market_short_sell_event(self):
-        pass

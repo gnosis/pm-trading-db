@@ -1,5 +1,5 @@
 from django.utils.module_loading import import_string
-from gnosisdb.eth.chainevent import AbstractAddressesGetter
+from django_eth_events.chainevents import AbstractAddressesGetter
 import unittest
 import inspect
 

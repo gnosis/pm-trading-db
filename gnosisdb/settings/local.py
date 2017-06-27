@@ -25,7 +25,7 @@ INSTALLED_APPS = (
     'relationaldb',
     'rest_framework',
     'restapi',
-    'eth',
+    'django_eth_events',
     'rest_framework_swagger',
     'chainevents',
 )

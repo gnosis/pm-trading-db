@@ -1,6 +1,6 @@
 from relationaldb.models import Contract, Market, Event, OutcomeToken, CentralizedOracle, UltimateOracle
 from django.core.exceptions import ObjectDoesNotExist
-from eth.chainevent import AbstractAddressesGetter
+from django_eth_events.chainevents import AbstractAddressesGetter
 
 
 class ContractAddressGetter(AbstractAddressesGetter):
