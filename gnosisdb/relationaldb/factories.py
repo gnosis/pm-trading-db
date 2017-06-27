@@ -60,6 +60,11 @@ class EventFactory(ContractCreatedByFactory):
     redeemed_winnings = 0
 
 
+class CategoricalEventFactory(EventFactory):
+    class Meta:
+        model = models.CategoricalEvent
+
+
 class OutcomeTokenFactory(ContractFactory):
 
     class Meta:
