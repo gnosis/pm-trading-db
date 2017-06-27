@@ -27,7 +27,8 @@ INSTALLED_APPS = (
     'restapi',
     'eth',
     'settings_utils',
-    'rest_framework_swagger'
+    'rest_framework_swagger',
+    'chainevents',
 )
 
 MIDDLEWARE_CLASSES = [
