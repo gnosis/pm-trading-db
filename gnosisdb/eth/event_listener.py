@@ -1,13 +1,14 @@
-from settings_utils.singleton import Singleton
-from decoder import Decoder
-from json import loads, dumps
-from eth.web3_service import Web3Service
+from threading import RLock
+
+from celery.utils.log import get_task_logger
 from django.conf import settings
 from django.utils.module_loading import import_string
-from celery.utils.log import get_task_logger
-from eth.models import Daemon
 from ethereum.utils import remove_0x_head
-from threading import RLock
+
+from .decoder import Decoder
+from .models import Daemon
+from .singleton import Singleton
+from .web3_service import Web3Service
 
 logger = get_task_logger(__name__)
 

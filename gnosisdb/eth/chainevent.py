@@ -1,5 +1,5 @@
 from abc import ABCMeta, abstractmethod
-from settings_utils.singleton import SingletonABCMeta
+from .singleton import SingletonABCMeta
 
 
 class AbstractAddressesGetter(object):
