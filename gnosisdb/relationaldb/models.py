@@ -23,18 +23,14 @@ class Contract(models.Model):
 
 
 class ContractCreatedByFactory(Contract, BlockTimeStamped):
-    factory = models.CharField(max_length=40)  # factory contract creating the contract
-    creator = models.CharField(max_length=40)
+    factory = models.CharField(max_length=40, db_index=True)  # factory contract creating the contract
+    creator = models.CharField(max_length=40, db_index=True)
 
     class Meta:
         abstract = True
 
 
 class Oracle(ContractCreatedByFactory):
-
-    class Meta:
-        unique_together = ('factory', 'creator',)
-
     is_outcome_set = models.BooleanField(default=False)
     outcome = models.BigIntegerField(blank=True, null=True)
 
@@ -42,7 +38,7 @@ class Oracle(ContractCreatedByFactory):
 # Events
 class Event(ContractCreatedByFactory):
     oracle = models.ForeignKey(Oracle, related_name='event_oracle')
-    collateral_token = models.CharField(max_length=40)
+    collateral_token = models.CharField(max_length=40, db_index=True)
     is_winning_outcome_set = models.BooleanField(default=False)
     outcome = models.BigIntegerField(null=True)
     redeemed_winnings = models.BigIntegerField(default=0)
@@ -65,7 +61,6 @@ class OutcomeToken(Contract):
 
 
 class OutcomeTokenBalance(models.Model):
-    # address = models.CharField(max_length=40)
     owner = models.CharField(max_length=40)
     outcome_token = models.ForeignKey(OutcomeToken)
     balance = models.BigIntegerField(default=0)
@@ -90,17 +85,13 @@ class CategoricalEventDescription(EventDescription):
 
 # Oracles
 class CentralizedOracle(Oracle):
-    owner = models.CharField(max_length=40) # owner can be updated
+    owner = models.CharField(max_length=40, db_index=True) # owner can be updated
     event_description = models.ForeignKey(EventDescription, unique=False, null=True)
 
 
 class UltimateOracle(Oracle):
-
-    class Meta:
-        index_together = ['forwarded_oracle', 'collateral_token',]
-
     forwarded_oracle = models.ForeignKey(Oracle, related_name='ultimate_oracle_forwarded_oracle', null=True)
-    collateral_token = models.CharField(max_length=40)
+    collateral_token = models.CharField(max_length=40, db_index=True)
     spread_multiplier = models.PositiveIntegerField()
     challenge_period = models.BigIntegerField()
     challenge_amount = models.BigIntegerField()
@@ -124,10 +115,6 @@ class OutcomeVoteBalance(models.Model):
 
 # Market
 class Market(ContractCreatedByFactory):
-
-    class Meta:
-        unique_together = ('event', 'market_maker', 'creator',)
-
     stages = (
         (0, 'MarketCreated'),
         (1, 'MarketFunded'),
@@ -135,7 +122,7 @@ class Market(ContractCreatedByFactory):
     )
 
     event = models.ForeignKey(Event, related_name='market_oracle')
-    market_maker = models.CharField(max_length=40)
+    market_maker = models.CharField(max_length=40, db_index=True)
     fee = models.PositiveIntegerField()
     funding = models.BigIntegerField(null=True)
     # net_outcome_tokens_sold = models.TextField(validators=[validate_numeric_dictionary], null=True)
@@ -147,12 +134,8 @@ class Market(ContractCreatedByFactory):
 
 
 class Order(BlockTimeStamped):
-
-    class Meta:
-        unique_together = ('sender', 'creation_block',)
-
     market = models.ForeignKey(Market)
-    sender = models.CharField(max_length=40)
+    sender = models.CharField(max_length=40, db_index=True)
     outcome_token_index = models.PositiveIntegerField()
     outcome_token_count = models.BigIntegerField()
     net_outcome_tokens_sold = ArrayField(models.BigIntegerField()) # models.TextField(validators=[validate_numeric_dictionary], null=True)
