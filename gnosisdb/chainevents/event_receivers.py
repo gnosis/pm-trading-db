@@ -1,4 +1,4 @@
-from eth.chainevent import AbstractEventReceiver
+from django_eth_events.chainevents import AbstractEventReceiver
 from relationaldb.serializers import (
     CentralizedOracleSerializer, ScalarEventSerializer, CategoricalEventSerializer,
     UltimateOracleSerializer, MarketSerializer, OutcomeTokenInstanceSerializer,

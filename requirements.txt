@@ -1,5 +1,3 @@
-pymongo==3.4.0
-jsonschema==2.6.0
 bitcoin==1.1.42
 djangorestframework==3.6.3
 Django==1.11
@@ -21,3 +19,4 @@ djangorestframework-camel-case==0.2.0
 ipfsapi==0.4.1
 six==1.10.0
 django-rest-swagger==2.1.2
+-e git+https://github.com/gnosis/django-eth-events.git@0a68ca33296aebdcebd5d7f5af45099588751849#egg=django-eth-events
