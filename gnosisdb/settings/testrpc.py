@@ -8,7 +8,7 @@ ETHEREUM_NODE_SSL = 0
 
 
 # GnosisDB Contract Addresses
-GNOSISDB_CONTRACTS = [
+ETH_EVENTS = [
     {
         'ADDRESSES': ['254dffcd3277c0b1660f6d42efbb754edababc2b'],
         'ADDRESSES_GETTER': '',
