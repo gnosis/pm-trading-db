@@ -108,7 +108,7 @@ class TestDaemonExec(TestCase):
         categorical_event_description_json = {
             'title': ' '.join(event_description_factory.title),
             'description': ' '.join(event_description_factory.description),
-            'resolution_date': event_description_factory.resolution_date.isoformat(),
+            'resolutionDate': event_description_factory.resolution_date.isoformat(),
             'outcomes': ['A', 'B', 'C']
         }
         ipfs_hash = self.ipfs.post(categorical_event_description_json)

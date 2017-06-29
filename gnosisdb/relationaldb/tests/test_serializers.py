@@ -55,7 +55,7 @@ class TestSerializers(TestCase):
         event_description_json = {
             'title': oracle.event_description.title,
             'description': oracle.event_description.description,
-            'resolution_date': oracle.event_description.resolution_date.isoformat(),
+            'resolutionDate': oracle.event_description.resolution_date.isoformat(),
             'outcomes': ['Yes', 'No']
         }
 
@@ -509,7 +509,7 @@ class TestSerializers(TestCase):
         event_description_json = {
             'title': oracle.event_description.title,
             'description': oracle.event_description.description,
-            'resolution_date': oracle.event_description.resolution_date.isoformat(),
+            'resolutionDate': oracle.event_description.resolution_date.isoformat(),
             'outcomes': ['Yes', 'No']
         }
 

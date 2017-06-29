@@ -147,16 +147,36 @@ class IpfsHashField(CharField):
             except Exception as e:
                 raise serializers.ValidationError('IPFS hash must exist')
 
-            # add ipfs_hash to description_json
-            event_description_json.update({'ipfs_hash': data})
+            if not event_description_json.get('title'):
+                raise serializers.ValidationError('Missing title field')
+
+            if not event_description_json.get('resolutionDate'):
+                raise serializers.ValidationError('Missing resolution date field')
+
+            if not event_description_json.get('description'):
+                raise serializers.ValidationError('Missing description field')
 
             if 'outcomes' in event_description_json:
+                categorical_json = {
+                    'ipfs_hash': data,
+                    'title': event_description_json['title'],
+                    'description': event_description_json['description'],
+                    'resolution_date': event_description_json['resolutionDate'],
+                    'outcomes': event_description_json['outcomes']
+                }
                 # categorical
-                event_description = models.CategoricalEventDescription.objects.create(**event_description_json)
+                event_description = models.CategoricalEventDescription.objects.create(**categorical_json)
 
             elif 'decimals' in event_description_json and 'unit' in event_description_json:
+                scalar_json = {
+                    'ipfs_hash': data,
+                    'title': event_description_json['title'],
+                    'description': event_description_json['description'],
+                    'resolution_date': event_description_json['resolutionDate'],
+                    'decimals': event_description_json['decimals']
+                }
                 # scalar
-                event_description = models.ScalarEventDescription.objects.create(**event_description_json)
+                event_description = models.ScalarEventDescription.objects.create(**scalar_json)
             else:
                 raise serializers.ValidationError('Event must be categorical or scalar')
 

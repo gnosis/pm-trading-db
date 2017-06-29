@@ -37,7 +37,7 @@ class TestEventReceiver(TestCase):
         event_description_json = {
             'title':'Test title',
             'description': 'test long description',
-            'resolution_date': datetime.now().isoformat(),
+            'resolutionDate': datetime.now().isoformat(),
             'outcomes': ['YES', 'NO']
         }
 
