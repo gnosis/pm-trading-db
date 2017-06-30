@@ -8,7 +8,7 @@ from django_eth_events.web3_service import Web3Service
 from web3 import TestRPCProvider
 from relationaldb import models
 from ipfs.ipfs import Ipfs
-from relationaldb.factories import EventDescriptionFactory
+from relationaldb.tests.factories import EventDescriptionFactory
 from chainevents.abis import load_json_file, abi_file_path
 import os
 

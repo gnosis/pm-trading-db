@@ -3,7 +3,7 @@ from __future__ import unicode_literals, absolute_import
 from django.core.urlresolvers import reverse
 from rest_framework.test import APITestCase
 from rest_framework import status
-from relationaldb.factories import (
+from relationaldb.tests.factories import (
     CentralizedOracleFactory, UltimateOracleFactory,
     EventFactory, OutcomeTokenFactory, MarketFactory,
     EventDescriptionFactory, CategoricalEventFactory

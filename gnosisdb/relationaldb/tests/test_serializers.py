@@ -1,5 +1,5 @@
 from unittest import TestCase
-from relationaldb.factories import (
+from relationaldb.tests.factories import (
     OracleFactory, CentralizedOracleFactory, UltimateOracleFactory, EventFactory,
     MarketFactory, EventDescriptionFactory, OutcomeTokenFactory, OutcomeTokenBalanceFactory,
     ScalarEventDescriptionFactory

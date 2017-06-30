@@ -141,7 +141,7 @@ CELERY_DISABLE_RATE_LIMITS = False
 # If you want to see results and try out tasks interactively, change it to False
 # Or change this setting on tasks level
 CELERY_IGNORE_RESULT = False
-CELERY_SEND_TASK_ERROR_EMAILS = False
+CELERY_SEND_TASK_ERROR_EMAILS = True
 CELERY_TASK_RESULT_EXPIRES = 600
 # Don't use pickle as serializer, json is much safer
 CELERY_TASK_SERIALIZER = "json"

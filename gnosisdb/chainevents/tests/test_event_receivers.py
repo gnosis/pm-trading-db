@@ -13,7 +13,7 @@ from relationaldb.models import (
     Event, OutcomeVoteBalance
 )
 
-from relationaldb.factories import (
+from relationaldb.tests.factories import (
     UltimateOracleFactory, CentralizedOracleFactory,
     OracleFactory, EventFactory, MarketFactory, OutcomeTokenFactory,
     OutcomeVoteBalanceFactory
