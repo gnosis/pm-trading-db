@@ -34,7 +34,7 @@ Change your working dir to /contracts and deploy the contracts onto the running 
 
 `python ethdeploy.py --f deploy/basicFramework.json --gas 40000000`
 
-The execution will furnish all the contracts' addesses. Now open /settings/local.py file and modify the addresses in GNOSISDB_CONTRACTS for the following instances:
+The execution will furnish all the contracts' addesses. Now open /settings/local.py file and modify the addresses in ETH_EVENTS for the following instances:
 * Centralized Oracle Factory
 * Event Factory
 * Standard Market Factory
