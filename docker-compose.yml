@@ -8,8 +8,6 @@ services:
       - "8080:8080"
       - "4001:4001"
       - "5001:5001"
-    volumes:
-      - ./.ipfs/:/data/ipfs/
   rabbit:
     hostname: rabbit
     image: rabbitmq:latest
@@ -53,4 +51,5 @@ services:
     links:
       - rabbit
     depends_on:
+      - db
       - rabbit
