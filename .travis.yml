@@ -6,6 +6,11 @@ services:
 before_script:
   - psql -c 'create database travisci;' -U postgres
 
+before_install:
+  - export DJANGO_SETTINGS_MODULE=settings.production
+  - export PYTHONPATH=$HOME/builds/gnosis/gnosisdb
+  - export PIP_USE_MIRRORS=true
+
 script:
   - cd gnosisdb
   - python manage.py test
