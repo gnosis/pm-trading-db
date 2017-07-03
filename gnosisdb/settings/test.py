@@ -1,4 +1,4 @@
-from gnosisdb.settings.local import *
+from settings.local import *
 import os
 
 
