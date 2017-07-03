@@ -10,7 +10,7 @@ Gnosis Core Database Layer
 
 ### Build containers
 The application is made up of several container images that are linked together using docker-compose. Before running the application, build the images:
-`sudo docker-compose build`
+`docker-compose build --force-rm`
 
 ## Create a Django superuser
 Run the Web container with the following command and create a super user in order to access the /admin interface.
