@@ -7,8 +7,8 @@ before_script:
   - psql -c 'create database travisci;' -U postgres
 
 before_install:
-  - export DJANGO_SETTINGS_MODULE=gnosisdb.settings.test
-  - export PYTHONPATH=$HOME/builds/gnosis/gnosisdb
+  - export DJANGO_SETTINGS_MODULE="settings.test"
+  - export PYTHONPATH="$HOME/build/gnosis/gnosisdb"
   - export PIP_USE_MIRRORS=true
 
 script:

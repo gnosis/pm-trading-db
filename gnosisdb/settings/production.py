@@ -1,4 +1,4 @@
-from gnosisdb.settings.base import *
+from settings.base import *
 import os
 
 CELERY_SEND_TASK_ERROR_EMAILS = True
