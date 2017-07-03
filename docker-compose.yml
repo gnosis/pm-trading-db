@@ -3,7 +3,9 @@ version: '2'
 services:
   ipfs:
     hostname: ipfs
-    image: jbenet/go-ipfs:latest
+    build:
+      context: .
+      dockerfile: DockerfileIPFS
     ports:
       - "8080:8080"
       - "4001:4001"
