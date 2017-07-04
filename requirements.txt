@@ -20,4 +20,7 @@ ipfsapi==0.4.1
 six==1.10.0
 django-rest-swagger==2.1.2
 docutils==0.14rc1
--e git+https://github.com/gnosis/django-eth-events.git@39693d7b2f50687f76e73531be1127fd540266dd#egg=django-eth-events
+gunicorn==19.7.1
+whitenoise==3.3.0
+gevent==1.0.1
+-e git+https://github.com/gnosis/django-eth-events.git@98ac2802f21baa344c7dad35337b86406bb3f182#egg=django-eth-events

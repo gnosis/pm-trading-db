@@ -1,2 +1,2 @@
-web: run_django.sh
-worker: run_celery.sh
+web: gunicorn --pythonpath "$PWD/gnosisdb" gnosisdb.wsgi:application --log-file=- --access-logfile '-' --log-level info
+worker: /bin/sh run_celery.sh

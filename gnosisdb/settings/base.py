@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 import sys
-from chainevents.abis import abi_file_path, load_json_file
+from gnosisdb.chainevents.abis import abi_file_path, load_json_file
 
 TIME_ZONE = 'UTC'
 DEBUG = False

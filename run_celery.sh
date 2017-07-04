@@ -15,7 +15,8 @@ fi
 # wait for RabbitMQ server and Postgres to start
 echo "==> call run_celery.sh <=="
 
-cd gnosisdb/
+cd $PWD/gnosisdb
+
 echo "==> run worker <=="
 celery -A gnosisdb.apps worker -Q default -n default@%h --loglevel debug --workdir="$PWD" -c 1 &
 sleep 10
