@@ -17,6 +17,7 @@ script:
 - cd gnosisdb
 - python manage.py test
 after_success:
+- cd ../
 - eval "$(ssh-agent -s)"
 - chmod 600 .travis/deploy_key
 - ssh-add .travis/deploy_key
