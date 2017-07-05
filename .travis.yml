@@ -8,7 +8,7 @@ services:
 before_script:
 - psql -c 'create database travisci;' -U postgres
 before_install:
-- openssl aes-256-cbc -K $encrypted_daa83a01834f_key -iv $encrypted_daa83a01834f_iv
+- openssl aes-256-cbc -K $encrypted_1475ea0b013f_key -iv $encrypted_1475ea0b013f_iv
   -in .travis/deploy_key.enc -out .travis/deploy_key -d
 - export DJANGO_SETTINGS_MODULE="settings.test"
 - export PYTHONPATH="$HOME/build/gnosis/gnosisdb"
