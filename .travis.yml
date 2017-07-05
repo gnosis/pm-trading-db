@@ -18,4 +18,4 @@ after_success:
 - chmod 600 .travis/deploy_key
 - ssh-add .travis/deploy_key
 - git remote add deploy dokku@gnosisdb-beta.gnosis.pm:gnosisdb-beta.gnosis.pm
-- git push deploy -f
+- git push deploy master -f
