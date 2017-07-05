@@ -42,7 +42,7 @@ ADMINS = (
 # ------------------------------------------------------------------------------
 ETHEREUM_NODE_HOST = os.environ['ETHEREUM_NODE_HOST']
 ETHEREUM_NODE_PORT = os.environ['ETHEREUM_NODE_PORT']
-ETHEREUM_NODE_SSL = os.environ['ETHEREUM_NODE_SSL']
+ETHEREUM_NODE_SSL = bool(int(os.environ['ETHEREUM_NODE_SSL']))
 
 # ------------------------------------------------------------------------------
 # IPFS
