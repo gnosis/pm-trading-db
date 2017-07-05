@@ -1,5 +1,8 @@
 language: python
 dist: trusty
+addons:
+  ssh_known_hosts:
+  - gnosisdb-beta.gnosis.pm
 services:
 - postgresql
 before_script:
