@@ -1,9 +1,13 @@
 from __future__ import absolute_import
 import sys
+import environ
 from gnosisdb.chainevents.abis import abi_file_path, load_json_file
 
 TIME_ZONE = 'UTC'
 DEBUG = False
+
+ROOT_DIR = environ.Path(__file__) - 3  # (/a/b/myfile.py - 3 = /)
+DJANGO_DIR = ROOT_DIR.path('gnosisdb')
 
 INSTALLED_APPS = (
     'django.contrib.auth',
@@ -81,8 +85,25 @@ TEMPLATES = [
     },
 ]
 
+# STATIC FILE CONFIGURATION
+# ------------------------------------------------------------------------------
+# See: https://docs.djangoproject.com/en/dev/ref/settings/#static-root
+STATIC_ROOT = str(ROOT_DIR('staticfiles'))
+COMPRESS_ROOT = str(ROOT_DIR('staticfiles'))
+
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#static-url
 STATIC_URL = '/static/'
+
+# See: https://docs.djangoproject.com/en/dev/ref/contrib/staticfiles/#std:setting-STATICFILES_DIRS
+STATICFILES_DIRS = (
+    str(DJANGO_DIR.path('static')),
+)
+
+# See: https://docs.djangoproject.com/en/dev/ref/contrib/staticfiles/#staticfiles-finders
+STATICFILES_FINDERS = (
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder'
+)
 
 DATABASES = {
     'default': {

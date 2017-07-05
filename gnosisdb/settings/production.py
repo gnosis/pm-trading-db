@@ -138,9 +138,8 @@ ETH_EVENTS = [
 # GNOSIS ETHEREUM CONTRACTS
 # ------------------------------------------------------------------------------
 DATABASES = {
-    'default': os.environ['DATABASE_URL'],
-    'alternative': {
-        'ENGINE': 'django.db.backends.postgresql',
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': os.environ['DATABASE_NAME'],
         'USER': os.environ['DATABASE_USER'],
         'PASSWORD': os.environ['DATABASE_PASSWORD'],
