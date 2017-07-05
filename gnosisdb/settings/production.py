@@ -70,7 +70,6 @@ BROKER_URL = 'amqp://{user}:{password}@{hostname}:{port}'.format(
 ETH_EVENTS = [
     {
         'ADDRESSES': [os.environ['CENTRALIZED_ORACLE_FACTORY']],
-        'ADDRESSES_GETTER': '',
         'EVENT_ABI': load_json_file(abi_file_path('CentralizedOracleFactory.json')),
         'EVENT_DATA_RECEIVER': 'chainevents.event_receivers.CentralizedOracleFactoryReceiver',
         'NAME': 'centralizedOracleFactory',
@@ -78,7 +77,6 @@ ETH_EVENTS = [
     },
     {
         'ADDRESSES': [os.environ['ULTIMATE_ORACLE_FACTORY']],
-        'ADDRESSES_GETTER': '',
         'EVENT_ABI': load_json_file(abi_file_path('UltimateOracleFactory.json')),
         'EVENT_DATA_RECEIVER': 'chainevents.event_receivers.UltimateOracleFactoryReceiver',
         'NAME': 'ultimateOracleFactory',
@@ -86,7 +84,6 @@ ETH_EVENTS = [
     },
     {
         'ADDRESSES': [os.environ['EVENT_FACTORY']],
-        'ADDRESSES_GETTER': '',
         'EVENT_ABI': load_json_file(abi_file_path('EventFactory.json')),
         'EVENT_DATA_RECEIVER': 'chainevents.event_receivers.EventFactoryReceiver',
         'NAME': 'eventFactory',
@@ -94,7 +91,6 @@ ETH_EVENTS = [
     },
     {
         'ADDRESSES': [os.environ['MARKET_FACTORY']],
-        'ADDRESSES_GETTER': '',
         'EVENT_ABI': load_json_file(abi_file_path('StandardMarketFactory.json')),
         'EVENT_DATA_RECEIVER': 'chainevents.event_receivers.MarketFactoryReceiver',
         'NAME': 'standardMarketFactory',
@@ -102,7 +98,6 @@ ETH_EVENTS = [
         'PUBLISH_UNDER': 'marketFactories'
     },
     {
-        'ADDRESSES': [],
         'ADDRESSES_GETTER': 'chainevents.address_getters.MarketAddressGetter',
         'EVENT_ABI': load_json_file(abi_file_path('StandardMarket.json')),
         'EVENT_DATA_RECEIVER': 'chainevents.event_receivers.MarketInstanceReceiver',

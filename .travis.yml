@@ -14,10 +14,8 @@ before_install:
 - export PYTHONPATH="$HOME/build/gnosis/gnosisdb"
 - export PIP_USE_MIRRORS=true
 script:
-- cd gnosisdb
-- python manage.py test
+- python gnosisdb/manage.py test
 after_success:
-- cd ../
 - eval "$(ssh-agent -s)"
 - chmod 600 .travis/deploy_key
 - ssh-add .travis/deploy_key

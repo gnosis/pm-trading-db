@@ -183,7 +183,6 @@ IPFS_PORT = 5001
 ETH_EVENTS = [
     {
         'ADDRESSES': ['254dffcd3277c0b1660f6d42efbb754edababc2b'],
-        'ADDRESSES_GETTER': '',
         'EVENT_ABI': load_json_file(abi_file_path('CentralizedOracleFactory.json')),
         'EVENT_DATA_RECEIVER': 'chainevents.event_receivers.CentralizedOracleFactoryReceiver',
         'NAME': 'centralizedOracleFactory',
@@ -191,7 +190,6 @@ ETH_EVENTS = [
     },
     {
         'ADDRESSES': ['c89ce4735882c9f0f0fe26686c53074e09b0d550'],
-        'ADDRESSES_GETTER': '',
         'EVENT_ABI': load_json_file(abi_file_path('UltimateOracleFactory.json')),
         'EVENT_DATA_RECEIVER': 'chainevents.event_receivers.UltimateOracleFactoryReceiver',
         'NAME': 'ultimateOracleFactory',
@@ -199,7 +197,6 @@ ETH_EVENTS = [
     },
     {
         'ADDRESSES': ['5b1869d9a4c187f2eaa108f3062412ecf0526b24'],
-        'ADDRESSES_GETTER': '',
         'EVENT_ABI': load_json_file(abi_file_path('EventFactory.json')),
         'EVENT_DATA_RECEIVER': 'chainevents.event_receivers.EventFactoryReceiver',
         'NAME': 'eventFactory',
@@ -207,7 +204,6 @@ ETH_EVENTS = [
     },
     {
         'ADDRESSES': ['9561c133dd8580860b6b7e504bc5aa500f0f06a7'],
-        'ADDRESSES_GETTER': '',
         'EVENT_ABI': load_json_file(abi_file_path('StandardMarketFactory.json')),
         'EVENT_DATA_RECEIVER': 'chainevents.event_receivers.MarketFactoryReceiver',
         'NAME': 'standardMarketFactory',
@@ -215,7 +211,6 @@ ETH_EVENTS = [
         'PUBLISH_UNDER': 'marketFactories'
     },
     {
-        'ADDRESSES': [],
         'ADDRESSES_GETTER': 'chainevents.address_getters.MarketAddressGetter',
         'EVENT_ABI': load_json_file(abi_file_path('StandardMarket.json')),
         'EVENT_DATA_RECEIVER': 'chainevents.event_receivers.MarketInstanceReceiver',
@@ -246,4 +241,3 @@ ETH_EVENTS = [
         'NAME': 'Ultimate Oracle Instances'
     },
 ]
-
