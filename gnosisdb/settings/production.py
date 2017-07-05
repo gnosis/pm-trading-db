@@ -57,11 +57,13 @@ RABBIT_HOSTNAME = os.environ['RABBIT_HOSTNAME']
 RABBIT_USER = os.environ['RABBIT_USER']
 RABBIT_PASSWORD = os.environ['RABBIT_PASSWORD']
 RABBIT_PORT = os.environ['RABBIT_PORT']
-BROKER_URL = 'amqp://{user}:{password}@{hostname}:{port}'.format(
+RABBIT_QUEUE = os.environ['RABBIT_QUEUE']
+BROKER_URL = 'amqp://{user}:{password}@{hostname}:{port}/{queue}'.format(
     user=RABBIT_USER,
     password=RABBIT_PASSWORD,
     hostname=RABBIT_HOSTNAME,
-    port=RABBIT_PORT
+    port=RABBIT_PORT,
+    queue=RABBIT_QUEUE
 )
 
 # ------------------------------------------------------------------------------
