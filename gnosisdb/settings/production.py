@@ -9,6 +9,12 @@ SECRET_KEY = os.environ['SECRET_KEY']
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#wsgi-application
 WSGI_APPLICATION = 'wsgi.application'
 
+INSTALLED_APPS += ("gunicorn", )
+
+if DEBUG is False:
+    STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'
+
+
 # ------------------------------------------------------------------------------
 # EMAIL CONFIGURATION
 # ------------------------------------------------------------------------------
