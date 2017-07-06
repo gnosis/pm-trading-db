@@ -873,20 +873,25 @@ class OutcomeTokenShortSaleOrderSerializer(ContractEventTimestamped, serializers
     def create(self, validated_data):
         try:
             market = models.Market.objects.get(address=validated_data.get('address'))
-            # Create Order
-            order = models.ShortSellOrder()
-            order.creation_date_time = validated_data['creation_date_time']
-            order.creation_block = validated_data['creation_block']
-            order.market = market
-            order.sender = validated_data.get('buyer')
-            order.outcome_token_index = validated_data.get('outcomeTokenIndex')
-            order.outcome_token_count = validated_data.get('outcomeTokenCount')
-            order.cost = validated_data.get('cost')
-            order.net_outcome_tokens_sold = market.net_outcome_tokens_sold
-            # Update token sale statistics
-            order.save()
-            # market.save()
-            return order
+            try:
+                # get outcome token
+                outcome_token = models.OutcomeToken.objects.get(index=validated_data.get('outcomeTokenIndex'))
+                # Create Order
+                order = models.ShortSellOrder()
+                order.creation_date_time = validated_data['creation_date_time']
+                order.creation_block = validated_data['creation_block']
+                order.market = market
+                order.sender = validated_data.get('buyer')
+                # order.outcome_token_index = validated_data.get('outcomeTokenIndex')
+                order.outcome_token = outcome_token
+                order.outcome_token_count = validated_data.get('outcomeTokenCount')
+                order.cost = validated_data.get('cost')
+                order.net_outcome_tokens_sold = market.net_outcome_tokens_sold
+                # save order
+                order.save()
+                return order
+            except models.OutcomeToken.DoesNotExist:
+                raise serializers.ValidationError('OutcomeToken with index {} does not exist.' % validated_data.get('outcomeTokenIndex'))
         except models.Market.DoesNotExist:
             raise serializers.ValidationError('Market with address {} does not exist.' % validated_data.get('address'))
 

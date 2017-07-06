@@ -133,7 +133,7 @@ class Market(ContractCreatedByFactory):
 class Order(BlockTimeStamped):
     market = models.ForeignKey(Market)
     sender = models.CharField(max_length=40, db_index=True)
-    outcome_token_index = models.PositiveIntegerField()
+    outcome_token = models.ForeignKey(OutcomeToken, to_field='address', null=True)
     outcome_token_count = models.DecimalField(max_digits=80, decimal_places=0)
     net_outcome_tokens_sold = ArrayField(models.DecimalField(max_digits=80, decimal_places=0))
 
