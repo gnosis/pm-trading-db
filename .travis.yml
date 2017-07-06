@@ -2,7 +2,7 @@ language: python
 dist: trusty
 addons:
   ssh_known_hosts:
-  - gnosisdb-beta.gnosis.pm
+  - gnosisdb-kovan.gnosis.pm
 services:
 - postgresql
 before_script:
@@ -19,5 +19,5 @@ after_success:
 - eval "$(ssh-agent -s)"
 - chmod 600 .travis/deploy_key
 - ssh-add .travis/deploy_key
-- git remote add deploy dokku@gnosisdb-beta.gnosis.pm:gnosisdb-beta.gnosis.pm
+- git remote add deploy dokku@gnosisdb-kovan.gnosis.pm:gnosisdb-kovan.gnosis.pm
 - git push deploy master -f
