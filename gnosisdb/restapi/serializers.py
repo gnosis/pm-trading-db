@@ -2,17 +2,20 @@ from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import serializers
 from relationaldb.models import EventDescription, ScalarEventDescription, CategoricalEventDescription, Oracle
 from relationaldb.models import CentralizedOracle, UltimateOracle, Event, Market
+from gnosisdb.utils import remove_null_values
 
 
 class ContractSerializer(serializers.BaseSerializer):
     def to_representation(self, instance):
-        return {
+        response = {
             'address': instance.address,
             'factory_address': instance.factory,
             'creator': instance.creator,
             'creation_date': instance.creation_date_time,
             'creation_block': instance.creation_block
         }
+
+        return remove_null_values(response)
 
 
 class EventDescriptionSerializer(serializers.BaseSerializer):
@@ -90,6 +93,10 @@ class UltimateOracleSerializer(serializers.ModelSerializer):
                   'challenge_amount', 'front_runner_period', 'forwarded_outcome', 'outcome_set_at_timestamp',
                   'front_runner', 'front_runner_set_at_timestamp', 'total_amount', 'forwarded_oracle')
 
+    def to_representation(self, instance):
+        response = super(UltimateOracleSerializer, self).to_representation(instance)
+        return remove_null_values(response)
+
 
 class OutcomeTokenSerializer(serializers.BaseSerializer):
     def to_representation(self, instance):
@@ -114,6 +121,10 @@ class EventSerializer(serializers.ModelSerializer):
             return 'SCALAR'
         else:
             return 'CATEGORICAL'
+
+    def to_representation(self, instance):
+        response = super(EventSerializer, self).to_representation(instance)
+        return remove_null_values(response)
 
 
 class MarketSerializer(serializers.ModelSerializer):
