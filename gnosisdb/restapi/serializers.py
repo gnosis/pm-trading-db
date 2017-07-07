@@ -2,17 +2,20 @@ from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import serializers
 from relationaldb.models import EventDescription, ScalarEventDescription, CategoricalEventDescription, Oracle
 from relationaldb.models import CentralizedOracle, UltimateOracle, Event, Market, MarketShareEntry, Order
+from gnosisdb.utils import remove_null_values
 
 
 class ContractSerializer(serializers.BaseSerializer):
     def to_representation(self, instance):
-        return {
+        response = {
             'address': instance.address,
             'factory_address': instance.factory,
             'creator': instance.creator,
             'creation_date': instance.creation_date_time,
             'creation_block': instance.creation_block
         }
+
+        return remove_null_values(response)
 
 
 class EventDescriptionSerializer(serializers.BaseSerializer):
@@ -37,23 +40,27 @@ class EventDescriptionSerializer(serializers.BaseSerializer):
         except ObjectDoesNotExist:
             pass
 
-        return result
+        return remove_null_values(result)
 
 
 class OracleSerializer(serializers.Serializer):
 
     def to_representation(self, instance):
+        result = None
         try:
             centralized_oracle = CentralizedOracle.objects.get(address=instance.address)
-            return CentralizedOracleSerializer(centralized_oracle).to_representation(centralized_oracle)
+            result = CentralizedOracleSerializer(centralized_oracle).to_representation(centralized_oracle)
+            return remove_null_values(result)
         except CentralizedOracle.DoesNotExist:
             pass
 
         try:
             ultimate_oracle = UltimateOracle.objects.get(address=instance.address)
-            return UltimateOracleSerializer(ultimate_oracle).to_representation(ultimate_oracle)
+            result = UltimateOracleSerializer(ultimate_oracle).to_representation(ultimate_oracle)
+            return remove_null_values(result)
         except UltimateOracle.DoesNotExist:
-            return super(OracleSerializer, self).to_representation(instance)
+            response = super(OracleSerializer, self).to_representation(instance)
+            return remove_null_values(response)
 
 
 class CentralizedOracleSerializer(serializers.ModelSerializer):
@@ -66,6 +73,10 @@ class CentralizedOracleSerializer(serializers.ModelSerializer):
     class Meta:
         model = CentralizedOracle
         fields = ('contract', 'is_outcome_set', 'outcome', 'owner', 'event_description')
+
+    def to_representation(self, instance):
+        response = super(CentralizedOracleSerializer, self).to_representation(instance)
+        return remove_null_values(response)
 
 
 class UltimateOracleSerializer(serializers.ModelSerializer):
@@ -89,6 +100,10 @@ class UltimateOracleSerializer(serializers.ModelSerializer):
         fields = ('contract', 'is_outcome_set', 'outcome', 'collateral_token', 'spread_multiplier', 'challenge_period',
                   'challenge_amount', 'front_runner_period', 'forwarded_outcome', 'outcome_set_at_timestamp',
                   'front_runner', 'front_runner_set_at_timestamp', 'total_amount', 'forwarded_oracle')
+
+    def to_representation(self, instance):
+        response = super(UltimateOracleSerializer, self).to_representation(instance)
+        return remove_null_values(response)
 
 
 class OutcomeTokenSerializer(serializers.BaseSerializer):
@@ -115,6 +130,10 @@ class EventSerializer(serializers.ModelSerializer):
         else:
             return 'CATEGORICAL'
 
+    def to_representation(self, instance):
+        response = super(EventSerializer, self).to_representation(instance)
+        return remove_null_values(response)
+
 
 class MarketSerializer(serializers.ModelSerializer):
     contract = ContractSerializer(source='*', many=False, read_only=True)
@@ -129,6 +148,10 @@ class MarketSerializer(serializers.ModelSerializer):
         model = Market
         fields = ('contract', 'event', 'market_maker', 'fee', 'funding', 'net_outcome_tokens_sold', 'stage')
 
+    def to_representation(self, instance):
+        response = super(MarketSerializer, self).to_representation(instance)
+        return remove_null_values(response)
+
 
 class MarketShareEntrySerializer(serializers.ModelSerializer):
     market = serializers.CharField(source='market__address', read_only=True)
@@ -139,6 +162,10 @@ class MarketShareEntrySerializer(serializers.ModelSerializer):
         model = MarketShareEntry
         fields = ('market', 'shares')
 
+    def to_representation(self, instance):
+        response = super(MarketShareEntrySerializer, self).to_representation(instance)
+        return remove_null_values(response)
+
 
 class MarketHistorySerializer(serializers.ModelSerializer):
     date = serializers.DateTimeField(source="creation_date_time", read_only=True)
@@ -148,3 +175,7 @@ class MarketHistorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
         fields = ('date', 'net_outcome_tokens_sold')
+
+    def to_representation(self, instance):
+        response = super(MarketHistorySerializer, self).to_representation(instance)
+        return remove_null_values(response)
