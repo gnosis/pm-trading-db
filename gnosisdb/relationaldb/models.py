@@ -149,3 +149,8 @@ class SellOrder(Order):
 class ShortSellOrder(Order):
     cost = models.DecimalField(max_digits=80, decimal_places=0)
 
+
+class MarketShareEntry(models.Model):
+    owner = models.CharField(max_length=40, db_index=True)
+    market = models.ForeignKey(Market)
+    net_outcome_tokens_owned = ArrayField(models.DecimalField(max_digits=80, decimal_places=0))
