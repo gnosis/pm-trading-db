@@ -1,7 +1,7 @@
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import serializers
 from relationaldb.models import EventDescription, ScalarEventDescription, CategoricalEventDescription, Oracle
-from relationaldb.models import CentralizedOracle, UltimateOracle, Event, Market
+from relationaldb.models import CentralizedOracle, UltimateOracle, Event, Market, MarketShareEntry
 
 
 class ContractSerializer(serializers.BaseSerializer):
@@ -128,3 +128,13 @@ class MarketSerializer(serializers.ModelSerializer):
     class Meta:
         model = Market
         fields = ('contract', 'event', 'market_maker', 'fee', 'funding', 'net_outcome_tokens_sold', 'stage')
+
+
+class MarketShareEntrySerializer(serializers.ModelSerializer):
+    market = serializers.CharField(source='market__address')
+    shares = serializers.ListField(source='net_outcome_tokens_owned',
+                                   child=serializers.DecimalField(max_digits=80, decimal_places=0, read_only=True))
+
+    class Meta:
+        model = MarketShareEntry
+        fields = ('market', 'shares')
