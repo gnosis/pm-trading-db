@@ -79,7 +79,7 @@ class MarketFetchView(generics.RetrieveAPIView):
 @api_view(['GET'])
 def factories_view(request):
     factories = {}
-    for contract in settings.GNOSISDB_CONTRACTS:
+    for contract in settings.ETH_EVENTS:
         if 'PUBLISH' not in contract or not contract['PUBLISH']:
             continue
         address = contract['ADDRESSES'][0]
