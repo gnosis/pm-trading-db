@@ -109,4 +109,4 @@ class MarketHistoryFilter(filters.FilterSet):
 
     class Meta:
         model = Order
-        fields = ('creation_date_time')
+        fields = ('creation_date_time',)
