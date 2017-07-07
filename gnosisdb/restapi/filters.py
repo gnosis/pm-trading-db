@@ -99,7 +99,7 @@ class MarketFilter(filters.FilterSet):
 class MarketShareEntryFilter(filters.FilterSet):
     market = filters.AllValuesMultipleFilter()
 
-    class Meda:
+    class Meta:
         model = MarketShareEntry
         fields = ('market',)
 
