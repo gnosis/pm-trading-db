@@ -1,7 +1,7 @@
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import serializers
 from relationaldb.models import EventDescription, ScalarEventDescription, CategoricalEventDescription, Oracle
-from relationaldb.models import CentralizedOracle, UltimateOracle, Event, Market, MarketShareEntry
+from relationaldb.models import CentralizedOracle, UltimateOracle, Event, Market, MarketShareEntry, Order
 from gnosisdb.utils import remove_null_values
 
 
@@ -154,7 +154,7 @@ class MarketSerializer(serializers.ModelSerializer):
 
 
 class MarketShareEntrySerializer(serializers.ModelSerializer):
-    market = serializers.CharField(source='market__address')
+    market = serializers.CharField(source='market__address', read_only=True)
     shares = serializers.ListField(source='net_outcome_tokens_owned',
                                    child=serializers.DecimalField(max_digits=80, decimal_places=0, read_only=True))
 
@@ -164,4 +164,18 @@ class MarketShareEntrySerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         response = super(MarketShareEntrySerializer, self).to_representation(instance)
+        return remove_null_values(response)
+
+
+class MarketHistorySerializer(serializers.ModelSerializer):
+    date = serializers.DateTimeField(source="creation_date_time", read_only=True)
+    net_outcome_tokens_sold = serializers.ListField(
+        child=serializers.DecimalField(max_digits=80, decimal_places=0, read_only=True))
+
+    class Meta:
+        model = Order
+        fields = ('date', 'net_outcome_tokens_sold')
+
+    def to_representation(self, instance):
+        response = super(MarketHistorySerializer, self).to_representation(instance)
         return remove_null_values(response)
