@@ -162,9 +162,9 @@ class MarketShareEntrySerializer(serializers.ModelSerializer):
         model = MarketShareEntry
         fields = ('market', 'shares')
 
-    def to_representation(self, instance):
-        response = super(MarketShareEntrySerializer, self).to_representation(instance)
-        return remove_null_values(response)
+    # def to_representation(self, instance):
+    #     response = super(MarketShareEntrySerializer, self).to_representation(instance)
+    #     return remove_null_values(response)
 
 
 class MarketHistorySerializer(serializers.ModelSerializer):
