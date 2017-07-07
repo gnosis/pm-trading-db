@@ -3,9 +3,13 @@ from django.shortcuts import get_object_or_404
 from rest_framework import generics
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from relationaldb.models import UltimateOracle, CentralizedOracle, Event, Market, EventDescription
-from .serializers import UltimateOracleSerializer, CentralizedOracleSerializer, EventSerializer, MarketSerializer
-from .filters import CentralizedOracleFilter, UltimateOracleFilter, EventFilter, MarketFilter, DefaultPagination
+from relationaldb.models import UltimateOracle, CentralizedOracle, Event, Market, EventDescription, MarketShareEntry
+from .serializers import (
+    UltimateOracleSerializer, CentralizedOracleSerializer, EventSerializer, MarketSerializer, MarketShareEntrySerializer
+)
+from .filters import (
+    CentralizedOracleFilter, UltimateOracleFilter, EventFilter, MarketFilter, DefaultPagination, MarketShareEntryFilter
+)
 
 
 class CentralizedOracleListView(generics.ListAPIView):
@@ -66,6 +70,14 @@ class MarketFetchView(generics.RetrieveAPIView):
 
     def get_object(self):
         return get_object_or_404(Market, address=self.kwargs['addr'])
+
+
+class MarketSharesView(generics.ListAPIView):
+    serializer_class = MarketShareEntrySerializer
+    filter_class = MarketShareEntryFilter
+
+    def get_queryset(self):
+        return MarketShareEntry.objects.filter(owner = self.kwargs['addr'])
 
 
 @api_view(['GET'])

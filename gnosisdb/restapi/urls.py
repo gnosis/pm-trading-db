@@ -12,4 +12,5 @@ urlpatterns = [
     url(r'^markets/$', views.MarketListView.as_view(), name='markets'),
     url(r'^markets/(?P<addr>[a-fA-F0-9]+)/$', views.MarketFetchView.as_view(), name='markets-by-name'),
     url(r'^factories/$', views.factories_view, name='factories'),
+    url(r'^shares/(?P<addr>[a-fA-F0-9]+)/$', views.MarketSharesView.as_view(), name='shares-by-owner'),
 ]
