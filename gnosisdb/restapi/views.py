@@ -3,12 +3,16 @@ from django.shortcuts import get_object_or_404
 from rest_framework import generics
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from relationaldb.models import UltimateOracle, CentralizedOracle, Event, Market, EventDescription, MarketShareEntry
+from relationaldb.models import (
+    UltimateOracle, CentralizedOracle, Event, Market, EventDescription, MarketShareEntry, Order
+)
 from .serializers import (
-    UltimateOracleSerializer, CentralizedOracleSerializer, EventSerializer, MarketSerializer, MarketShareEntrySerializer
+    UltimateOracleSerializer, CentralizedOracleSerializer, EventSerializer, MarketSerializer,
+    MarketShareEntrySerializer, MarketHistorySerializer
 )
 from .filters import (
-    CentralizedOracleFilter, UltimateOracleFilter, EventFilter, MarketFilter, DefaultPagination, MarketShareEntryFilter
+    CentralizedOracleFilter, UltimateOracleFilter, EventFilter, MarketFilter, DefaultPagination, MarketShareEntryFilter,
+    MarketHistoryFilter
 )
 
 
@@ -72,14 +76,6 @@ class MarketFetchView(generics.RetrieveAPIView):
         return get_object_or_404(Market, address=self.kwargs['addr'])
 
 
-class MarketSharesView(generics.ListAPIView):
-    serializer_class = MarketShareEntrySerializer
-    filter_class = MarketShareEntryFilter
-
-    def get_queryset(self):
-        return MarketShareEntry.objects.filter(owner = self.kwargs['addr'])
-
-
 @api_view(['GET'])
 def factories_view(request):
     factories = {}
@@ -98,3 +94,19 @@ def factories_view(request):
             factories[index] = address
 
     return Response(factories)
+
+
+class MarketSharesView(generics.ListAPIView):
+    serializer_class = MarketShareEntrySerializer
+    filter_class = MarketShareEntryFilter
+
+    def get_queryset(self):
+        return MarketShareEntry.objects.filter(owner = self.kwargs['addr'])
+
+
+class MarketHistoryView(generics.ListAPIView):
+    serializer_class = MarketHistorySerializer
+    filter_class = MarketHistoryFilter
+
+    def get_queryset(self):
+        return Order.objects.filter(market = self.kwargs['addr']).order_by('creation_date_time')
