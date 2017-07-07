@@ -154,7 +154,7 @@ class MarketSerializer(serializers.ModelSerializer):
 
 
 class MarketShareEntrySerializer(serializers.ModelSerializer):
-    market = serializers.CharField(source='market__address', read_only=True)
+    market = serializers.CharField(source='market.address', read_only=True)
     shares = serializers.ListField(source='net_outcome_tokens_owned',
                                    child=serializers.DecimalField(max_digits=80, decimal_places=0, read_only=True))
 
@@ -162,9 +162,9 @@ class MarketShareEntrySerializer(serializers.ModelSerializer):
         model = MarketShareEntry
         fields = ('market', 'shares')
 
-    # def to_representation(self, instance):
-    #     response = super(MarketShareEntrySerializer, self).to_representation(instance)
-    #     return remove_null_values(response)
+    def to_representation(self, instance):
+        response = super(MarketShareEntrySerializer, self).to_representation(instance)
+        return remove_null_values(response)
 
 
 class MarketHistorySerializer(serializers.ModelSerializer):
