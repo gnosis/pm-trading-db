@@ -237,10 +237,6 @@ REST API
 -------
 GnosisDB comes with a handy RESTful API. Run GnosisDB, open your Web browser and connect to http://localhost:8000. You will get all the relevant API endpoints and their input/return data.
 
-License
--------
-The project is released under GPL v.3.
-
 Contributors
 ------------
 - Stefan George (stefan@gnosis.pm)
