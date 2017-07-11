@@ -145,7 +145,7 @@ Change the --ipfs_host option with your wlan ip address. The script will communi
 
 How to implement your own AddressGetter and EventReceiver
 -------
-Let's consider the ETH_ALERTS settings varable:
+Let's consider the ETH_EVENTS settings varable:
 ```
 ETH_EVENTS = [
     {
