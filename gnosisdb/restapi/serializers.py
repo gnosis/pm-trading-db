@@ -154,7 +154,7 @@ class MarketSerializer(serializers.ModelSerializer):
 
 
 class MarketShareEntrySerializer(serializers.ModelSerializer):
-    market = serializers.CharField(source='market__address', read_only=True)
+    market = serializers.CharField(source='market.address', read_only=True)
     shares = serializers.ListField(source='net_outcome_tokens_owned',
                                    child=serializers.DecimalField(max_digits=80, decimal_places=0, read_only=True))
 
