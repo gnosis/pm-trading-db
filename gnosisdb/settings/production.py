@@ -27,8 +27,8 @@ EMAIL_USE_TLS = True
 EMAIL_SUBJECT_PREFIX = os.environ['EMAIL_SUBJECT_PREFIX']
 DEFAULT_FROM_EMAIL = os.environ['DEFAULT_FROM_EMAIL']
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
-EMAIL_BACKEND = 'email_log.backends.EmailBackend'
-EMAIL_LOG_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_LOG_BACKEND = 'email_log.backends.EmailBackend'
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
 ADMINS = (
     ('Giacomo', 'giacomo.licari@gnosis.pm'),

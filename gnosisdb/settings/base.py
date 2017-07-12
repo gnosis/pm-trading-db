@@ -47,11 +47,22 @@ LOGGING = {
         'console': {
             'class': 'logging.StreamHandler',
             'stream': sys.stdout,
+        },
+        'mail_admins': {
+            'level': 'ERROR',
+            'class': 'django.utils.log.AdminEmailHandler',
         }
     },
     'root': {
         'handlers': ['console'],
         'level': 'INFO'
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console', 'mail_admins'],
+            'propagate': True,
+            'level': 'ERROR'
+        }
     }
 }
 
