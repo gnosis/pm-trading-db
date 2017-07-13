@@ -11,7 +11,7 @@ urlpatterns = [
     url(r'^events/(?P<addr>[a-fA-F0-9]+)/$', views.EventFetchView.as_view(), name='events-by-address'),
     url(r'^markets/$', views.MarketListView.as_view(), name='markets'),
     url(r'^markets/(?P<addr>[a-fA-F0-9]+)/$', views.MarketFetchView.as_view(), name='markets-by-name'),
+    url(r'^markets/(?P<market_address>[a-fA-F0-9]+)/shares/(?P<addr>[a-fA-F0-9]+)/$', views.MarketSharesView.as_view(), name='shares-by-owner'),
     url(r'^factories/$', views.factories_view, name='factories'),
-    url(r'^shares/(?P<addr>[a-fA-F0-9]+)/$', views.MarketSharesView.as_view(), name='shares-by-owner'),
     url(r'^history/(?P<addr>[a-fA-F0-9]+)/$', views.MarketHistoryView.as_view(), name='history-by-market'),
 ]

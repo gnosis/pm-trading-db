@@ -4,11 +4,11 @@ from rest_framework import generics
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from relationaldb.models import (
-    UltimateOracle, CentralizedOracle, Event, Market, EventDescription, MarketShareEntry, Order
+    UltimateOracle, CentralizedOracle, Event, Market, MarketShareEntry, Order, OutcomeTokenBalance
 )
 from .serializers import (
     UltimateOracleSerializer, CentralizedOracleSerializer, EventSerializer, MarketSerializer,
-    MarketShareEntrySerializer, MarketHistorySerializer
+    MarketShareEntrySerializer, MarketHistorySerializer, OutcomeTokenBalanceSerializer
 )
 from .filters import (
     CentralizedOracleFilter, UltimateOracleFilter, EventFilter, MarketFilter, DefaultPagination, MarketShareEntryFilter,
@@ -97,11 +97,18 @@ def factories_view(request):
 
 
 class MarketSharesView(generics.ListAPIView):
-    serializer_class = MarketShareEntrySerializer
-    filter_class = MarketShareEntryFilter
+    serializer_class = OutcomeTokenBalanceSerializer
+    # filter_class = MarketShareEntryFilter
 
     def get_queryset(self):
-        return MarketShareEntry.objects.filter(owner = self.kwargs['addr'])
+        return OutcomeTokenBalance.objects.filter(
+            owner = self.kwargs['addr'],
+            outcome_token__address__in=list(
+                Market.objects.get(
+                    address=self.kwargs['market_address']
+                ).event.outcometoken_set.values_list('address', flat=True)
+            )
+        )
 
 
 class MarketHistoryView(generics.ListAPIView):

@@ -1,6 +1,6 @@
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import serializers
-from relationaldb.models import EventDescription, ScalarEventDescription, CategoricalEventDescription, Oracle
+from relationaldb.models import ScalarEventDescription, CategoricalEventDescription, OutcomeTokenBalance, OutcomeToken
 from relationaldb.models import CentralizedOracle, UltimateOracle, Event, Market, MarketShareEntry, Order
 from gnosisdb.utils import remove_null_values
 
@@ -106,18 +106,12 @@ class UltimateOracleSerializer(serializers.ModelSerializer):
         return remove_null_values(response)
 
 
-class OutcomeTokenSerializer(serializers.BaseSerializer):
-    def to_representation(self, instance):
-        return instance.address
-
-
 class EventSerializer(serializers.ModelSerializer):
     contract = ContractSerializer(source='*', many=False, read_only=True)
     collateral_token = serializers.CharField()
     oracle = OracleSerializer(many=False, read_only=True)
     is_winning_outcome_set = serializers.BooleanField()
     outcome = serializers.IntegerField()
-    # outcome_tokens = OutcomeTokenSerializer(many=True, read_only=True)
     type = serializers.SerializerMethodField()
 
     class Meta:
@@ -179,3 +173,20 @@ class MarketHistorySerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         response = super(MarketHistorySerializer, self).to_representation(instance)
         return remove_null_values(response)
+
+
+class OutcomeTokenSerializer(serializers.ModelSerializer):
+    # event = EventSerializer()
+    totalSupply = serializers.DecimalField(source="total_supply", max_digits=80, decimal_places=0)
+    class Meta:
+        model = OutcomeToken
+        fields = ('event', 'index', 'totalSupply', 'address')
+
+
+class OutcomeTokenBalanceSerializer(serializers.ModelSerializer):
+
+    outcomeToken = OutcomeTokenSerializer(source="outcome_token")
+
+    class Meta:
+        model = OutcomeTokenBalance
+        fields = ('outcomeToken', 'owner', 'balance', )
