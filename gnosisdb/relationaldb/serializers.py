@@ -173,7 +173,8 @@ class IpfsHashField(CharField):
                     'title': event_description_json['title'],
                     'description': event_description_json['description'],
                     'resolution_date': event_description_json['resolutionDate'],
-                    'decimals': event_description_json['decimals']
+                    'decimals': event_description_json['decimals'],
+                    'unit': event_description_json['unit']
                 }
                 # scalar
                 event_description = models.ScalarEventDescription.objects.create(**scalar_json)

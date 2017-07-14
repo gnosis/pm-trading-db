@@ -2,6 +2,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import serializers
 from relationaldb.models import ScalarEventDescription, CategoricalEventDescription, OutcomeTokenBalance, OutcomeToken
 from relationaldb.models import CentralizedOracle, UltimateOracle, Event, Market, MarketShareEntry, Order, ScalarEvent
+from relationaldb.models import ScalarEvent, CategoricalEvent
 from gnosisdb.utils import remove_null_values
 
 
@@ -106,17 +107,24 @@ class UltimateOracleSerializer(serializers.ModelSerializer):
         return remove_null_values(response)
 
 
-class EventSerializer(serializers.ModelSerializer):
+class CategoricalEventSerializer(serializers.ModelSerializer):
     contract = ContractSerializer(source='*', many=False, read_only=True)
-    collateral_token = serializers.CharField()
-    oracle = OracleSerializer(many=False, read_only=True)
-    is_winning_outcome_set = serializers.BooleanField()
-    outcome = serializers.IntegerField()
-    type = serializers.SerializerMethodField()
+    class Meta:
+        model = CategoricalEvent
+        fields = ('contract', 'collateral_token', 'oracle', 'is_winning_outcome_set', 'outcome',)
+
+
+class ScalarEventSerializer(serializers.ModelSerializer):
+    contract = ContractSerializer(source='*', many=False, read_only=True)
 
     class Meta:
-        model = Event
-        fields = ('contract', 'collateral_token', 'oracle', 'is_winning_outcome_set', 'outcome', 'type',)
+        model = ScalarEvent
+        fields = ('contract', 'collateral_token', 'oracle', 'is_winning_outcome_set', 'outcome', 'lower_bound', 'upper_bound')
+
+
+class EventSerializer(serializers.Serializer):
+
+    type = serializers.SerializerMethodField()
 
     def get_type(self, obj):
         if hasattr(obj, 'scalarevent'):
@@ -125,16 +133,20 @@ class EventSerializer(serializers.ModelSerializer):
             return 'CATEGORICAL'
 
     def to_representation(self, instance):
-        response = super(EventSerializer, self).to_representation(instance)
+        result = None
+        try:
+            categorical_event = CategoricalEvent.objects.get(address=instance.address)
+            result = CategoricalEventSerializer(categorical_event).to_representation(categorical_event)
+            return remove_null_values(result)
+        except CategoricalEvent.DoesNotExist:
+            pass
 
         try:
             scalar_event = ScalarEvent.objects.get(address=instance.address)
-            response['lowerBound'] = scalar_event.lower_bound
-            response['upperBound'] = scalar_event.upper_bound
-        except ObjectDoesNotExist:
+            result = ScalarEventSerializer(scalar_event).to_representation(scalar_event)
+            return remove_null_values(result)
+        except ScalarEvent.DoesNotExist:
             pass
-
-        return remove_null_values(response)
 
 
 class MarketSerializer(serializers.ModelSerializer):
