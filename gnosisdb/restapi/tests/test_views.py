@@ -72,8 +72,8 @@ class TestViews(APITestCase):
         # outcomes creation
         # outcomes = (OutcomeTokenFactory(), OutcomeTokenFactory(), OutcomeTokenFactory())
         # event creation
-        event = EventFactory()
-        #self.assertEquals(event.outcome_tokens.count(), len(outcomes))
+        event = CategoricalEventFactory()
+        # self.assertEquals(event.outcome_tokens.count(), len(outcomes))
         events_response = self.client.get(reverse('api:events'), content_type='application/json')
         self.assertEquals(len(json.loads(events_response.content).get('results')), 1)
 

@@ -109,28 +109,31 @@ class UltimateOracleSerializer(serializers.ModelSerializer):
 
 class CategoricalEventSerializer(serializers.ModelSerializer):
     contract = ContractSerializer(source='*', many=False, read_only=True)
+    oracle = OracleSerializer()
+    type = serializers.SerializerMethodField()
     class Meta:
         model = CategoricalEvent
-        fields = ('contract', 'collateral_token', 'oracle', 'is_winning_outcome_set', 'outcome',)
+        fields = ('contract', 'collateral_token', 'oracle', 'is_winning_outcome_set', 'outcome', 'type',)
+
+    def get_type(self, obj):
+        return 'CATEGORICAL'
 
 
 class ScalarEventSerializer(serializers.ModelSerializer):
     contract = ContractSerializer(source='*', many=False, read_only=True)
+    oracle = OracleSerializer()
+    type = serializers.SerializerMethodField()
 
     class Meta:
         model = ScalarEvent
-        fields = ('contract', 'collateral_token', 'oracle', 'is_winning_outcome_set', 'outcome', 'lower_bound', 'upper_bound')
+        fields = ('contract', 'collateral_token', 'oracle', 'is_winning_outcome_set', 'outcome', 'lower_bound',
+                  'upper_bound', 'type')
+
+    def get_type(self, obj):
+        return 'SCALAR'
 
 
 class EventSerializer(serializers.Serializer):
-
-    type = serializers.SerializerMethodField()
-
-    def get_type(self, obj):
-        if hasattr(obj, 'scalarevent'):
-            return 'SCALAR'
-        else:
-            return 'CATEGORICAL'
 
     def to_representation(self, instance):
         result = None
