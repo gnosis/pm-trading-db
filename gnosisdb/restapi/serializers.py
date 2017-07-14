@@ -1,7 +1,7 @@
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import serializers
 from relationaldb.models import ScalarEventDescription, CategoricalEventDescription, OutcomeTokenBalance, OutcomeToken
-from relationaldb.models import CentralizedOracle, UltimateOracle, Event, Market, MarketShareEntry, Order
+from relationaldb.models import CentralizedOracle, UltimateOracle, Event, Market, MarketShareEntry, Order, ScalarEvent
 from gnosisdb.utils import remove_null_values
 
 
@@ -126,6 +126,14 @@ class EventSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         response = super(EventSerializer, self).to_representation(instance)
+
+        try:
+            scalar_event = ScalarEvent.objects.get(address=instance.address)
+            response['lowerBound'] = scalar_event.lower_bound
+            response['upperBound'] = scalar_event.upper_bound
+        except ObjectDoesNotExist:
+            pass
+
         return remove_null_values(response)
 
 
