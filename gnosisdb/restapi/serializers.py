@@ -70,14 +70,18 @@ class CentralizedOracleSerializer(serializers.ModelSerializer):
     outcome = serializers.IntegerField()
     owner = serializers.CharField(max_length=20)
     event_description = EventDescriptionSerializer(many=False, read_only=True)
+    type = serializers.SerializerMethodField()
 
     class Meta:
         model = CentralizedOracle
-        fields = ('contract', 'is_outcome_set', 'outcome', 'owner', 'event_description')
+        fields = ('contract', 'is_outcome_set', 'outcome', 'owner', 'event_description', 'type',)
 
     def to_representation(self, instance):
         response = super(CentralizedOracleSerializer, self).to_representation(instance)
         return remove_null_values(response)
+
+    def get_type(self, obj):
+        return 'CENTRALIZED'
 
 
 class UltimateOracleSerializer(serializers.ModelSerializer):
@@ -95,16 +99,20 @@ class UltimateOracleSerializer(serializers.ModelSerializer):
     front_runner = serializers.IntegerField()
     front_runner_set_at_timestamp = serializers.IntegerField()
     total_amount = serializers.IntegerField()
+    type = serializers.SerializerMethodField()
 
     class Meta:
         model = UltimateOracle
         fields = ('contract', 'is_outcome_set', 'outcome', 'collateral_token', 'spread_multiplier', 'challenge_period',
                   'challenge_amount', 'front_runner_period', 'forwarded_outcome', 'outcome_set_at_timestamp',
-                  'front_runner', 'front_runner_set_at_timestamp', 'total_amount', 'forwarded_oracle')
+                  'front_runner', 'front_runner_set_at_timestamp', 'total_amount', 'forwarded_oracle', 'type',)
 
     def to_representation(self, instance):
         response = super(UltimateOracleSerializer, self).to_representation(instance)
         return remove_null_values(response)
+
+    def get_type(self, obj):
+        return 'ULTIMATE'
 
 
 class CategoricalEventSerializer(serializers.ModelSerializer):

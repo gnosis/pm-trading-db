@@ -3,7 +3,9 @@ from __future__ import unicode_literals, absolute_import
 from django.core.urlresolvers import reverse
 from rest_framework.test import APITestCase
 from rest_framework import status
-from relationaldb.tests.factories import ScalarEventFactory, CategoricalEventFactory, UltimateOracleFactory
+from relationaldb.tests.factories import (
+    ScalarEventFactory, CategoricalEventFactory, UltimateOracleFactory, CentralizedOracleFactory
+)
 import json
 
 
@@ -24,4 +26,10 @@ class TestSerializers(APITestCase):
         response = self.client.get(reverse('api:ultimate-oracles'), content_type='application/json')
         self.assertFalse(json.loads(response.content).get('results')[0].get('forwardedOracle', False))
 
-
+    def test_oracle_types(self):
+        ultimate_oracle = UltimateOracleFactory(forwarded_oracle=None)
+        centralized_oracle = CentralizedOracleFactory()
+        ultimate_response = self.client.get(reverse('api:ultimate-oracles'), content_type='application/json')
+        centralized_response = self.client.get(reverse('api:centralized-oracles'), content_type='application/json')
+        self.assertEquals(json.loads(ultimate_response.content).get('results')[0].get('type'), 'ULTIMATE')
+        self.assertEquals(json.loads(centralized_response.content).get('results')[0].get('type'), 'CENTRALIZED')
