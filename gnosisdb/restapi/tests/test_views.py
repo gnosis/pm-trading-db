@@ -5,11 +5,11 @@ from rest_framework.test import APITestCase
 from rest_framework import status
 from relationaldb.tests.factories import (
     CentralizedOracleFactory, UltimateOracleFactory,
-    EventFactory, OutcomeTokenFactory, MarketFactory,
-    EventDescriptionFactory, CategoricalEventFactory
+    MarketFactory, CategoricalEventFactory, OutcomeTokenFactory
 )
-from relationaldb.models import CentralizedOracle, UltimateOracle, Market
-from ipfs.ipfs import Ipfs
+from relationaldb.models import CentralizedOracle, UltimateOracle, Market, ShortSellOrder, OutcomeToken
+from datetime import datetime, timedelta
+# from ipfs.ipfs import Ipfs
 import json
 
 
@@ -138,6 +138,49 @@ class TestViews(APITestCase):
         self.assertEquals(len(json.loads(market_response_data.content).get('results')), 1)
 
         self.assertEqual(str(market.funding), json.loads(market_response_data.content)['results'][0]['funding'])
+
+    def test_market_history(self):
+        # create markets
+        outcome_token = OutcomeTokenFactory()
+        event = outcome_token.event
+        oracle = event.oracle
+        market = MarketFactory(event=event)
+        creation_date_time = datetime.now()
+
+        # Create Order
+        order = ShortSellOrder()
+        order.creation_date_time = creation_date_time
+        order.creation_block = 0
+        order.market = market
+        order.sender = '0x1'
+        order.outcome_token = outcome_token
+        order.outcome_token_count = 1
+        order.cost = 1
+        order.net_outcome_tokens_sold = market.net_outcome_tokens_sold
+        order.save()
+
+        history_data = self.client.get(reverse('api:history-by-market', kwargs={'addr': market.address}), content_type='application/json')
+        self.assertEquals(history_data.status_code, status.HTTP_200_OK)
+        self.assertEquals(len(json.loads(history_data.content)), 1)
+
+        from_date = (creation_date_time - timedelta(days=1)).strftime('%Y-%m-%d %H:%S:%M')
+        to_date = (creation_date_time + timedelta(days=1)).strftime('%Y-%m-%d %H:%S:%M')
+        history_data = self.client.get(reverse('api:history-by-market', kwargs={'addr': market.address, 'from': from_date, 'to': to_date}), content_type='application/json')
+        self.assertEquals(history_data.status_code, status.HTTP_200_OK)
+        self.assertEquals(len(json.loads(history_data.content)), 1)
+
+        # test querying date with no orders
+        from_date = (creation_date_time - timedelta(days=5)).strftime('%Y-%m-%d %H:%S:%M')
+        to_date = (creation_date_time - timedelta(days=4)).strftime('%Y-%m-%d %H:%S:%M')
+        history_data = self.client.get(reverse('api:history-by-market', kwargs={'addr': market.address, 'from': from_date, 'to': to_date}), content_type='application/json')
+        self.assertEquals(history_data.status_code, status.HTTP_200_OK)
+        self.assertEquals(len(json.loads(history_data.content)), 0)
+
+        # test querying date passing only the from param
+        from_date = (creation_date_time - timedelta(days=5)).strftime('%Y-%m-%d %H:%S:%M')
+        history_data = self.client.get(reverse('api:history-by-market', kwargs={'addr': market.address, 'from': from_date}), content_type='application/json')
+        self.assertEquals(history_data.status_code, status.HTTP_200_OK)
+        self.assertEquals(len(json.loads(history_data.content)), 1)
 
     def test_factories(self):
         pass

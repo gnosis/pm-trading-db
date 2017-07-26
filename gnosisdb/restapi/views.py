@@ -15,6 +15,8 @@ from .filters import (
     MarketHistoryFilter
 )
 
+from datetime import datetime
+
 
 class CentralizedOracleListView(generics.ListAPIView):
     queryset = CentralizedOracle.objects.all()
@@ -112,8 +114,19 @@ class MarketSharesView(generics.ListAPIView):
 
 
 class MarketHistoryView(generics.ListAPIView):
+    """
+    Returns the list of orders by providing the market address, as well as the 'From' and 'To'
+    parameters referring the order creation date.
+    """
     serializer_class = MarketHistorySerializer
     filter_class = MarketHistoryFilter
 
     def get_queryset(self):
-        return Order.objects.filter(market = self.kwargs['addr']).order_by('creation_date_time')
+        if 'from' in self.kwargs and 'to' in self.kwargs:
+            return Order.objects.filter(market=self.kwargs['addr'], creation_date_time__gte=self.kwargs['from'],
+                                        creation_date_time__lte=self.kwargs['to']).order_by('creation_date_time')
+        elif 'from' in self.kwargs:
+            return Order.objects.filter(market=self.kwargs['addr'], creation_date_time__gte=self.kwargs['from'],
+                                        creation_date_time__lte=datetime.today().strftime('%Y-%m-%d %H:%S:%M')).order_by('creation_date_time')
+        else:
+            return Order.objects.filter(market = self.kwargs['addr']).order_by('creation_date_time')
