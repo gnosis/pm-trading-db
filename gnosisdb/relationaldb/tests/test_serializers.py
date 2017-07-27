@@ -2,7 +2,7 @@ from unittest import TestCase
 from relationaldb.tests.factories import (
     OracleFactory, CentralizedOracleFactory, UltimateOracleFactory, EventFactory,
     MarketFactory, EventDescriptionFactory, OutcomeTokenFactory, OutcomeTokenBalanceFactory,
-    ScalarEventDescriptionFactory
+    ScalarEventDescriptionFactory, CategoricalEventFactory
 )
 from relationaldb.serializers import (
     OutcomeTokenIssuanceSerializer, ScalarEventSerializer, UltimateOracleSerializer, OutcomeTokenRevocationSerializer,
@@ -418,9 +418,9 @@ class TestSerializers(TestCase):
         self.assertIsNotNone(instance)
 
     def test_create_market(self):
-        event_factory = EventFactory()
+        oracle = CentralizedOracleFactory()
+        event_factory = CategoricalEventFactory(oracle=oracle)
         market_factory = MarketFactory()
-        oracle = OracleFactory()
 
         block = {
             'number': oracle.creation_block,
