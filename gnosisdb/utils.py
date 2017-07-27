@@ -44,7 +44,7 @@ def calc_lmsr_marginal_price(token_count, token_index, net_outcome_tokens_sold, 
     mp.pretty=True
     b = mpf(funding) / mp.log(len(net_outcome_tokens_sold))
     result = b * mp.log(
-            sum(mp.exp(share_count / b + token_count / b) for share_count in net_outcome_tokens_sold),
+            sum(mp.exp(share_count / b + token_count / b) for share_count in net_outcome_tokens_sold) -
             sum(mp.exp(share_count / b) for index, share_count in enumerate(net_outcome_tokens_sold) if index != token_index)
         ) - net_outcome_tokens_sold[token_index]
 
