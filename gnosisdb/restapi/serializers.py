@@ -3,15 +3,15 @@ from rest_framework import serializers
 from relationaldb.models import ScalarEventDescription, CategoricalEventDescription, OutcomeTokenBalance, OutcomeToken
 from relationaldb.models import CentralizedOracle, UltimateOracle, Event, Market, MarketShareEntry, Order, ScalarEvent
 from relationaldb.models import ScalarEvent, CategoricalEvent
-from gnosisdb.utils import remove_null_values
+from gnosisdb.utils import remove_null_values, add_0x_prefix
 
 
 class ContractSerializer(serializers.BaseSerializer):
     def to_representation(self, instance):
         response = {
-            'address': instance.address,
-            'factory_address': instance.factory,
-            'creator': instance.creator,
+            'address': add_0x_prefix(instance.address),
+            'factory_address': add_0x_prefix(instance.factory),
+            'creator': add_0x_prefix(instance.creator),
             'creation_date': instance.creation_date_time,
             'creation_block': instance.creation_block
         }
@@ -80,6 +80,9 @@ class CentralizedOracleSerializer(serializers.ModelSerializer):
         response = super(CentralizedOracleSerializer, self).to_representation(instance)
         return remove_null_values(response)
 
+    def get_owner(self, obj):
+        return add_0x_prefix(obj)
+
     def get_type(self, obj):
         return 'CENTRALIZED'
 
@@ -110,6 +113,9 @@ class UltimateOracleSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         response = super(UltimateOracleSerializer, self).to_representation(instance)
         return remove_null_values(response)
+
+    def get_collateral_token(self, obj):
+        return add_0x_prefix(obj)
 
     def get_type(self, obj):
         return 'ULTIMATE'
@@ -177,6 +183,9 @@ class MarketSerializer(serializers.ModelSerializer):
         response = super(MarketSerializer, self).to_representation(instance)
         return remove_null_values(response)
 
+    def get_market_maker(self, obj):
+        return add_0x_prefix(obj)
+
 
 class MarketShareEntrySerializer(serializers.ModelSerializer):
     market = serializers.CharField(source='market.address', read_only=True)
@@ -190,6 +199,9 @@ class MarketShareEntrySerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         response = super(MarketShareEntrySerializer, self).to_representation(instance)
         return remove_null_values(response)
+
+    def get_market(self, obj):
+        return add_0x_prefix(obj)
 
 
 class MarketHistorySerializer(serializers.ModelSerializer):
@@ -207,7 +219,6 @@ class MarketHistorySerializer(serializers.ModelSerializer):
 
 
 class OutcomeTokenSerializer(serializers.ModelSerializer):
-    # event = EventSerializer()
     totalSupply = serializers.DecimalField(source="total_supply", max_digits=80, decimal_places=0)
     class Meta:
         model = OutcomeToken

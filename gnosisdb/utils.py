@@ -39,6 +39,10 @@ def remove_null_values(obj):
     return obj
 
 
+def add_0x_prefix(value):
+    return '0x' + value if value[:2] not in (b'0x', '0x') else value
+
+
 def calc_lmsr_marginal_price(token_count, token_index, net_outcome_tokens_sold, funding):
     mp.dps = 100
     mp.pretty=True
