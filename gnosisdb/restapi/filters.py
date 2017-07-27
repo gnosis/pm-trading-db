@@ -102,11 +102,3 @@ class MarketShareEntryFilter(filters.FilterSet):
     class Meta:
         model = MarketShareEntry
         fields = ('market',)
-
-
-class MarketHistoryFilter(filters.FilterSet):
-    creation_date_time = filters.DateFromToRangeFilter()
-
-    class Meta:
-        model = Order
-        fields = ('creation_date_time',)
