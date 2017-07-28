@@ -115,11 +115,11 @@ The -d option allows you to get the same address everytime a contract is deploye
 
 The -h option tells TestRPC to listen on all interfaces, including the bridge interfaces which are exposed inside of the docker containers. This will allow a setting of `ETHEREUM_NODE_HOST = '172.x.x.x'` to work for the Celery worker.
 
-In another terminal instance, install the Gnosis-contracts repo (https://github.com/gnosis/gnosis-contracts) following the provided instructions. Go into that directory and deploy the contracts with:
+In another terminal instance, install `gnosis.js` (https://github.com/gnosis/gnosis.js) following the provided instructions. Go into that directory and deploy the contracts with:
 
 `npm run migrate`
 
-The execution will furnish all the contracts' addesses in the `gnosis-contracts` repo directory in the build/contracts folder as parts of the build artifacts. You should also see the addresses displayed in your console.
+The execution will furnish all the contracts' addesses in the node_modules/@gnosis.pm/gnosis-core-contracts/build/contracts folder as parts of the build artifacts. You should also see the addresses displayed in your console.
 
 You should verify that the addresses in ETH_EVENTS specified in /settings/base.py match what is displayed by the console for all the contracts including:
 
@@ -138,7 +138,7 @@ Create now a Celery periodic task.
 
 ![Periodic task management](https://github.com/gnosis/gnosisdb/blob/master/img/django_celery.png)
 
-A test script was created on gnosis-contracts. This emulates the creation of oracles, events and markets.
+A test script was created on gnosis.js. This emulates the creation of oracles, events and markets.
 Run it with:
 
 `npm run test-gnosisdb`
