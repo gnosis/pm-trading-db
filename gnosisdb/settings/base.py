@@ -18,6 +18,7 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'django.contrib.admindocs',
     'django_filters',
+    'corsheaders',
     'solo',
     'gnosisdb',
     'djcelery',
@@ -38,7 +39,8 @@ MIDDLEWARE_CLASSES = [
     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'django.contrib.admindocs.middleware.XViewMiddleware'
+    'django.contrib.admindocs.middleware.XViewMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
 ]
 
 LOGGING = {
@@ -95,6 +97,8 @@ TEMPLATES = [
         },
     },
 ]
+
+CORS_ORIGIN_ALLOW_ALL = True
 
 # STATIC FILE CONFIGURATION
 # ------------------------------------------------------------------------------
