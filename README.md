@@ -109,39 +109,39 @@ Development
 -------
 For development purposes you may want to run a testrpc node on your machine. To do so, run:
 
-`testrpc --gasLimit 400000000 -d`
+`testrpc --gasLimit 400000000 -d -h 0.0.0.0`
 
 The -d option allows you to get the same address everytime a contract is deployed. You will not have to update your django settings everytime a new testrpc server is running.
 
-Install the Gnosis-contracts repo (https://github.com/giacomolicari/gnosis-contracts) following the provided instrunctions.
-Change your working dir to /contracts and deploy the contracts onto the running testrpc with the command:
+The -h option tells TestRPC to listen on all interfaces, including the bridge interfaces which are exposed inside of the docker containers. This will allow a setting of `ETHEREUM_NODE_HOST = '172.x.x.x'` to work for the Celery worker.
 
-`python ethdeploy.py --f deploy/basicFramework.json --gas 40000000`
+In another terminal instance, install the Gnosis-contracts repo (https://github.com/gnosis/gnosis-contracts) following the provided instructions. Go into that directory and deploy the contracts with:
 
-The execution will furnish all the contracts' addesses. Now open /settings/local.py file and modify the addresses in ETH_EVENTS for the following instances:
+`npm run migrate`
+
+The execution will furnish all the contracts' addesses in the `gnosis-contracts` repo directory in the build/contracts folder as parts of the build artifacts. You should also see the addresses displayed in your console.
+
+You should verify that the addresses in ETH_EVENTS specified in /settings/base.py match what is displayed by the console for all the contracts including:
+
 * Centralized Oracle Factory
 * Event Factory
 * Standard Market Factory
 * Ultimate Oracle Factory
 
-Make sure that ETHEREUM_NODE_HOST variable in settings.local points to your wlan ip address serving testrpc.
-
 Run `docker-compose build` to apply the code changes and then `docker-compose up` to get GNOSISDB up and running.
 Open your browser and go to http://localhost:8000/admin, provide your superuser username and password.
 You should now see something like this:
 
-![alt_text](https://github.com/gnosis/gnosisdb/blob/master/img/django_admin_overview.png)
+![Admin overview](https://github.com/gnosis/gnosisdb/blob/master/img/django_admin_overview.png)
 
 Create now a Celery periodic task.
 
-![alt text](https://github.com/gnosis/gnosisdb/blob/master/img/django_celery.png)
+![Periodic task management](https://github.com/gnosis/gnosisdb/blob/master/img/django_celery.png)
 
-A test script was created on gnosis-contracts/scripts. This emulates the creation of oracles, events and markets.
+A test script was created on gnosis-contracts. This emulates the creation of oracles, events and markets.
 Run it with:
 
-`python create_oracles.py --testrpc_host 0.0.0.0 --testrpc_port 8545 --ipfs_host http://192.168.1.165 --ipfs_port 5001 --gas 10000000`
-
-Change the --ipfs_host option with your wlan ip address. The script will communicate to the IPFS Docker Container.
+`npm run test-gnosisdb`
 
 How to implement your own AddressGetter and EventReceiver
 -------
