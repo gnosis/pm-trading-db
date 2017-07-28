@@ -16,7 +16,7 @@ from relationaldb.models import (
 from relationaldb.tests.factories import (
     UltimateOracleFactory, CentralizedOracleFactory,
     OracleFactory, EventFactory, MarketFactory, OutcomeTokenFactory,
-    OutcomeVoteBalanceFactory
+    OutcomeVoteBalanceFactory, CategoricalEventFactory
 )
 from datetime import datetime
 from time import mktime
@@ -216,9 +216,11 @@ class TestEventReceiver(TestCase):
         self.assertIsNotNone(event.pk)
 
     def test_market_receiver(self):
-        event = EventFactory()
+        oracle = CentralizedOracleFactory()
+        oracle.event_description.outcomes = ['1', '2', '3']
+        oracle.event_description.save()
+        event = CategoricalEventFactory(oracle=oracle)
         market = MarketFactory()
-        oracle = OracleFactory()
         event_address = event.address
 
         block = {
@@ -263,6 +265,7 @@ class TestEventReceiver(TestCase):
         MarketFactoryReceiver().save(market_dict, block)
         market = Market.objects.get(event=event_address)
         self.assertIsNotNone(market.pk)
+        self.assertEquals(len(market.net_outcome_tokens_sold), 3)
 
     #
     # contract instances

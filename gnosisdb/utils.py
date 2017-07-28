@@ -1,3 +1,5 @@
+from mpmath import mp, mpf
+
 
 def singleton(clazz):
     instances = {}
@@ -35,3 +37,19 @@ def remove_null_values(obj):
             remove_null_values(obj[k])
 
     return obj
+
+
+def add_0x_prefix(value):
+    return '0x' + value if value[:2] not in (b'0x', '0x') else value
+
+
+def calc_lmsr_marginal_price(token_count, token_index, net_outcome_tokens_sold, funding):
+    mp.dps = 100
+    mp.pretty=True
+    b = mpf(funding) / mp.log(len(net_outcome_tokens_sold))
+    result = b * mp.log(
+            sum(mp.exp(share_count / b + token_count / b) for share_count in net_outcome_tokens_sold) -
+            sum(mp.exp(share_count / b) for index, share_count in enumerate(net_outcome_tokens_sold) if index != token_index)
+        ) - net_outcome_tokens_sold[token_index]
+
+    return result
