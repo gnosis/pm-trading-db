@@ -31,6 +31,7 @@ INSTALLED_APPS = (
 )
 
 MIDDLEWARE_CLASSES = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -40,7 +41,6 @@ MIDDLEWARE_CLASSES = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.contrib.admindocs.middleware.XViewMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
 ]
 
 LOGGING = {
