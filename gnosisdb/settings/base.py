@@ -197,28 +197,28 @@ IPFS_PORT = 5001
 # GnosisDB Contract Addresses
 ETH_EVENTS = [
     {
-        'ADDRESSES': ['254dffcd3277c0b1660f6d42efbb754edababc2b'],
+        'ADDRESSES': ['cfeb869f69431e42cdb54a4f4f105c19c080a601'],
         'EVENT_ABI': load_json_file(abi_file_path('CentralizedOracleFactory.json')),
         'EVENT_DATA_RECEIVER': 'chainevents.event_receivers.CentralizedOracleFactoryReceiver',
         'NAME': 'centralizedOracleFactory',
         'PUBLISH': True,
     },
     {
-        'ADDRESSES': ['c89ce4735882c9f0f0fe26686c53074e09b0d550'],
+        'ADDRESSES': ['d833215cbcc3f914bd1c9ece3ee7bf8b14f841bb'],
         'EVENT_ABI': load_json_file(abi_file_path('UltimateOracleFactory.json')),
         'EVENT_DATA_RECEIVER': 'chainevents.event_receivers.UltimateOracleFactoryReceiver',
         'NAME': 'ultimateOracleFactory',
         'PUBLISH': True,
     },
     {
-        'ADDRESSES': ['5b1869d9a4c187f2eaa108f3062412ecf0526b24'],
+        'ADDRESSES': ['9b1f7f645351af3631a656421ed2e40f2802e6c0'],
         'EVENT_ABI': load_json_file(abi_file_path('EventFactory.json')),
         'EVENT_DATA_RECEIVER': 'chainevents.event_receivers.EventFactoryReceiver',
         'NAME': 'eventFactory',
         'PUBLISH': True,
     },
     {
-        'ADDRESSES': ['9561c133dd8580860b6b7e504bc5aa500f0f06a7'],
+        'ADDRESSES': ['e982e462b094850f12af94d21d470e21be9d0e9c'],
         'EVENT_ABI': load_json_file(abi_file_path('StandardMarketFactory.json')),
         'EVENT_DATA_RECEIVER': 'chainevents.event_receivers.MarketFactoryReceiver',
         'NAME': 'standardMarketFactory',
