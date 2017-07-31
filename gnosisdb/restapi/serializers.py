@@ -76,7 +76,12 @@ class CentralizedOracleSerializer(serializers.ModelSerializer):
         model = CentralizedOracle
         fields = ('contract', 'is_outcome_set', 'outcome', 'owner', 'event_description', 'type',)
 
+    def get_type(self, obj):
+        return 'CENTRALIZED'
+
     def to_representation(self, instance):
+        # Prepend 0x prefix to owner
+        instance.owner = add_0x_prefix(instance.owner)
         response = super(CentralizedOracleSerializer, self).to_representation(instance)
         return remove_null_values(response)
 
@@ -111,6 +116,8 @@ class UltimateOracleSerializer(serializers.ModelSerializer):
                   'front_runner', 'front_runner_set_at_timestamp', 'total_amount', 'forwarded_oracle', 'type',)
 
     def to_representation(self, instance):
+        # Prepend 0x prefix to collateral_token
+        instance.owner = add_0x_prefix(instance.collateral_token)
         response = super(UltimateOracleSerializer, self).to_representation(instance)
         return remove_null_values(response)
 

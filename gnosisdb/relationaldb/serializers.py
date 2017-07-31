@@ -354,13 +354,23 @@ class MarketSerializer(ContractCreatedByFactorySerializer, serializers.ModelSeri
 
     def create(self, validated_data):
         # Check event type (Categorical or Scalar)
-        if isinstance(validated_data.get('event'), models.CategoricalEvent):
-            # categorical
-            n_outcome_tokens = validated_data.get('event').outcometoken_set.count()
+        try:
+            categorical_event = models.CategoricalEvent.objects.get(address=validated_data.get('event').address)
+            event = validated_data.get('event')
+            n_outcome_tokens = len(categorical_event.oracle.centralizedoracle.event_description.categoricaleventdescription.outcomes)
             net_outcome_tokens_sold = [0] * n_outcome_tokens
-        else:
+        except models.CategoricalEvent.DoesNotExist:
+            scalar_event = models.ScalarEvent.objects.get(address=validated_data.get('event').address)
             # scalar, creating an array of size 2
             net_outcome_tokens_sold = [0, 0]
+
+        # if isinstance(validated_data.get('event'), models.CategoricalEvent):
+        #     # categorical
+        #     n_outcome_tokens = validated_data.get('event').outcometoken_set.count()
+        #     net_outcome_tokens_sold = [0] * n_outcome_tokens
+        # else:
+        #     # scalar, creating an array of size 2
+        #     net_outcome_tokens_sold = [0, 0]
 
         validated_data.update({'net_outcome_tokens_sold': net_outcome_tokens_sold})
         market = models.Market.objects.create(**validated_data)
