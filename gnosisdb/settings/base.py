@@ -193,6 +193,9 @@ CELERY_LOCK_EXPIRE = 60
 IPFS_HOST = 'http://ipfs'  # 'ipfs'
 IPFS_PORT = 5001
 
+# LMSR Market Maker Address
+LMSR_MARKET_MAKER = '2f2be9db638cb31d4143cbc1525b0e104f7ed597'
+
 
 # GnosisDB Contract Addresses
 ETH_EVENTS = [

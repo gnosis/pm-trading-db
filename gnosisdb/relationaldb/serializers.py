@@ -6,6 +6,7 @@ from datetime import datetime
 from ipfsapi.exceptions import ErrorResponse
 from time import mktime
 from celery.utils.log import get_task_logger
+from django.conf import settings
 
 
 logger = get_task_logger(__name__)
@@ -351,6 +352,11 @@ class MarketSerializer(ContractCreatedByFactorySerializer, serializers.ModelSeri
     market = serializers.CharField(max_length=40, source='address')
     revenue = serializers.IntegerField(default=0)
     collected_fees = serializers.IntegerField(default=0)
+
+    def validate_marketMaker(self, obj):
+        if not settings.LMSR_MARKET_MAKER == obj:
+            raise serializers.ValidationError('Market Maker {} does not exist'.format(obj))
+        return obj
 
     def create(self, validated_data):
         # Check event type (Categorical or Scalar)
