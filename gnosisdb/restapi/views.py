@@ -1,8 +1,10 @@
 from django.conf import settings
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, get_list_or_404
 from rest_framework import generics
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from rest_framework.exceptions import ParseError
+from django.http import Http404
 from relationaldb.models import (
     UltimateOracle, CentralizedOracle, Event, Market, MarketShareEntry, Order, OutcomeTokenBalance
 )
@@ -99,10 +101,37 @@ def factories_view(request):
 class MarketSharesView(generics.ListAPIView):
     serializer_class = OutcomeTokenBalanceSerializer
     # filter_class = MarketShareEntryFilter
+    pagination_class = DefaultPagination
+
+    def get_queryset(self):
+        return get_list_or_404(
+            OutcomeTokenBalance,
+            owner=self.kwargs['owner_address'],
+            outcome_token__address__in=list(
+                Market.objects.get(
+                    address=self.kwargs['market_address']
+                ).event.outcometoken_set.values_list('address', flat=True)
+            )
+        )
+        # return OutcomeTokenBalance.objects.filter(
+        #     owner = self.kwargs['owner_address'],
+        #     outcome_token__address__in=list(
+        #         Market.objects.get(
+        #             address=self.kwargs['market_address']
+        #         ).event.outcometoken_set.values_list('address', flat=True)
+        #     )
+        # )
+
+
+class AllMarketSharesView(generics.ListAPIView):
+    """
+    Returns all outcome token balances (market shares) for all users in a market
+    """
+    serializer_class = OutcomeTokenBalanceSerializer
+    pagination_class = DefaultPagination
 
     def get_queryset(self):
         return OutcomeTokenBalance.objects.filter(
-            owner = self.kwargs['addr'],
             outcome_token__address__in=list(
                 Market.objects.get(
                     address=self.kwargs['market_address']
@@ -127,7 +156,11 @@ class MarketHistoryView(generics.ListAPIView):
                                         creation_date_time__lte=self.request.query_params['to']).order_by('creation_date_time')
         elif 'market' in self.request.query_params and 'from' in self.request.query_params:
             return Order.objects.filter(market=self.request.query_params['market'], creation_date_time__gte=self.request.query_params['from']).order_by('creation_date_time')
-        elif 'market':
-            return Order.objects.filter(market = self.request.query_params['market']).order_by('creation_date_time')
+        elif 'market' in self.request.query_params:
+            balances = Order.objects.filter(market=self.request.query_params['market']).order_by('creation_date_time')
+            if balances.count():
+                return balances
+            else:
+                raise Http404('Unknown Market')
         else:
-            return None
+            raise ParseError()
