@@ -827,24 +827,9 @@ class OutcomeTokenPurchaseSerializer(ContractEventTimestamped, serializers.Model
             order.outcome_token_count = token_count
             order.cost = validated_data.get('cost')
             order.net_outcome_tokens_sold = market.net_outcome_tokens_sold
-            # Create Market Share Entry
-            share_entry = models.MarketShareEntry()
-            share_entry.market = market
-            share_entry.owner = order.sender
-            share_entry.net_outcome_tokens_owned = [0] * len(market.net_outcome_tokens_sold)
-            share_entry.net_outcome_tokens_owned[token_index] += token_count
-            # Get the previous share entry to aggregate orders
-            last_share_entry = models.MarketShareEntry.objects \
-                .filter(owner=order.sender, market=market) \
-                .order_by('-id') \
-                .last()
-            if last_share_entry is not None:
-                for i in range(0, len(last_share_entry.net_outcome_tokens_owned)):
-                    share_entry.net_outcome_tokens_owned[i] += last_share_entry.net_outcome_tokens_owned[i]
             # Save order successfully, save market changes, then save the share entry
             order.save()
             market.save()
-            share_entry.save()
             return order
         except models.Market.DoesNotExist:
             raise serializers.ValidationError('Market with address {} does not exist.' % validated_data.get('address'))
@@ -880,24 +865,9 @@ class OutcomeTokenSaleSerializer(ContractEventTimestamped, serializers.ModelSeri
             order.outcome_token_count = token_count
             order.profit = validated_data.get('profit')
             order.net_outcome_tokens_sold = market.net_outcome_tokens_sold
-            # Create Market Share Entry
-            share_entry = models.MarketShareEntry()
-            share_entry.market = market
-            share_entry.owner = order.sender
-            share_entry.net_outcome_tokens_owned = [0] * len(market.net_outcome_tokens_sold)
-            share_entry.net_outcome_tokens_owned[token_index] -= token_count
-            # Get the previous share entry to aggregate orders
-            last_share_entry = models.MarketShareEntry.objects \
-                .filter(owner=order.sender, market=market) \
-                .order_by('-id') \
-                .last()
-            if last_share_entry is not None:
-                for i in range(0, len(last_share_entry.net_outcome_tokens_owned)):
-                    share_entry.net_outcome_tokens_owned[i] += last_share_entry.net_outcome_tokens_owned[i]
             # Save order successfully, save market changes, then save the share entry
             order.save()
             market.save()
-            share_entry.save()
             return order
         except models.Market.DoesNotExist:
             raise serializers.ValidationError('Market with address {} does not exist.' % validated_data.get('address'))

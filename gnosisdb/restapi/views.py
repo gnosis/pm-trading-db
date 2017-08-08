@@ -6,14 +6,14 @@ from rest_framework.response import Response
 from rest_framework.exceptions import ParseError
 from django.http import Http404
 from relationaldb.models import (
-    UltimateOracle, CentralizedOracle, Event, Market, MarketShareEntry, Order, OutcomeTokenBalance
+    UltimateOracle, CentralizedOracle, Event, Market, Order, OutcomeTokenBalance
 )
 from .serializers import (
     UltimateOracleSerializer, CentralizedOracleSerializer, EventSerializer, MarketSerializer,
-    MarketShareEntrySerializer, MarketHistorySerializer, OutcomeTokenBalanceSerializer
+    MarketHistorySerializer, OutcomeTokenBalanceSerializer
 )
 from .filters import (
-    CentralizedOracleFilter, UltimateOracleFilter, EventFilter, MarketFilter, DefaultPagination, MarketShareEntryFilter)
+    CentralizedOracleFilter, UltimateOracleFilter, EventFilter, MarketFilter, DefaultPagination)
 
 from datetime import datetime
 

@@ -1,8 +1,9 @@
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import serializers
-from relationaldb.models import ScalarEventDescription, CategoricalEventDescription, OutcomeTokenBalance, OutcomeToken
-from relationaldb.models import CentralizedOracle, UltimateOracle, Event, Market, MarketShareEntry, Order, ScalarEvent
-from relationaldb.models import ScalarEvent, CategoricalEvent
+from relationaldb.models import (
+    ScalarEventDescription, CategoricalEventDescription, OutcomeTokenBalance, OutcomeToken,
+    CentralizedOracle, UltimateOracle, Market, Order, ScalarEvent, CategoricalEvent
+)
 from gnosisdb.utils import remove_null_values, add_0x_prefix
 
 
@@ -182,23 +183,6 @@ class MarketSerializer(serializers.ModelSerializer):
         return remove_null_values(response)
 
     def get_market_maker(self, obj):
-        return add_0x_prefix(obj)
-
-
-class MarketShareEntrySerializer(serializers.ModelSerializer):
-    market = serializers.CharField(source='market.address', read_only=True)
-    shares = serializers.ListField(source='net_outcome_tokens_owned',
-                                   child=serializers.DecimalField(max_digits=80, decimal_places=0, read_only=True))
-
-    class Meta:
-        model = MarketShareEntry
-        fields = ('market', 'shares')
-
-    def to_representation(self, instance):
-        response = super(MarketShareEntrySerializer, self).to_representation(instance)
-        return remove_null_values(response)
-
-    def get_market(self, obj):
         return add_0x_prefix(obj)
 
 
