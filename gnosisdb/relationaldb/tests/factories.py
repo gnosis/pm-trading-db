@@ -161,7 +161,7 @@ class MarketFactory(ContractCreatedByFactory):
         model = models.Market
 
     event = factory_boy.SubFactory(EventFactory)
-    market_maker = factory_boy.Sequence(lambda _: faker.name())
+    market_maker = factory_boy.Sequence(lambda n: '{:040d}'.format(n))
     fee = factory_boy.Sequence(lambda n: n)
     funding = factory_boy.Sequence(lambda n: n)
     net_outcome_tokens_sold = [0, 0]

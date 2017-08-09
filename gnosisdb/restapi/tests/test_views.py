@@ -5,7 +5,7 @@ from rest_framework.test import APITestCase
 from rest_framework import status
 from relationaldb.tests.factories import (
     CentralizedOracleFactory, UltimateOracleFactory,
-    MarketFactory, CategoricalEventFactory, OutcomeTokenFactory
+    MarketFactory, CategoricalEventFactory, OutcomeTokenFactory, OutcomeTokenBalanceFactory
 )
 from relationaldb.models import CentralizedOracle, UltimateOracle, Market, ShortSellOrder, OutcomeToken
 from datetime import datetime, timedelta
@@ -139,6 +139,36 @@ class TestViews(APITestCase):
 
         self.assertEqual(str(market.funding), json.loads(market_response_data.content)['results'][0]['funding'])
 
+    def test_shares_by_owner(self):
+        market = MarketFactory()
+        response = self.client.get(reverse('api:shares-by-owner', kwargs = {'market_address': market.address, 'owner_address': market.creator}),
+                                   content_type='application/json')
+        self.assertEquals(response.status_code, status.HTTP_404_NOT_FOUND)
+
+        outcome_token = OutcomeTokenFactory(event=market.event)
+        OutcomeTokenBalanceFactory(owner=market.creator, outcome_token=outcome_token)
+        response = self.client.get(
+            reverse('api:shares-by-owner', kwargs={'market_address': market.address, 'owner_address': market.creator}),
+            content_type='application/json')
+        self.assertEquals(response.status_code, status.HTTP_200_OK)
+        self.assertEquals(len(json.loads(response.content).get('results')), 1)
+
+    def test_all_shares(self):
+        market = MarketFactory()
+        response = self.client.get(
+            reverse('api:all-shares', kwargs={'market_address': market.address}),
+            content_type='application/json')
+        self.assertEquals(response.status_code, status.HTTP_200_OK)
+        self.assertEquals(len(json.loads(response.content).get('results')), 0)
+
+        outcome_token = OutcomeTokenFactory(event=market.event)
+        OutcomeTokenBalanceFactory(owner=market.creator, outcome_token=outcome_token)
+        response = self.client.get(
+            reverse('api:all-shares', kwargs={'market_address': market.address}),
+            content_type='application/json')
+        self.assertEquals(response.status_code, status.HTTP_200_OK)
+        self.assertEquals(len(json.loads(response.content).get('results')), 1)
+
     def test_market_history(self):
         # create markets
         outcome_token = OutcomeTokenFactory()
@@ -166,7 +196,7 @@ class TestViews(APITestCase):
 
         from_date = (creation_date_time - timedelta(days=1)).strftime('%Y-%m-%d %H:%M:%S')
         to_date = (creation_date_time + timedelta(days=1)).strftime('%Y-%m-%d %H:%M:%S')
-        url =  reverse('api:history-by-market') + '?market=' + market.address + '&from=' + from_date + '&to=' + to_date
+        url = reverse('api:history-by-market') + '?market=' + market.address + '&from=' + from_date + '&to=' + to_date
         history_data = self.client.get(url, content_type='application/json')
         self.assertEquals(history_data.status_code, status.HTTP_200_OK)
         self.assertEquals(len(json.loads(history_data.content).get('results')), 1)
@@ -186,5 +216,13 @@ class TestViews(APITestCase):
         self.assertEquals(history_data.status_code, status.HTTP_200_OK)
         self.assertEquals(len(json.loads(history_data.content).get('results')), 1)
 
-    def test_factories(self):
-        pass
+    def test_history_unknown_market(self):
+        market = MarketFactory()
+        url = reverse('api:history-by-market') + '?market=' + market.address
+        history_data = self.client.get(url, content_type='application/json')
+        self.assertEquals(history_data.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_history_without_market(self):
+        url = reverse('api:history-by-market')
+        history_data = self.client.get(url, content_type='application/json')
+        self.assertEquals(history_data.status_code, status.HTTP_400_BAD_REQUEST)

@@ -11,7 +11,8 @@ from relationaldb.serializers import (
 )
 
 from relationaldb.models import OutcomeTokenBalance, OutcomeToken
-
+from rest_framework.serializers import ValidationError
+from django.conf import settings
 from ipfs.ipfs import Ipfs
 from time import mktime
 
@@ -470,6 +471,12 @@ class TestSerializers(TestCase):
         self.assertFalse(s.is_valid(), s.errors)
 
         market_dict.get('params')[-2]['value'] = event_factory.address
+
+        s = MarketSerializer(data=market_dict, block=block)
+        self.assertFalse(s.is_valid(), s.errors)
+
+        marketMaker = [x for x in market_dict.get('params') if x.get('name') == 'marketMaker'][0]
+        marketMaker.update({'value': settings.LMSR_MARKET_MAKER})
 
         s = MarketSerializer(data=market_dict, block=block)
         self.assertTrue(s.is_valid(), s.errors)

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 from django.test import TestCase
-from json import loads
+from django.conf import settings
 from chainevents.event_receivers import (
     CentralizedOracleFactoryReceiver, UltimateOracleFactoryReceiver, EventFactoryReceiver, MarketFactoryReceiver,
     CentralizedOracleInstanceReceiver, EventInstanceReceiver, UltimateOracleInstanceReceiver, OutcomeTokenInstanceReceiver,
@@ -262,6 +262,12 @@ class TestEventReceiver(TestCase):
             ]
         }
 
+        MarketFactoryReceiver().save(market_dict, block)
+        with self.assertRaises(Market.DoesNotExist):
+            Market.objects.get(event=event_address)
+
+
+        market_dict.get('params')[2].update({'value': settings.LMSR_MARKET_MAKER})
         MarketFactoryReceiver().save(market_dict, block)
         market = Market.objects.get(event=event_address)
         self.assertIsNotNone(market.pk)
