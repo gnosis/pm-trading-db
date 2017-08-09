@@ -143,7 +143,8 @@ class TestViews(APITestCase):
         market = MarketFactory()
         response = self.client.get(reverse('api:shares-by-owner', kwargs = {'market_address': market.address, 'owner_address': market.creator}),
                                    content_type='application/json')
-        self.assertEquals(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEquals(response.status_code, status.HTTP_200_OK)
+        self.assertEquals(len(json.loads(response.content).get('results')), 0)
 
         outcome_token = OutcomeTokenFactory(event=market.event)
         OutcomeTokenBalanceFactory(owner=market.creator, outcome_token=outcome_token)

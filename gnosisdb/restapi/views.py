@@ -104,23 +104,12 @@ class MarketSharesView(generics.ListAPIView):
     pagination_class = DefaultPagination
 
     def get_queryset(self):
-        return get_list_or_404(
-            OutcomeTokenBalance,
+        market = get_object_or_404(Market, address=self.kwargs['market_address'])
+        outcome_tokens = market.event.outcometoken_set.values_list('address', flat=True)
+        return OutcomeTokenBalance.objects.filter(
             owner=self.kwargs['owner_address'],
-            outcome_token__address__in=list(
-                Market.objects.get(
-                    address=self.kwargs['market_address']
-                ).event.outcometoken_set.values_list('address', flat=True)
-            )
+            outcome_token__address__in=list(outcome_tokens)
         )
-        # return OutcomeTokenBalance.objects.filter(
-        #     owner = self.kwargs['owner_address'],
-        #     outcome_token__address__in=list(
-        #         Market.objects.get(
-        #             address=self.kwargs['market_address']
-        #         ).event.outcometoken_set.values_list('address', flat=True)
-        #     )
-        # )
 
 
 class AllMarketSharesView(generics.ListAPIView):
