@@ -223,13 +223,21 @@ class MarketParticipantHistorySerializer(serializers.ModelSerializer):
     #     child=serializers.DecimalField(max_digits=80, decimal_places=0, read_only=True))
     outcome_token = OutcomeTokenSerializer()
     outcome_token_count = serializers.DecimalField(max_digits=80, decimal_places=0)
+    market = serializers.SerializerMethodField()
+    owner = serializers.SerializerMethodField()
     order_type = serializers.SerializerMethodField()
     cost = serializers.SerializerMethodField()
     profit = serializers.SerializerMethodField()
 
     class Meta:
         model = Order
-        fields = ('date', 'outcome_token', 'outcome_token_count', 'order_type', 'profit', 'cost',)
+        fields = ('date', 'outcome_token', 'outcome_token_count', 'market', 'owner', 'order_type', 'profit', 'cost',)
+
+    def get_market(self, obj):
+        return add_0x_prefix(obj.market.address)
+
+    def get_owner(self, obj):
+        return add_0x_prefix(obj.sender)
 
     def get_order_type(self, obj):
         if hasattr(obj, 'sellorder'):
