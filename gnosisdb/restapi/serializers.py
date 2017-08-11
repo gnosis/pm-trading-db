@@ -195,6 +195,13 @@ class MarketSerializer(serializers.ModelSerializer):
         return add_0x_prefix(obj)
 
 
+class OutcomeTokenSerializer(serializers.ModelSerializer):
+    totalSupply = serializers.DecimalField(source="total_supply", max_digits=80, decimal_places=0)
+    class Meta:
+        model = OutcomeToken
+        fields = ('event', 'index', 'totalSupply', 'address')
+
+
 class MarketHistorySerializer(serializers.ModelSerializer):
     date = serializers.DateTimeField(source="creation_date_time", read_only=True)
     net_outcome_tokens_sold = serializers.ListField(
@@ -209,11 +216,31 @@ class MarketHistorySerializer(serializers.ModelSerializer):
         return remove_null_values(response)
 
 
-class OutcomeTokenSerializer(serializers.ModelSerializer):
-    totalSupply = serializers.DecimalField(source="total_supply", max_digits=80, decimal_places=0)
+class MarketParticipantHistorySerializer(serializers.ModelSerializer):
+    """Serializes the list of orders (trades) for the given sender address and market"""
+    date = serializers.DateTimeField(source="creation_date_time", read_only=True)
+    net_outcome_tokens_sold = serializers.ListField(
+        child=serializers.DecimalField(max_digits=80, decimal_places=0, read_only=True))
+    outcome_token = OutcomeTokenSerializer()
+    order_type = serializers.SerializerMethodField()
+
     class Meta:
-        model = OutcomeToken
-        fields = ('event', 'index', 'totalSupply', 'address')
+        model = Order
+        fields = ('date', 'net_outcome_tokens_sold', 'outcome_token', 'order_type',)
+
+    def get_order_type(self, obj):
+        if hasattr(obj, 'sellorder'):
+            return 'SELL'
+        elif hasattr(obj, 'shortsellorder'):
+            return 'SHORT SELL'
+        elif hasattr(obj, 'buyorder'):
+            return 'BUY'
+        else:
+            return 'UNKNOWN'
+
+    def to_representation(self, instance):
+        response = super(MarketParticipantHistorySerializer, self).to_representation(instance)
+        return remove_null_values(response)
 
 
 class OutcomeTokenBalanceSerializer(serializers.ModelSerializer):

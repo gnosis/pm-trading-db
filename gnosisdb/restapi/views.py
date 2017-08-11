@@ -10,12 +10,10 @@ from relationaldb.models import (
 )
 from .serializers import (
     UltimateOracleSerializer, CentralizedOracleSerializer, EventSerializer, MarketSerializer,
-    MarketHistorySerializer, OutcomeTokenBalanceSerializer
+    MarketHistorySerializer, OutcomeTokenBalanceSerializer, MarketParticipantHistorySerializer
 )
 from .filters import (
     CentralizedOracleFilter, UltimateOracleFilter, EventFilter, MarketFilter, DefaultPagination)
-
-from datetime import datetime
 
 
 class CentralizedOracleListView(generics.ListAPIView):
@@ -127,6 +125,18 @@ class AllMarketSharesView(generics.ListAPIView):
                 ).event.outcometoken_set.values_list('address', flat=True)
             )
         )
+
+
+class MarketParticipantHistoryView(generics.ListAPIView):
+
+    serializer_class = MarketParticipantHistorySerializer
+    pagination_class = DefaultPagination
+
+    def get_queryset(self):
+        return Order.objects.filter(
+            market=self.kwargs['market_address'],
+            sender=self.kwargs['owner_address']
+        ).order_by('creation_date_time')
 
 
 class MarketHistoryView(generics.ListAPIView):
