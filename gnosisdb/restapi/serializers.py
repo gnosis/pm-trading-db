@@ -219,14 +219,17 @@ class MarketHistorySerializer(serializers.ModelSerializer):
 class MarketParticipantHistorySerializer(serializers.ModelSerializer):
     """Serializes the list of orders (trades) for the given sender address and market"""
     date = serializers.DateTimeField(source="creation_date_time", read_only=True)
-    net_outcome_tokens_sold = serializers.ListField(
-        child=serializers.DecimalField(max_digits=80, decimal_places=0, read_only=True))
+    # net_outcome_tokens_sold = serializers.ListField(
+    #     child=serializers.DecimalField(max_digits=80, decimal_places=0, read_only=True))
     outcome_token = OutcomeTokenSerializer()
+    outcome_token_count = serializers.DecimalField(max_digits=80, decimal_places=0)
     order_type = serializers.SerializerMethodField()
+    cost = serializers.SerializerMethodField()
+    profit = serializers.SerializerMethodField()
 
     class Meta:
         model = Order
-        fields = ('date', 'net_outcome_tokens_sold', 'outcome_token', 'order_type',)
+        fields = ('date', 'outcome_token', 'outcome_token_count', 'order_type', 'profit', 'cost',)
 
     def get_order_type(self, obj):
         if hasattr(obj, 'sellorder'):
@@ -237,6 +240,22 @@ class MarketParticipantHistorySerializer(serializers.ModelSerializer):
             return 'BUY'
         else:
             return 'UNKNOWN'
+
+    def get_cost(self, obj):
+        order_type = self.get_order_type(obj)
+        if order_type == 'BUY':
+            return obj.buyorder.cost
+        elif order_type == 'SHORT SELL':
+            return obj.shortsellorder.cost
+        else:
+            None
+
+    def get_profit(self, obj):
+        order_type = self.get_order_type(obj)
+        if order_type == 'SELL':
+            return obj.sellorder.cost
+        else:
+            None
 
     def to_representation(self, instance):
         response = super(MarketParticipantHistorySerializer, self).to_representation(instance)
