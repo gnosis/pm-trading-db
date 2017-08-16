@@ -1,387 +1,397 @@
 [
-  {
-    "inputs": [],
-    "constant": true,
-    "name": "creator",
-    "payable": false,
-    "outputs": [
-      {
-        "type": "address",
-        "name": ""
-      }
-    ],
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "constant": true,
-    "name": "marketMaker",
-    "payable": false,
-    "outputs": [
-      {
-        "type": "address",
-        "name": ""
-      }
-    ],
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "type": "uint8",
-        "name": "outcomeTokenIndex"
-      },
-      {
-        "type": "uint256",
-        "name": "outcomeTokenCount"
-      },
-      {
-        "type": "uint256",
-        "name": "minProfit"
-      }
-    ],
-    "constant": false,
-    "name": "shortSell",
-    "payable": false,
-    "outputs": [
-      {
-        "type": "uint256",
-        "name": "cost"
-      }
-    ],
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "constant": false,
-    "name": "close",
-    "payable": false,
-    "outputs": [],
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "type": "uint8",
-        "name": "outcomeTokenIndex"
-      },
-      {
-        "type": "uint256",
-        "name": "outcomeTokenCount"
-      },
-      {
-        "type": "uint256",
-        "name": "minProfit"
-      }
-    ],
-    "constant": false,
-    "name": "sell",
-    "payable": false,
-    "outputs": [
-      {
-        "type": "uint256",
-        "name": "profit"
-      }
-    ],
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "constant": false,
-    "name": "withdrawFees",
-    "payable": false,
-    "outputs": [
-      {
-        "type": "uint256",
-        "name": "fees"
-      }
-    ],
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "constant": true,
-    "name": "createdAtBlock",
-    "payable": false,
-    "outputs": [
-      {
-        "type": "uint256",
-        "name": ""
-      }
-    ],
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "type": "uint256",
-        "name": ""
-      }
-    ],
-    "constant": true,
-    "name": "netOutcomeTokensSold",
-    "payable": false,
-    "outputs": [
-      {
-        "type": "int256",
-        "name": ""
-      }
-    ],
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "type": "uint256",
-        "name": "outcomeTokenCost"
-      }
-    ],
-    "constant": true,
-    "name": "calcMarketFee",
-    "payable": false,
-    "outputs": [
-      {
-        "type": "uint256",
-        "name": ""
-      }
-    ],
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "constant": true,
-    "name": "stage",
-    "payable": false,
-    "outputs": [
-      {
-        "type": "uint8",
-        "name": ""
-      }
-    ],
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "type": "uint256",
-        "name": "_funding"
-      }
-    ],
-    "constant": false,
-    "name": "fund",
-    "payable": false,
-    "outputs": [],
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "constant": true,
-    "name": "funding",
-    "payable": false,
-    "outputs": [
-      {
-        "type": "uint256",
-        "name": ""
-      }
-    ],
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "constant": true,
-    "name": "fee",
-    "payable": false,
-    "outputs": [
-      {
-        "type": "uint24",
-        "name": ""
-      }
-    ],
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "constant": true,
-    "name": "eventContract",
-    "payable": false,
-    "outputs": [
-      {
-        "type": "address",
-        "name": ""
-      }
-    ],
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "type": "uint8",
-        "name": "outcomeTokenIndex"
-      },
-      {
-        "type": "uint256",
-        "name": "outcomeTokenCount"
-      },
-      {
-        "type": "uint256",
-        "name": "maxCost"
-      }
-    ],
-    "constant": false,
-    "name": "buy",
-    "payable": false,
-    "outputs": [
-      {
-        "type": "uint256",
-        "name": "cost"
-      }
-    ],
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "constant": true,
-    "name": "FEE_RANGE",
-    "payable": false,
-    "outputs": [
-      {
-        "type": "uint24",
-        "name": ""
-      }
-    ],
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "type": "address",
-        "name": "_creator"
-      },
-      {
-        "type": "address",
-        "name": "_eventContract"
-      },
-      {
-        "type": "address",
-        "name": "_marketMaker"
-      },
-      {
-        "type": "uint24",
-        "name": "_fee"
-      }
-    ],
-    "type": "constructor",
-    "payable": false
-  },
-  {
-    "inputs": [
-      {
-        "indexed": false,
-        "type": "uint256",
-        "name": "funding"
-      }
-    ],
-    "type": "event",
-    "name": "MarketFunding",
-    "anonymous": false
-  },
-  {
-    "inputs": [],
-    "type": "event",
-    "name": "MarketClosing",
-    "anonymous": false
-  },
-  {
-    "inputs": [
-      {
-        "indexed": false,
-        "type": "uint256",
-        "name": "fees"
-      }
-    ],
-    "type": "event",
-    "name": "FeeWithdrawal",
-    "anonymous": false
-  },
-  {
-    "inputs": [
-      {
-        "indexed": true,
-        "type": "address",
-        "name": "buyer"
-      },
-      {
-        "indexed": false,
-        "type": "uint8",
-        "name": "outcomeTokenIndex"
-      },
-      {
-        "indexed": false,
-        "type": "uint256",
-        "name": "outcomeTokenCount"
-      },
-      {
-        "indexed": false,
-        "type": "uint256",
-        "name": "cost"
-      }
-    ],
-    "type": "event",
-    "name": "OutcomeTokenPurchase",
-    "anonymous": false
-  },
-  {
-    "inputs": [
-      {
-        "indexed": true,
-        "type": "address",
-        "name": "seller"
-      },
-      {
-        "indexed": false,
-        "type": "uint8",
-        "name": "outcomeTokenIndex"
-      },
-      {
-        "indexed": false,
-        "type": "uint256",
-        "name": "outcomeTokenCount"
-      },
-      {
-        "indexed": false,
-        "type": "uint256",
-        "name": "profit"
-      }
-    ],
-    "type": "event",
-    "name": "OutcomeTokenSale",
-    "anonymous": false
-  },
-  {
-    "inputs": [
-      {
-        "indexed": true,
-        "type": "address",
-        "name": "buyer"
-      },
-      {
-        "indexed": false,
-        "type": "uint8",
-        "name": "outcomeTokenIndex"
-      },
-      {
-        "indexed": false,
-        "type": "uint256",
-        "name": "outcomeTokenCount"
-      },
-      {
-        "indexed": false,
-        "type": "uint256",
-        "name": "cost"
-      }
-    ],
-    "type": "event",
-    "name": "OutcomeTokenShortSale",
-    "anonymous": false
-  }
-]
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "creator",
+      "outputs": [
+        {
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "marketMaker",
+      "outputs": [
+        {
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "outcomeTokenIndex",
+          "type": "uint8"
+        },
+        {
+          "name": "outcomeTokenCount",
+          "type": "uint256"
+        },
+        {
+          "name": "minProfit",
+          "type": "uint256"
+        }
+      ],
+      "name": "shortSell",
+      "outputs": [
+        {
+          "name": "cost",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [],
+      "name": "close",
+      "outputs": [],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "outcomeTokenIndex",
+          "type": "uint8"
+        },
+        {
+          "name": "outcomeTokenCount",
+          "type": "uint256"
+        },
+        {
+          "name": "minProfit",
+          "type": "uint256"
+        }
+      ],
+      "name": "sell",
+      "outputs": [
+        {
+          "name": "profit",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [],
+      "name": "withdrawFees",
+      "outputs": [
+        {
+          "name": "fees",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "createdAtBlock",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "netOutcomeTokensSold",
+      "outputs": [
+        {
+          "name": "",
+          "type": "int256"
+        }
+      ],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "outcomeTokenCost",
+          "type": "uint256"
+        }
+      ],
+      "name": "calcMarketFee",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "stage",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint8"
+        }
+      ],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_funding",
+          "type": "uint256"
+        }
+      ],
+      "name": "fund",
+      "outputs": [],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "funding",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "fee",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint24"
+        }
+      ],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "eventContract",
+      "outputs": [
+        {
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "outcomeTokenIndex",
+          "type": "uint8"
+        },
+        {
+          "name": "outcomeTokenCount",
+          "type": "uint256"
+        },
+        {
+          "name": "maxCost",
+          "type": "uint256"
+        }
+      ],
+      "name": "buy",
+      "outputs": [
+        {
+          "name": "cost",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "FEE_RANGE",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint24"
+        }
+      ],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "name": "_creator",
+          "type": "address"
+        },
+        {
+          "name": "_eventContract",
+          "type": "address"
+        },
+        {
+          "name": "_marketMaker",
+          "type": "address"
+        },
+        {
+          "name": "_fee",
+          "type": "uint24"
+        }
+      ],
+      "payable": false,
+      "type": "constructor"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "name": "funding",
+          "type": "uint256"
+        }
+      ],
+      "name": "MarketFunding",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [],
+      "name": "MarketClosing",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "name": "fees",
+          "type": "uint256"
+        }
+      ],
+      "name": "FeeWithdrawal",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "name": "buyer",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "name": "outcomeTokenIndex",
+          "type": "uint8"
+        },
+        {
+          "indexed": false,
+          "name": "outcomeTokenCount",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "name": "outcomeTokenCost",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "name": "marketFees",
+          "type": "uint256"
+        }
+      ],
+      "name": "OutcomeTokenPurchase",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "name": "seller",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "name": "outcomeTokenIndex",
+          "type": "uint8"
+        },
+        {
+          "indexed": false,
+          "name": "outcomeTokenCount",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "name": "outcomeTokenProfit",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "name": "marketFees",
+          "type": "uint256"
+        }
+      ],
+      "name": "OutcomeTokenSale",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "name": "buyer",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "name": "outcomeTokenIndex",
+          "type": "uint8"
+        },
+        {
+          "indexed": false,
+          "name": "outcomeTokenCount",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "name": "cost",
+          "type": "uint256"
+        }
+      ],
+      "name": "OutcomeTokenShortSale",
+      "type": "event"
+    }
+  ]
