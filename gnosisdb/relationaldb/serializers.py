@@ -510,7 +510,7 @@ class OutcomeTokenIssuanceSerializer(ContractNotTimestampted, serializers.ModelS
 
 class OutcomeTokenRevocationSerializer(ContractNotTimestampted, serializers.ModelSerializer):
     """
-    Serializes the Outcome TOken revocation event
+    Serializes the Outcome Token revocation event
     """
     class Meta:
         model = models.OutcomeToken
@@ -520,21 +520,26 @@ class OutcomeTokenRevocationSerializer(ContractNotTimestampted, serializers.Mode
     amount = serializers.IntegerField()
     address = serializers.CharField(max_length=40, source='outcome_token')
 
-    def create(self, validated_data):
-        outcome_token = None
-        outcome_token_balance = None
+    def validate(self, attrs):
         try:
-            outcome_token_balance = models.OutcomeTokenBalance.objects.get(owner=validated_data.get('owner'),
-                                                                           outcome_token__address=validated_data.get('outcome_token'))
-            outcome_token_balance.balance -= validated_data.get('amount')
-            outcome_token_balance.outcome_token.total_supply -= validated_data.get('amount')
-            # save the outcome_token
-            outcome_token_balance.outcome_token.save()
-            # save the outcome_token_balance
-            outcome_token_balance.save()
+            outcome_token_balance = models.OutcomeTokenBalance.objects.get(owner=attrs.get('owner'),
+                                                                           outcome_token__address=attrs.get('outcome_token'))
+            return attrs
         except models.OutcomeTokenBalance.DoesNotExist:
-            pass
+            raise serializers.ValidationError('OutcomeTokenBalance {} for owner {} doesn\'t exist'.format(
+                attrs.get('outcome_token'),
+                attrs.get('owner')
+            ))
 
+    def create(self, validated_data):
+        outcome_token_balance = models.OutcomeTokenBalance.objects.get(owner=validated_data.get('owner'),
+                                                                       outcome_token__address=validated_data.get('outcome_token'))
+        outcome_token_balance.balance -= validated_data.get('amount')
+        outcome_token_balance.outcome_token.total_supply -= validated_data.get('amount')
+        # save the outcome_token
+        outcome_token_balance.outcome_token.save()
+        # save the outcome_token_balance
+        outcome_token_balance.save()
         return outcome_token_balance.outcome_token
 
 
