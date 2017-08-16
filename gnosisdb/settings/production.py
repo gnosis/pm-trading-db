@@ -33,8 +33,7 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 ADMINS = (
     ('Giacomo', 'giacomo.licari@gnosis.pm'),
     ('Denis', 'denis@gnosis.pm'),
-    ('Rami', 'rami.khalil@gnosis.pm'),
-    ('Stefa', 'stefan@gnosis.pm'),
+    ('Stefan', 'stefan@gnosis.pm'),
 )
 
 # ------------------------------------------------------------------------------
@@ -65,6 +64,11 @@ BROKER_URL = 'amqp://{user}:{password}@{hostname}:{port}/{queue}'.format(
     port=RABBIT_PORT,
     queue=RABBIT_QUEUE
 )
+
+# ------------------------------------------------------------------------------
+# LMSR MARKET MAKER Address
+# ------------------------------------------------------------------------------
+LMSR_MARKET_MAKER = os.environ['LMSR_MARKET_MAKER']
 
 # ------------------------------------------------------------------------------
 # GNOSIS ETHEREUM CONTRACTS
