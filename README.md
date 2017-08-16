@@ -18,7 +18,6 @@ Specify your application administrators:
 ADMINS = (
     ('Giacomo', 'giacomo.licari@gnosis.pm'),
     ('Denis', 'denis@gnosis.pm'),
-    ('Rami', 'rami.khalil@gnosis.pm'),
     ('Stefan', 'stefan@gnosis.pm'),
 )
 ```
