@@ -7,7 +7,7 @@ from relationaldb.tests.factories import (
     CentralizedOracleFactory, UltimateOracleFactory,
     MarketFactory, CategoricalEventFactory, OutcomeTokenFactory, OutcomeTokenBalanceFactory
 )
-from relationaldb.models import CentralizedOracle, UltimateOracle, Market, ShortSellOrder, OutcomeToken
+from relationaldb.models import CentralizedOracle, UltimateOracle, Market, ShortSellOrder, BuyOrder
 from datetime import datetime, timedelta
 from gnosisdb.utils import add_0x_prefix
 import json
@@ -227,3 +227,49 @@ class TestViews(APITestCase):
         url = reverse('api:history-by-market')
         history_data = self.client.get(url, content_type='application/json')
         self.assertEquals(history_data.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_market_participant_history(self):
+        outcome_token = OutcomeTokenFactory()
+        event = outcome_token.event
+        oracle = event.oracle
+        market = MarketFactory(event=event)
+        creation_date_time = datetime.now()
+        sender_address = '{:040d}'.format(100)
+
+        response = self.client.get(
+            reverse('api:trades-by-owner', kwargs={'market_address': market.address, 'owner_address': sender_address}),
+            content_type='application/json'
+        )
+        self.assertEquals(response.status_code, status.HTTP_200_OK)
+        self.assertEquals(len(json.loads(response.content).get('results')), 0)
+
+        # Buy Order
+        order = BuyOrder()
+        order.creation_date_time = creation_date_time
+        order.creation_block = 0
+        order.market = market
+        order.sender = sender_address
+        order.outcome_token = outcome_token
+        order.outcome_token_count = 1
+        order.cost = 1
+        order.net_outcome_tokens_sold = market.net_outcome_tokens_sold
+        order.save()
+
+        # Create Order
+        order = ShortSellOrder()
+        order.creation_date_time = creation_date_time
+        order.creation_block = 0
+        order.market = market
+        order.sender = sender_address
+        order.outcome_token = outcome_token
+        order.outcome_token_count = 1
+        order.cost = 1
+        order.net_outcome_tokens_sold = market.net_outcome_tokens_sold
+        order.save()
+
+        response = self.client.get(
+            reverse('api:trades-by-owner', kwargs={'market_address': market.address, 'owner_address': sender_address}),
+            content_type='application/json'
+        )
+        self.assertEquals(response.status_code, status.HTTP_200_OK)
+        self.assertEquals(len(json.loads(response.content).get('results')), 2)

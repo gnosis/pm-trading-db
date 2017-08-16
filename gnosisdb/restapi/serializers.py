@@ -195,6 +195,13 @@ class MarketSerializer(serializers.ModelSerializer):
         return add_0x_prefix(obj)
 
 
+class OutcomeTokenSerializer(serializers.ModelSerializer):
+    totalSupply = serializers.DecimalField(source="total_supply", max_digits=80, decimal_places=0)
+    class Meta:
+        model = OutcomeToken
+        fields = ('event', 'index', 'totalSupply', 'address')
+
+
 class MarketHistorySerializer(serializers.ModelSerializer):
     date = serializers.DateTimeField(source="creation_date_time", read_only=True)
     net_outcome_tokens_sold = serializers.ListField(
@@ -209,11 +216,58 @@ class MarketHistorySerializer(serializers.ModelSerializer):
         return remove_null_values(response)
 
 
-class OutcomeTokenSerializer(serializers.ModelSerializer):
-    totalSupply = serializers.DecimalField(source="total_supply", max_digits=80, decimal_places=0)
+class MarketParticipantHistorySerializer(serializers.ModelSerializer):
+    """Serializes the list of orders (trades) for the given sender address and market"""
+    date = serializers.DateTimeField(source="creation_date_time", read_only=True)
+    # net_outcome_tokens_sold = serializers.ListField(
+    #     child=serializers.DecimalField(max_digits=80, decimal_places=0, read_only=True))
+    outcome_token = OutcomeTokenSerializer()
+    outcome_token_count = serializers.DecimalField(max_digits=80, decimal_places=0)
+    market = serializers.SerializerMethodField()
+    owner = serializers.SerializerMethodField()
+    order_type = serializers.SerializerMethodField()
+    cost = serializers.SerializerMethodField()
+    profit = serializers.SerializerMethodField()
+
     class Meta:
-        model = OutcomeToken
-        fields = ('event', 'index', 'totalSupply', 'address')
+        model = Order
+        fields = ('date', 'outcome_token', 'outcome_token_count', 'market', 'owner', 'order_type', 'profit', 'cost',)
+
+    def get_market(self, obj):
+        return add_0x_prefix(obj.market.address)
+
+    def get_owner(self, obj):
+        return add_0x_prefix(obj.sender)
+
+    def get_order_type(self, obj):
+        if hasattr(obj, 'sellorder'):
+            return 'SELL'
+        elif hasattr(obj, 'shortsellorder'):
+            return 'SHORT SELL'
+        elif hasattr(obj, 'buyorder'):
+            return 'BUY'
+        else:
+            return 'UNKNOWN'
+
+    def get_cost(self, obj):
+        order_type = self.get_order_type(obj)
+        if order_type == 'BUY':
+            return obj.buyorder.cost
+        elif order_type == 'SHORT SELL':
+            return obj.shortsellorder.cost
+        else:
+            None
+
+    def get_profit(self, obj):
+        order_type = self.get_order_type(obj)
+        if order_type == 'SELL':
+            return obj.sellorder.cost
+        else:
+            None
+
+    def to_representation(self, instance):
+        response = super(MarketParticipantHistorySerializer, self).to_representation(instance)
+        return remove_null_values(response)
 
 
 class OutcomeTokenBalanceSerializer(serializers.ModelSerializer):
