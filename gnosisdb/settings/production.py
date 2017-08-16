@@ -2,7 +2,7 @@ from gnosisdb.settings.base import *
 from gnosisdb.chainevents.abis import abi_file_path, load_json_file
 import os
 
-CELERY_SEND_TASK_ERROR_EMAILS = True
+CELERY_SEND_TASK_ERROR_EMAILS = False
 
 SECRET_KEY = os.environ['SECRET_KEY']
 
