@@ -59,6 +59,12 @@ BROKER_URL = 'amqp://{user}:{password}@{hostname}:{port}/{queue}'.format(
     queue=RABBIT_QUEUE
 )
 ```
+##### LMSR MARKET MAKER
+You need to specify the LMSR Market Maker address you have deployed previously (to discover how to do that please take a look at <a href="https://github.com/gnosis/gnosis-contracts" target="_blank">gnosis-contracts</a>):
+
+```
+LSRM_MARKET_MAKER = '2f2be9db638cb31d4143cbc1525b0e104f7ed597'
+```
 
 ##### GNOSIS ETHEREUM CONTRACTS
 The ETH_EVENTS array variable allows you to define and map a list of addressess to their related event listeners.<br/>
