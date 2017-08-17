@@ -882,8 +882,8 @@ class OutcomeTokenSaleSerializer(ContractEventTimestamped, serializers.ModelSeri
             order.sender = validated_data.get('seller')
             order.outcome_token = outcome_token
             order.outcome_token_count = token_count
-            order.profit = validated_data.get('outcomeTokenProfit') + validated_data.get('fees')
-            order.outcome_token_profit = validated_data('outcomeTokenProfit')
+            order.profit = validated_data.get('outcomeTokenProfit') - validated_data.get('fees')
+            order.outcome_token_profit = validated_data.get('outcomeTokenProfit')
             order.fees = validated_data.get('fees')
             order.net_outcome_tokens_sold = market.net_outcome_tokens_sold
             # Save order successfully, save market changes, then save the share entry

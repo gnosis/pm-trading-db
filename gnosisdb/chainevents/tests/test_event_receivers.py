@@ -10,7 +10,7 @@ from chainevents.event_receivers import (
 
 from relationaldb.models import (
     CentralizedOracle, UltimateOracle, ScalarEvent, CategoricalEvent, Market, OutcomeToken,
-    Event, OutcomeVoteBalance
+    Event, OutcomeVoteBalance, BuyOrder, SellOrder
 )
 
 from relationaldb.tests.factories import (
@@ -609,3 +609,96 @@ class TestEventReceiver(TestCase):
         market = Market.objects.get(address=market_factory.address)
         # self.assertEquals(market.stage, 3)
         self.assertEquals(market.withdrawn_fees, market_factory.withdrawn_fees+10)
+
+    def test_outcome_token_purchase(self):
+        categorical_event = CategoricalEventFactory()
+        outcome_token = OutcomeTokenFactory(event=categorical_event, index=0)
+        market = MarketFactory(event=categorical_event)
+        sender_address = '{:040d}'.format(100)
+
+        outcome_token_purchase_event = {
+            'name': 'OutcomeTokenPurchase',
+            'address': market.address,
+            'params': [
+                {'name': 'outcomeTokenCost', 'value': 100},
+                {'name': 'fees', 'value': 10},
+                {'name': 'buyer', 'value': sender_address},
+                {'name': 'outcomeTokenIndex', 'value': 0},
+                {'name': 'outcomeTokenCount', 'value': 10},
+            ]
+        }
+
+        block = {
+            'number': 1,
+            'timestamp': self.to_timestamp(datetime.now())
+        }
+
+        self.assertEquals(BuyOrder.objects.all().count(), 0)
+        MarketInstanceReceiver().save(outcome_token_purchase_event, block)
+        buy_orders = BuyOrder.objects.all()
+        self.assertEquals(buy_orders.count(), 1)
+        self.assertEquals(buy_orders[0].cost, 110) # outcomeTokenCost+fee
+
+    def test_outcome_token_sell(self):
+        categorical_event = CategoricalEventFactory()
+        outcome_token = OutcomeTokenFactory(event=categorical_event, index=0)
+        market = MarketFactory(event=categorical_event)
+        sender_address = '{:040d}'.format(100)
+
+        outcome_token_sell_event = {
+            'name': 'OutcomeTokenSale',
+            'address': market.address,
+            'params': [
+                {'name': 'outcomeTokenProfit', 'value': 100},
+                {'name': 'fees', 'value': 10},
+                {'name': 'seller', 'value': sender_address},
+                {'name': 'outcomeTokenIndex', 'value': 0},
+                {'name': 'outcomeTokenCount', 'value': 10},
+            ]
+        }
+
+        block = {
+            'number': 1,
+            'timestamp': self.to_timestamp(datetime.now())
+        }
+
+        self.assertEquals(SellOrder.objects.all().count(), 0)
+        MarketInstanceReceiver().save(outcome_token_sell_event, block)
+        sell_orders = SellOrder.objects.all()
+        self.assertEquals(sell_orders.count(), 1)
+        self.assertEquals(sell_orders[0].profit, 90) # outcomeTokenProfit-fee
+
+    def test_collected_fees(self):
+        categorical_event = CategoricalEventFactory()
+        outcome_token = OutcomeTokenFactory(event=categorical_event, index=0)
+        market = MarketFactory(event=categorical_event)
+        sender_address = '{:040d}'.format(100)
+        fees = 10
+
+        outcome_token_purchase_event = {
+            'name': 'OutcomeTokenPurchase',
+            'address': market.address,
+            'params': [
+                {'name': 'outcomeTokenCost', 'value': 100},
+                {'name': 'fees', 'value': fees},
+                {'name': 'buyer', 'value': sender_address},
+                {'name': 'outcomeTokenIndex', 'value': 0},
+                {'name': 'outcomeTokenCount', 'value': 10},
+            ]
+        }
+
+        block = {
+            'number': 1,
+            'timestamp': self.to_timestamp(datetime.now())
+        }
+
+        # Save event
+        MarketInstanceReceiver().save(outcome_token_purchase_event, block)
+        # Check that collected fees was incremented
+        market_check = Market.objects.get(address=market.address)
+        self.assertEquals(market_check.collected_fees, market.collected_fees+fees)
+
+        block.update({'number': 2})
+        MarketInstanceReceiver().save(outcome_token_purchase_event, block)
+        market_check = Market.objects.get(address=market.address)
+        self.assertEquals(market_check.collected_fees, market.collected_fees+fees+fees)
