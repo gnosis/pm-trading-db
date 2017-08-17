@@ -165,10 +165,14 @@ class Order(BlockTimeStamped):
 
 class BuyOrder(Order):
     cost = models.DecimalField(max_digits=80, decimal_places=0)
+    outcome_token_cost = models.DecimalField(max_digits=80, decimal_places=0)
+    fees = models.DecimalField(max_digits=80, decimal_places=0)
 
 
 class SellOrder(Order):
     profit = models.DecimalField(max_digits=80, decimal_places=0)
+    outcome_token_profit = models.DecimalField(max_digits=80, decimal_places=0)
+    fees = models.DecimalField(max_digits=80, decimal_places=0)
 
 
 class ShortSellOrder(Order):

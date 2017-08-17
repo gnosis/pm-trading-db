@@ -4,7 +4,7 @@ from django.core.urlresolvers import reverse
 from rest_framework.test import APITestCase
 from rest_framework import status
 from relationaldb.tests.factories import (
-    CentralizedOracleFactory, UltimateOracleFactory,
+    CentralizedOracleFactory, UltimateOracleFactory, BuyOrderFactory,
     MarketFactory, CategoricalEventFactory, OutcomeTokenFactory, OutcomeTokenBalanceFactory
 )
 from relationaldb.models import CentralizedOracle, UltimateOracle, Market, ShortSellOrder, BuyOrder
@@ -244,28 +244,8 @@ class TestViews(APITestCase):
         self.assertEquals(len(json.loads(response.content).get('results')), 0)
 
         # Buy Order
-        order = BuyOrder()
-        order.creation_date_time = creation_date_time
-        order.creation_block = 0
-        order.market = market
-        order.sender = sender_address
-        order.outcome_token = outcome_token
-        order.outcome_token_count = 1
-        order.cost = 1
-        order.net_outcome_tokens_sold = market.net_outcome_tokens_sold
-        order.save()
-
-        # Create Order
-        order = ShortSellOrder()
-        order.creation_date_time = creation_date_time
-        order.creation_block = 0
-        order.market = market
-        order.sender = sender_address
-        order.outcome_token = outcome_token
-        order.outcome_token_count = 1
-        order.cost = 1
-        order.net_outcome_tokens_sold = market.net_outcome_tokens_sold
-        order.save()
+        BuyOrderFactory(market=market, sender=sender_address)
+        BuyOrderFactory(market=market, sender=sender_address)
 
         response = self.client.get(
             reverse('api:trades-by-owner', kwargs={'market_address': market.address, 'owner_address': sender_address}),

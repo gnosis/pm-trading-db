@@ -170,3 +170,29 @@ class MarketFactory(ContractCreatedByFactory):
     stage = 0
     revenue = factory_boy.Sequence(lambda n: n)
     collected_fees = 0
+
+
+class OrderFactory(BlockTimestampedFactory, factory_boy.DjangoModelFactory):
+    market = factory_boy.SubFactory(MarketFactory)
+    sender = factory_boy.Sequence(lambda n: '{:040d}'.format(n))
+    outcome_token = factory_boy.SubFactory(OutcomeTokenFactory)
+    outcome_token_count = factory_boy.Sequence(lambda n: n)
+    net_outcome_tokens_sold = [0, 0]
+
+
+class BuyOrderFactory(OrderFactory):
+    class Meta:
+        model = models.BuyOrder
+
+    cost = factory_boy.Sequence(lambda n: n)
+    outcome_token_cost = factory_boy.Sequence(lambda n: n)
+    fees = 0
+
+
+class SellOrderFactory(OrderFactory):
+    class Meta:
+        model = models.SellOrder
+
+    profit = factory_boy.Sequence(lambda n: n)
+    outcome_token_profit = factory_boy.Sequence(lambda n: n)
+    fees = 0
