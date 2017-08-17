@@ -2,10 +2,10 @@ from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import serializers
 from relationaldb.models import (
     ScalarEventDescription, CategoricalEventDescription, OutcomeTokenBalance, OutcomeToken,
-    CentralizedOracle, UltimateOracle, Market, Order, ScalarEvent, CategoricalEvent
+    CentralizedOracle, UltimateOracle, Market, Order, ScalarEvent, CategoricalEvent, BuyOrder
 )
 from gnosisdb.utils import remove_null_values, add_0x_prefix
-
+from django.db.models import Sum
 
 class ContractSerializer(serializers.BaseSerializer):
     def to_representation(self, instance):
@@ -182,10 +182,11 @@ class MarketSerializer(serializers.ModelSerializer):
     funding = serializers.DecimalField(max_digits=80, decimal_places=0)
     net_outcome_tokens_sold = serializers.ListField(child=serializers.DecimalField(max_digits=80, decimal_places=0, read_only=True))
     stage = serializers.IntegerField()
+    trading_volume = serializers.SerializerMethodField()
 
     class Meta:
         model = Market
-        fields = ('contract', 'event', 'market_maker', 'fee', 'funding', 'net_outcome_tokens_sold', 'stage')
+        fields = ('contract', 'event', 'market_maker', 'fee', 'funding', 'net_outcome_tokens_sold', 'stage', 'trading_volume',)
 
     def to_representation(self, instance):
         response = super(MarketSerializer, self).to_representation(instance)
@@ -193,6 +194,13 @@ class MarketSerializer(serializers.ModelSerializer):
 
     def get_market_maker(self, obj):
         return add_0x_prefix(obj)
+
+    def get_trading_volume(self, obj):
+        orders = BuyOrder.objects.filter(market=obj.address)
+        if orders.count():
+            return orders.aggregate(Sum('cost'))['cost__sum']
+        else:
+            return 0
 
 
 class OutcomeTokenSerializer(serializers.ModelSerializer):
