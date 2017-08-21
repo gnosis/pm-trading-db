@@ -118,7 +118,7 @@ class TestViews(APITestCase):
         self.assertEquals(market_response_data.status_code, status.HTTP_200_OK)
         self.assertEquals(len(json.loads(market_response_data.content).get('results')), 1)
 
-        self.assertEqual(json.loads(market_response_data.content)['results'][0]['tradingVolume'], 0)
+        self.assertEqual(json.loads(market_response_data.content)['results'][0]['tradingVolume'], "0")
 
         BuyOrderFactory(market=market, cost=12)
 
@@ -126,7 +126,7 @@ class TestViews(APITestCase):
         self.assertEquals(market_response_data2.status_code, status.HTTP_200_OK)
         self.assertEquals(len(json.loads(market_response_data2.content).get('results')), 1)
 
-        self.assertEqual(json.loads(market_response_data2.content)['results'][0]['tradingVolume'], 12)
+        self.assertEqual(json.loads(market_response_data2.content)['results'][0]['tradingVolume'], "12")
 
     def test_markets_with_event_description(self):
         # test empty events response

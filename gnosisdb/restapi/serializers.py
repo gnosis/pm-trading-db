@@ -199,9 +199,9 @@ class MarketSerializer(serializers.ModelSerializer):
     def get_trading_volume(self, obj):
         orders = BuyOrder.objects.filter(market=obj.address)
         if orders.count():
-            return orders.aggregate(Sum('cost'))['cost__sum']
+            return str(orders.aggregate(Sum('cost'))['cost__sum'])
         else:
-            return 0
+            return "0"
 
 
 class OutcomeTokenSerializer(serializers.ModelSerializer):
