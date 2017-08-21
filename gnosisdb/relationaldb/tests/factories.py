@@ -186,7 +186,7 @@ class BuyOrderFactory(OrderFactory):
 
     cost = factory_boy.Sequence(lambda n: n)
     outcome_token_cost = factory_boy.Sequence(lambda n: n)
-    fees = 0
+    market_fees = 0
 
 
 class SellOrderFactory(OrderFactory):
@@ -195,4 +195,4 @@ class SellOrderFactory(OrderFactory):
 
     profit = factory_boy.Sequence(lambda n: n)
     outcome_token_profit = factory_boy.Sequence(lambda n: n)
-    fees = 0
+    market_fees = 0

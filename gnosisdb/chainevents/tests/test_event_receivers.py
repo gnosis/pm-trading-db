@@ -621,7 +621,7 @@ class TestEventReceiver(TestCase):
             'address': market.address,
             'params': [
                 {'name': 'outcomeTokenCost', 'value': 100},
-                {'name': 'fees', 'value': 10},
+                {'name': 'marketFees', 'value': 10},
                 {'name': 'buyer', 'value': sender_address},
                 {'name': 'outcomeTokenIndex', 'value': 0},
                 {'name': 'outcomeTokenCount', 'value': 10},
@@ -650,7 +650,7 @@ class TestEventReceiver(TestCase):
             'address': market.address,
             'params': [
                 {'name': 'outcomeTokenProfit', 'value': 100},
-                {'name': 'fees', 'value': 10},
+                {'name': 'marketFees', 'value': 10},
                 {'name': 'seller', 'value': sender_address},
                 {'name': 'outcomeTokenIndex', 'value': 0},
                 {'name': 'outcomeTokenCount', 'value': 10},
@@ -680,7 +680,7 @@ class TestEventReceiver(TestCase):
             'address': market.address,
             'params': [
                 {'name': 'outcomeTokenCost', 'value': 100},
-                {'name': 'fees', 'value': fees},
+                {'name': 'marketFees', 'value': fees},
                 {'name': 'buyer', 'value': sender_address},
                 {'name': 'outcomeTokenIndex', 'value': 0},
                 {'name': 'outcomeTokenCount', 'value': 10},

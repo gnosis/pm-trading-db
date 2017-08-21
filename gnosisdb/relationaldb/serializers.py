@@ -809,14 +809,14 @@ class OutcomeTokenPurchaseSerializer(ContractEventTimestamped, serializers.Model
     class Meta:
         model = models.BuyOrder
         fields = ContractEventTimestamped.Meta.fields + ('buyer', 'outcomeTokenIndex', 'outcomeTokenCount',
-                                                         'outcomeTokenCost', 'fees',)
+                                                         'outcomeTokenCost', 'marketFees',)
 
     address = serializers.CharField(max_length=40)
     buyer = serializers.CharField(max_length=40)
     outcomeTokenIndex = serializers.IntegerField()
     outcomeTokenCount = serializers.IntegerField()
     outcomeTokenCost = serializers.IntegerField()
-    fees = serializers.IntegerField()
+    marketFees = serializers.IntegerField()
 
     def create(self, validated_data):
         try:
@@ -824,7 +824,7 @@ class OutcomeTokenPurchaseSerializer(ContractEventTimestamped, serializers.Model
             token_index = validated_data.get('outcomeTokenIndex')
             token_count = validated_data.get('outcomeTokenCount')
             market.net_outcome_tokens_sold[token_index] += token_count
-            market.collected_fees += validated_data.get('fees')
+            market.collected_fees += validated_data.get('marketFees')
 
             outcome_token = market.event.outcometoken_set.get(index=token_index)
 
@@ -836,9 +836,9 @@ class OutcomeTokenPurchaseSerializer(ContractEventTimestamped, serializers.Model
             order.sender = validated_data.get('buyer')
             order.outcome_token = outcome_token
             order.outcome_token_count = token_count
-            order.cost = validated_data.get('outcomeTokenCost') + validated_data.get('fees')
+            order.cost = validated_data.get('outcomeTokenCost') + validated_data.get('marketFees')
             order.outcome_token_cost = validated_data.get('outcomeTokenCost')
-            order.fees = validated_data.get('fees')
+            order.fees = validated_data.get('marketFees')
             order.net_outcome_tokens_sold = market.net_outcome_tokens_sold
             # Save order successfully, save market changes, then save the share entry
             order.save()
@@ -855,14 +855,14 @@ class OutcomeTokenSaleSerializer(ContractEventTimestamped, serializers.ModelSeri
     class Meta:
         model = models.SellOrder
         fields = ContractEventTimestamped.Meta.fields + ('seller', 'outcomeTokenIndex', 'outcomeTokenCount',
-                                                         'outcomeTokenProfit', 'fees',)
+                                                         'outcomeTokenProfit', 'marketFees',)
 
     address = serializers.CharField(max_length=40)
     seller = serializers.CharField(max_length=40)
     outcomeTokenIndex = serializers.IntegerField()
     outcomeTokenCount = serializers.IntegerField()
     outcomeTokenProfit = serializers.IntegerField()
-    fees = serializers.IntegerField()
+    marketFees = serializers.IntegerField()
 
     def create(self, validated_data):
         try:
@@ -870,7 +870,7 @@ class OutcomeTokenSaleSerializer(ContractEventTimestamped, serializers.ModelSeri
             token_index = validated_data.get('outcomeTokenIndex')
             token_count = validated_data.get('outcomeTokenCount')
             market.net_outcome_tokens_sold[token_index] -= token_count
-            market.collected_fees += validated_data.get('fees')
+            market.collected_fees += validated_data.get('marketFees')
             # get outcome token
             outcome_token = market.event.outcometoken_set.get(index=token_index)
 
@@ -882,9 +882,9 @@ class OutcomeTokenSaleSerializer(ContractEventTimestamped, serializers.ModelSeri
             order.sender = validated_data.get('seller')
             order.outcome_token = outcome_token
             order.outcome_token_count = token_count
-            order.profit = validated_data.get('outcomeTokenProfit') - validated_data.get('fees')
+            order.profit = validated_data.get('outcomeTokenProfit') - validated_data.get('marketFees')
             order.outcome_token_profit = validated_data.get('outcomeTokenProfit')
-            order.fees = validated_data.get('fees')
+            order.fees = validated_data.get('marketFees')
             order.net_outcome_tokens_sold = market.net_outcome_tokens_sold
             # Save order successfully, save market changes, then save the share entry
             order.save()
