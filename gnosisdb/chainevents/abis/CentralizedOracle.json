@@ -1,144 +1,144 @@
 [
-  {
-    "inputs": [],
-    "constant": true,
-    "name": "outcome",
-    "payable": false,
-    "outputs": [
-      {
-        "type": "int256",
-        "name": ""
-      }
-    ],
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "type": "int256",
-        "name": "_outcome"
-      }
-    ],
-    "constant": false,
-    "name": "setOutcome",
-    "payable": false,
-    "outputs": [],
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "constant": true,
-    "name": "getOutcome",
-    "payable": false,
-    "outputs": [
-      {
-        "type": "int256",
-        "name": ""
-      }
-    ],
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "constant": true,
-    "name": "owner",
-    "payable": false,
-    "outputs": [
-      {
-        "type": "address",
-        "name": ""
-      }
-    ],
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "type": "address",
-        "name": "newOwner"
-      }
-    ],
-    "constant": false,
-    "name": "replaceOwner",
-    "payable": false,
-    "outputs": [],
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "constant": true,
-    "name": "ipfsHash",
-    "payable": false,
-    "outputs": [
-      {
-        "type": "bytes",
-        "name": ""
-      }
-    ],
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "constant": true,
-    "name": "isSet",
-    "payable": false,
-    "outputs": [
-      {
-        "type": "bool",
-        "name": ""
-      }
-    ],
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "constant": true,
-    "name": "isOutcomeSet",
-    "payable": false,
-    "outputs": [
-      {
-        "type": "bool",
-        "name": ""
-      }
-    ],
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "type": "address",
-        "name": "_owner"
-      },
-      {
-        "type": "bytes",
-        "name": "_ipfsHash"
-      }
-    ],
-    "type": "constructor",
-    "payable": false
-  },
-  {
-    "inputs": [
-      {
-        "indexed": true,
-        "type": "address",
-        "name": "newOwner"
-      }
-    ],
-    "type": "event",
-    "name": "OwnerReplacement",
-    "anonymous": false
-  },
-  {
-    "inputs": [
-      {
-        "indexed": false,
-        "type": "int256",
-        "name": "outcome"
-      }
-    ],
-    "type": "event",
-    "name": "OutcomeAssignment",
-    "anonymous": false
-  }
-]
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "outcome",
+      "outputs": [
+        {
+          "name": "",
+          "type": "int256"
+        }
+      ],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_outcome",
+          "type": "int256"
+        }
+      ],
+      "name": "setOutcome",
+      "outputs": [],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "getOutcome",
+      "outputs": [
+        {
+          "name": "",
+          "type": "int256"
+        }
+      ],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
+        {
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "replaceOwner",
+      "outputs": [],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "ipfsHash",
+      "outputs": [
+        {
+          "name": "",
+          "type": "bytes"
+        }
+      ],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "isSet",
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "isOutcomeSet",
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "name": "_owner",
+          "type": "address"
+        },
+        {
+          "name": "_ipfsHash",
+          "type": "bytes"
+        }
+      ],
+      "payable": false,
+      "type": "constructor"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "OwnerReplacement",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "name": "outcome",
+          "type": "int256"
+        }
+      ],
+      "name": "OutcomeAssignment",
+      "type": "event"
+    }
+  ]

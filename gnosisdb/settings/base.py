@@ -214,7 +214,7 @@ ETH_EVENTS = [
         'PUBLISH': True,
     },
     {
-        'ADDRESSES': ['9b1f7f645351af3631a656421ed2e40f2802e6c0'],
+        'ADDRESSES': ['67b5656d60a809915323bf2c40a8bef15a152e3e'],
         'EVENT_ABI': load_json_file(abi_file_path('EventFactory.json')),
         'EVENT_DATA_RECEIVER': 'chainevents.event_receivers.EventFactoryReceiver',
         'NAME': 'eventFactory',
