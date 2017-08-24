@@ -4,7 +4,7 @@ from django.core.urlresolvers import reverse
 from rest_framework.test import APITestCase
 from rest_framework import status
 from relationaldb.tests.factories import (
-    CentralizedOracleFactory, UltimateOracleFactory,
+    CentralizedOracleFactory, UltimateOracleFactory, BuyOrderFactory,
     MarketFactory, CategoricalEventFactory, OutcomeTokenFactory, OutcomeTokenBalanceFactory
 )
 from relationaldb.models import CentralizedOracle, UltimateOracle, Market, ShortSellOrder, BuyOrder
@@ -108,6 +108,25 @@ class TestViews(APITestCase):
         market_search_response = self.client.get(reverse('api:markets-by-name', kwargs={'addr': markets[0].address}), content_type='application/json')
         self.assertEquals(market_search_response.status_code, status.HTTP_200_OK)
         self.assertEquals(json.loads(market_search_response.content).get('contract').get('address'), add_0x_prefix(markets[0].address))
+
+    def test_market_trading_volume(self):
+
+        # create markets
+        market = MarketFactory()
+
+        market_response_data = self.client.get(reverse('api:markets'), content_type='application/json')
+        self.assertEquals(market_response_data.status_code, status.HTTP_200_OK)
+        self.assertEquals(len(json.loads(market_response_data.content).get('results')), 1)
+
+        self.assertEqual(json.loads(market_response_data.content)['results'][0]['tradingVolume'], "0")
+
+        BuyOrderFactory(market=market, cost=12)
+
+        market_response_data2 = self.client.get(reverse('api:markets'), content_type='application/json')
+        self.assertEquals(market_response_data2.status_code, status.HTTP_200_OK)
+        self.assertEquals(len(json.loads(market_response_data2.content).get('results')), 1)
+
+        self.assertEqual(json.loads(market_response_data2.content)['results'][0]['tradingVolume'], "12")
 
     def test_markets_with_event_description(self):
         # test empty events response
@@ -244,28 +263,8 @@ class TestViews(APITestCase):
         self.assertEquals(len(json.loads(response.content).get('results')), 0)
 
         # Buy Order
-        order = BuyOrder()
-        order.creation_date_time = creation_date_time
-        order.creation_block = 0
-        order.market = market
-        order.sender = sender_address
-        order.outcome_token = outcome_token
-        order.outcome_token_count = 1
-        order.cost = 1
-        order.net_outcome_tokens_sold = market.net_outcome_tokens_sold
-        order.save()
-
-        # Create Order
-        order = ShortSellOrder()
-        order.creation_date_time = creation_date_time
-        order.creation_block = 0
-        order.market = market
-        order.sender = sender_address
-        order.outcome_token = outcome_token
-        order.outcome_token_count = 1
-        order.cost = 1
-        order.net_outcome_tokens_sold = market.net_outcome_tokens_sold
-        order.save()
+        BuyOrderFactory(market=market, sender=sender_address)
+        BuyOrderFactory(market=market, sender=sender_address)
 
         response = self.client.get(
             reverse('api:trades-by-owner', kwargs={'market_address': market.address, 'owner_address': sender_address}),
