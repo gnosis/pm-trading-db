@@ -157,7 +157,8 @@ class IpfsHashField(CharField):
             if not event_description_json.get('description'):
                 raise serializers.ValidationError('Missing description field')
 
-            if 'outcomes' in event_description_json:
+            if 'outcomes' in event_description_json and type(event_description_json['outcomes']) is list \
+                    and len(event_description_json['outcomes']) > 1:
                 categorical_json = {
                     'ipfs_hash': data,
                     'title': event_description_json['title'],
