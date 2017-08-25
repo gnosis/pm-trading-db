@@ -245,6 +245,5 @@ GnosisDB comes with a handy RESTful API. Run GnosisDB, open your Web browser and
 Contributors
 ------------
 - Stefan George (stefan@gnosis.pm)
-- Denìs Graña (denis@gnosis.pm)
-- Rami Khalil (rami@gnosis.pm)
+- Denís Graña (denis@gnosis.pm)
 - Giacomo Licari (giacomo.licari@gnosis.pm)
