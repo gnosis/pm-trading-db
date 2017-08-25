@@ -10,7 +10,7 @@ from relationaldb.serializers import (
     CentralizedOracleInstanceSerializer, OutcomeTokenInstanceSerializer, OutcomeTokenTransferSerializer
 )
 
-from relationaldb.models import OutcomeTokenBalance, OutcomeToken
+from relationaldb.models import OutcomeTokenBalance, OutcomeToken, ScalarEventDescription
 from rest_framework.serializers import ValidationError
 from django.conf import settings
 from ipfs.ipfs import Ipfs
@@ -68,6 +68,58 @@ class TestSerializers(TestCase):
         self.assertTrue(s.is_valid(), s.errors)
         instance = s.save()
         self.assertIsNotNone(instance)
+
+    def test_create_centralized_oracle_scalar_event_with_outcomes(self):
+        oracle = CentralizedOracleFactory()
+        event_description_json = None
+
+        block = {
+            'number': oracle.creation_block,
+            'timestamp': mktime(oracle.creation_date_time.timetuple())
+        }
+
+        oracle_event = {
+            'address': oracle.factory,
+            'params': [
+                {
+                    'name': 'creator',
+                    'value': oracle.creator
+                },
+                {
+                    'name': 'centralizedOracle',
+                    'value': oracle.address,
+                },
+                {
+                    'name': 'ipfsHash',
+                    'value': 'something unknown'
+                }
+            ]
+        }
+        # remove test oracle before creating it again
+        oracle.delete()
+        s = CentralizedOracleSerializer(data=oracle_event, block=block)
+        # ipfs_hash not saved to IPFS
+        self.assertFalse(s.is_valid(), s.errors)
+        # oracle.event_description
+        event_description_json = {
+            'title': oracle.event_description.title,
+            'description': oracle.event_description.description,
+            'resolutionDate': oracle.event_description.resolution_date.isoformat(),
+            'outcomes': [],
+            'unit': 'unit',
+            'decimals': 2
+        }
+
+        # save event_description to IPFS
+        ipfs_hash = self.ipfs.post(event_description_json)
+        oracle_event.get('params')[2]['value'] = ipfs_hash
+
+        s = CentralizedOracleSerializer(data=oracle_event, block=block)
+        self.assertTrue(s.is_valid(), s.errors)
+        instance = s.save()
+        self.assertIsNotNone(instance)
+
+        self.assertEqual(ScalarEventDescription.objects.filter(ipfs_hash=instance.event_description.ipfs_hash).count(), 1)
 
     def test_event_description_different_outcomes(self):
 
