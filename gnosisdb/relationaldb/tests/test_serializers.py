@@ -372,11 +372,7 @@ class TestSerializers(TestCase):
         }
 
         s = UltimateOracleSerializer(data=oracle_event, block=block)
-        self.assertTrue(s.is_valid(), s.errors)
-        instance = s.save()
-        self.assertIsNotNone(instance)
-        self.assertIsNotNone(instance.pk)
-        self.assertIsNone(instance.forwarded_oracle)
+        self.assertFalse(s.is_valid())
 
     def test_create_scalar_event(self):
         event = EventFactory()

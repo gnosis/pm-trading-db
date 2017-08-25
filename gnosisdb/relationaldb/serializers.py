@@ -202,7 +202,7 @@ class OracleField(CharField):
                 oracle = models.Oracle.objects.get(address=data)
                 return oracle
             except models.Oracle.DoesNotExist:
-                return None
+                raise serializers.ValidationError('Unknown Oracle address')
 
 
 class EventField(CharField):
