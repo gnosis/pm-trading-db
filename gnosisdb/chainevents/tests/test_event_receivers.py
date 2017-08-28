@@ -21,6 +21,7 @@ from relationaldb.tests.factories import (
 from datetime import datetime
 from time import mktime
 from ipfs.ipfs import Ipfs
+from decimal import Decimal
 
 
 class TestEventReceiver(TestCase):
@@ -638,6 +639,36 @@ class TestEventReceiver(TestCase):
         buy_orders = BuyOrder.objects.all()
         self.assertEquals(buy_orders.count(), 1)
         self.assertEquals(buy_orders[0].cost, 110) # outcomeTokenCost+fee
+
+    def test_outcome_token_purchase_marginal_price(self):
+        categorical_event = CategoricalEventFactory()
+        OutcomeTokenFactory(event=categorical_event, index=0)
+        OutcomeTokenFactory(event=categorical_event, index=1)
+        market = MarketFactory(event=categorical_event, funding=1e18, net_outcome_tokens_sold=[0, 0])
+        sender_address = '{:040d}'.format(100)
+
+        outcome_token_purchase_event = {
+            'name': 'OutcomeTokenPurchase',
+            'address': market.address,
+            'params': [
+                {'name': 'outcomeTokenCost', 'value': 1000000000000000000},
+                {'name': 'marketFees', 'value': 0},
+                {'name': 'buyer', 'value': sender_address},
+                {'name': 'outcomeTokenIndex', 'value': 0},
+                {'name': 'outcomeTokenCount', 'value': 1584900000000000000},
+            ]
+        }
+
+        block = {
+            'number': 1,
+            'timestamp': self.to_timestamp(datetime.now())
+        }
+
+        self.assertEquals(BuyOrder.objects.all().count(), 0)
+        MarketInstanceReceiver().save(outcome_token_purchase_event, block)
+        buy_orders = BuyOrder.objects.all()
+        self.assertEquals(buy_orders.count(), 1)
+        self.assertListEqual(buy_orders[0].marginal_prices, [Decimal(0.7500), Decimal(0.2500)])  # outcomeTokenCost+fee
 
     def test_outcome_token_sell(self):
         categorical_event = CategoricalEventFactory()

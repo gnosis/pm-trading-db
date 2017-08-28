@@ -163,7 +163,7 @@ class MarketFactory(ContractCreatedByFactory):
     event = factory_boy.SubFactory(EventFactory)
     market_maker = factory_boy.Sequence(lambda n: '{:040d}'.format(n))
     fee = factory_boy.Sequence(lambda n: n)
-    funding = factory_boy.Sequence(lambda n: n)
+    funding = factory_boy.Sequence(lambda n: (n+1)*1e18)
     net_outcome_tokens_sold = [0, 0]
     withdrawn_fees = 0
     # outcome_probabilities = factory.Sequence(lambda n: n)
@@ -178,6 +178,7 @@ class OrderFactory(BlockTimestampedFactory, factory_boy.DjangoModelFactory):
     outcome_token = factory_boy.SubFactory(OutcomeTokenFactory)
     outcome_token_count = factory_boy.Sequence(lambda n: n)
     net_outcome_tokens_sold = [0, 0]
+    marginal_prices = [0.5, 0.5]
 
 
 class BuyOrderFactory(OrderFactory):

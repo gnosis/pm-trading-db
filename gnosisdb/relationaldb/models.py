@@ -161,6 +161,7 @@ class Order(BlockTimeStamped):
     outcome_token = models.ForeignKey(OutcomeToken, to_field='address', null=True)
     outcome_token_count = models.DecimalField(max_digits=80, decimal_places=0) # the amount of outcome tokens bought or sold
     net_outcome_tokens_sold = ArrayField(models.DecimalField(max_digits=80, decimal_places=0)) # represents the outcome tokens distrubition at the buy/sell order moment
+    marginal_prices = ArrayField(models.DecimalField(max_digits=5, decimal_places=4)) # represent the marginal price of each outcome at the time of the market order
 
 
 class BuyOrder(Order):

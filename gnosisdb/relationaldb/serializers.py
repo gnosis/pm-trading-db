@@ -7,7 +7,13 @@ from ipfsapi.exceptions import ErrorResponse
 from time import mktime
 from celery.utils.log import get_task_logger
 from django.conf import settings
+from gnosisdb.utils import calc_lmsr_marginal_price
+from mpmath import mp
+from decimal import Decimal
 
+
+mp.dps = 100
+mp.pretty=True
 
 logger = get_task_logger(__name__)
 
@@ -840,6 +846,12 @@ class OutcomeTokenPurchaseSerializer(ContractEventTimestamped, serializers.Model
             order.outcome_token_cost = validated_data.get('outcomeTokenCost')
             order.fees = validated_data.get('marketFees')
             order.net_outcome_tokens_sold = market.net_outcome_tokens_sold
+            # calculate current marginal price
+            order.marginal_prices = map(
+                lambda (index, _): Decimal(calc_lmsr_marginal_price(int(index), [int(x) for x in market.net_outcome_tokens_sold],
+                                                            int(market.funding))),
+                enumerate(market.net_outcome_tokens_sold)
+            )
             # Save order successfully, save market changes, then save the share entry
             order.save()
             market.save()
@@ -886,6 +898,11 @@ class OutcomeTokenSaleSerializer(ContractEventTimestamped, serializers.ModelSeri
             order.outcome_token_profit = validated_data.get('outcomeTokenProfit')
             order.fees = validated_data.get('marketFees')
             order.net_outcome_tokens_sold = market.net_outcome_tokens_sold
+            order.marginal_prices = map(
+                lambda (index, _): Decimal(calc_lmsr_marginal_price(int(index), [int(x) for x in market.net_outcome_tokens_sold],
+                                                            int(market.funding))),
+                enumerate(market.net_outcome_tokens_sold)
+            )
             # Save order successfully, save market changes, then save the share entry
             order.save()
             market.save()

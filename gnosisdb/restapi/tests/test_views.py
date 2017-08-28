@@ -207,6 +207,7 @@ class TestViews(APITestCase):
         order.outcome_token_count = 1
         order.cost = 1
         order.net_outcome_tokens_sold = market.net_outcome_tokens_sold
+        order.marginal_prices = [0.5, 0.5]
         order.save()
 
         url = reverse('api:history-by-market') + '?market=' + market.address

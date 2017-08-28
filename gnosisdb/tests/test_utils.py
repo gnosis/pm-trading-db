@@ -14,6 +14,6 @@ class TestUtils(TestCase):
         market = MarketFactory(event=event)
 
         net_outcome_tokens_sold = [0, 1] # market.net_outcome_tokens_sold
-        result = calc_lmsr_marginal_price(10**18, 1, net_outcome_tokens_sold, market.funding)
+        result = calc_lmsr_marginal_price(1, net_outcome_tokens_sold, market.funding)
         self.assertIsNotNone(result)
         self.assertTrue(result > 0)
