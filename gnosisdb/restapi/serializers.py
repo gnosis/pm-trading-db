@@ -237,10 +237,11 @@ class MarketParticipantHistorySerializer(serializers.ModelSerializer):
     order_type = serializers.SerializerMethodField()
     cost = serializers.SerializerMethodField()
     profit = serializers.SerializerMethodField()
+    marginal_prices = serializers.ListField(child=serializers.DecimalField(max_digits=5, decimal_places=4))
 
     class Meta:
         model = Order
-        fields = ('date', 'outcome_token', 'outcome_token_count', 'market', 'owner', 'order_type', 'profit', 'cost',)
+        fields = ('date', 'outcome_token', 'outcome_token_count', 'market', 'owner', 'order_type', 'profit', 'cost', 'marginal_prices', )
 
     def get_market(self, obj):
         return add_0x_prefix(obj.market.address)
