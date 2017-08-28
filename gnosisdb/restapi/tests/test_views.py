@@ -28,14 +28,14 @@ class TestViews(APITestCase):
         self.assertEquals(centralized_response_data.status_code, status.HTTP_200_OK)
         self.assertEquals(len(json.loads(centralized_response_data.content).get('results')), len(centralized_oracles))
 
-        centralized_search_response = self.client.get(reverse('api:centralized-oracles-by-address', kwargs={'addr': centralized_oracles[0].address}), content_type='application/json')
+        centralized_search_response = self.client.get(reverse('api:centralized-oracles-by-address', kwargs={'oracle_address': centralized_oracles[0].address}), content_type='application/json')
         self.assertEquals(centralized_search_response.status_code, status.HTTP_200_OK)
         self.assertEquals(json.loads(centralized_search_response.content).get('contract').get('creator'), add_0x_prefix(centralized_oracles[0].creator))
         # test empty response
-        centralized_empty_search_response = self.client.get(reverse('api:centralized-oracles-by-address', kwargs={'addr': "abcdef0"}), content_type='application/json')
+        centralized_empty_search_response = self.client.get(reverse('api:centralized-oracles-by-address', kwargs={'oracle_address': "abcdef0"}), content_type='application/json')
         self.assertEquals(centralized_empty_search_response.status_code, status.HTTP_404_NOT_FOUND)
 
-        centralized_empty_search_response = self.client.get(reverse('api:centralized-oracles-by-address', kwargs={'addr': centralized_oracles[0].creator}), content_type='application/json')
+        centralized_empty_search_response = self.client.get(reverse('api:centralized-oracles-by-address', kwargs={'oracle_address': centralized_oracles[0].creator}), content_type='application/json')
         self.assertEquals(centralized_empty_search_response.status_code, status.HTTP_200_OK)
         self.assertEquals(json.loads(centralized_empty_search_response.content).get('contract').get('creator'), add_0x_prefix(centralized_oracles[0].address))
 
@@ -53,14 +53,14 @@ class TestViews(APITestCase):
         self.assertEquals(ultimate_response_data.status_code, status.HTTP_200_OK)
         self.assertEquals(len(json.loads(ultimate_response_data.content).get('results')), len(ultimate_oracles))
 
-        ultimate_search_response = self.client.get(reverse('api:ultimate-oracles-by-address', kwargs={'addr': ultimate_oracles[0].address}), content_type='application/json')
+        ultimate_search_response = self.client.get(reverse('api:ultimate-oracles-by-address', kwargs={'oracle_address': ultimate_oracles[0].address}), content_type='application/json')
         self.assertEquals(ultimate_search_response.status_code, status.HTTP_200_OK)
         self.assertEquals(json.loads(ultimate_search_response.content).get('contract').get('creator'), add_0x_prefix(ultimate_oracles[0].creator))
         # test empty response
-        ultimate_empty_search_response = self.client.get(reverse('api:ultimate-oracles-by-address', kwargs={'addr': "abcdef0"}), content_type='application/json')
+        ultimate_empty_search_response = self.client.get(reverse('api:ultimate-oracles-by-address', kwargs={'oracle_address': "abcdef0"}), content_type='application/json')
         self.assertEquals(ultimate_empty_search_response.status_code, status.HTTP_404_NOT_FOUND)
 
-        ultimate_search_response = self.client.get(reverse('api:ultimate-oracles-by-address', kwargs={'addr': ultimate_oracles[0].address}), content_type='application/json')
+        ultimate_search_response = self.client.get(reverse('api:ultimate-oracles-by-address', kwargs={'oracle_address': ultimate_oracles[0].address}), content_type='application/json')
         self.assertEquals(ultimate_search_response.status_code, status.HTTP_200_OK)
         self.assertEquals(json.loads(ultimate_search_response.content).get('contract').get('address'), add_0x_prefix(ultimate_oracles[0].address))
 
@@ -77,10 +77,10 @@ class TestViews(APITestCase):
         events_response = self.client.get(reverse('api:events'), content_type='application/json')
         self.assertEquals(len(json.loads(events_response.content).get('results')), 1)
 
-        event_filtered_response = self.client.get(reverse('api:events-by-address', kwargs={'addr': "abcdef0"}), content_type='application/json')
+        event_filtered_response = self.client.get(reverse('api:events-by-address', kwargs={'event_address': "abcdef0"}), content_type='application/json')
         self.assertEquals(event_filtered_response.status_code, status.HTTP_404_NOT_FOUND)
 
-        event_filtered_response = self.client.get(reverse('api:events-by-address', kwargs={'addr': event.address}), content_type='application/json')
+        event_filtered_response = self.client.get(reverse('api:events-by-address', kwargs={'event_address': event.address}), content_type='application/json')
         self.assertEquals(event_filtered_response.status_code, status.HTTP_200_OK)
         self.assertEquals(json.loads(events_response.content).get('results')[0].get('contract').get('address'), add_0x_prefix(event.address))
 
@@ -98,14 +98,14 @@ class TestViews(APITestCase):
         self.assertEquals(market_response_data.status_code, status.HTTP_200_OK)
         self.assertEquals(len(json.loads(market_response_data.content).get('results')), len(markets))
 
-        market_search_response = self.client.get(reverse('api:markets-by-name', kwargs={'addr': markets[0].address}), content_type='application/json')
+        market_search_response = self.client.get(reverse('api:markets-by-name', kwargs={'market_address': markets[0].address}), content_type='application/json')
         self.assertEquals(market_search_response.status_code, status.HTTP_200_OK)
         self.assertEquals(json.loads(market_search_response.content).get('contract').get('creator'), add_0x_prefix(markets[0].creator))
         # test empty response
-        market_empty_search_response = self.client.get(reverse('api:markets-by-name', kwargs={'addr': "abcdef0"}), content_type='application/json')
+        market_empty_search_response = self.client.get(reverse('api:markets-by-name', kwargs={'market_address': "abcdef0"}), content_type='application/json')
         self.assertEquals(market_empty_search_response.status_code, status.HTTP_404_NOT_FOUND)
 
-        market_search_response = self.client.get(reverse('api:markets-by-name', kwargs={'addr': markets[0].address}), content_type='application/json')
+        market_search_response = self.client.get(reverse('api:markets-by-name', kwargs={'market_address': markets[0].address}), content_type='application/json')
         self.assertEquals(market_search_response.status_code, status.HTTP_200_OK)
         self.assertEquals(json.loads(market_search_response.content).get('contract').get('address'), add_0x_prefix(markets[0].address))
 
@@ -189,7 +189,11 @@ class TestViews(APITestCase):
         self.assertEquals(response.status_code, status.HTTP_200_OK)
         self.assertEquals(len(json.loads(response.content).get('results')), 1)
 
-    def test_market_history(self):
+    def test_market_trades(self):
+        url = reverse('api:trades-by-market', kwargs={'market_address': '{:040d}'.format(1000)})
+        trades_response = self.client.get(url, content_type='application/json')
+        self.assertEquals(trades_response.status_code, status.HTTP_404_NOT_FOUND)
+
         # create markets
         outcome_token = OutcomeTokenFactory()
         event = outcome_token.event
@@ -211,18 +215,21 @@ class TestViews(APITestCase):
         order.save()
 
         url = reverse('api:trades-by-market', kwargs={'market_address': market.address})
-        history_data = self.client.get(url, content_type='application/json')
-        self.assertEquals(history_data.status_code, status.HTTP_200_OK)
-        self.assertEquals(len(json.loads(history_data.content).get('results')), 1)
+
+        trades_response = self.client.get(url, content_type='application/json')
+        trades_data = json.loads(trades_response.content)
+        self.assertEquals(trades_response.status_code, status.HTTP_200_OK)
+        self.assertEquals(len(trades_data.get('results')), 1)
+        self.assertEquals(float(trades_data.get('results')[0].get('marginalPrices')[0]), order.marginal_prices[0])
 
         from_date = (creation_date_time - timedelta(days=1)).strftime('%Y-%m-%d %H:%M:%S')
         to_date = (creation_date_time + timedelta(days=1)).strftime('%Y-%m-%d %H:%M:%S')
         url = reverse('api:trades-by-market',
                       kwargs={'market_address': market.address})
         url += '?creation_date_time_0=' + from_date + '&creation_date_time_1='+to_date
-        history_data = self.client.get(url, content_type='application/json')
-        self.assertEquals(history_data.status_code, status.HTTP_200_OK)
-        self.assertEquals(len(json.loads(history_data.content).get('results')), 1)
+        trades_response = self.client.get(url, content_type='application/json')
+        self.assertEquals(trades_response.status_code, status.HTTP_200_OK)
+        self.assertEquals(len(json.loads(trades_response.content).get('results')), 1)
 
         # test querying date with no orders
         from_date = (creation_date_time - timedelta(days=5)).strftime('%Y-%m-%d %H:%M:%S')
@@ -230,26 +237,25 @@ class TestViews(APITestCase):
         url = reverse('api:trades-by-market',
                       kwargs={'market_address': market.address})
         url += '?creation_date_time_0=' + from_date + '&creation_date_time_1=' + to_date
-        history_data = self.client.get(url, content_type='application/json')
-        self.assertEquals(history_data.status_code, status.HTTP_200_OK)
-        self.assertEquals(len(json.loads(history_data.content).get('results')), 0)
+        trades_response = self.client.get(url, content_type='application/json')
+        self.assertEquals(trades_response.status_code, status.HTTP_200_OK)
+        self.assertEquals(len(json.loads(trades_response.content).get('results')), 0)
 
         # test querying date passing only the from param
         from_date = (creation_date_time - timedelta(days=5)).strftime('%Y-%m-%d %H:%M:%S')
         url = reverse('api:trades-by-market',
                       kwargs={'market_address': market.address})
         url += '?creation_date_time_0=' + from_date
-        history_data = self.client.get(url, content_type='application/json')
-        self.assertEquals(history_data.status_code, status.HTTP_200_OK)
-        self.assertEquals(len(json.loads(history_data.content).get('results')), 1)
+        trades_response = self.client.get(url, content_type='application/json')
+        self.assertEquals(trades_response.status_code, status.HTTP_200_OK)
+        self.assertEquals(len(json.loads(trades_response.content).get('results')), 1)
 
-    def test_history_unknown_market(self):
+    def test_market_trades_unknown_market(self):
         market = MarketFactory()
         url = reverse('api:trades-by-market', kwargs={'market_address': market.address})
         history_data = self.client.get(url, content_type='application/json')
         self.assertEquals(history_data.status_code, status.HTTP_200_OK)
         self.assertEquals(len(json.loads(history_data.content).get('results')), 0)
-
 
     def test_market_participant_history(self):
         outcome_token = OutcomeTokenFactory()

@@ -211,21 +211,24 @@ class OutcomeTokenSerializer(serializers.ModelSerializer):
         fields = ('event', 'index', 'totalSupply', 'address')
 
 
-class MarketHistorySerializer(serializers.ModelSerializer):
+class MarketTradesSerializer(serializers.ModelSerializer):
+    """Serializes the list of orders (trades) of the given market"""
     date = serializers.DateTimeField(source="creation_date_time", read_only=True)
     net_outcome_tokens_sold = serializers.ListField(
-        child=serializers.DecimalField(max_digits=80, decimal_places=0, read_only=True))
+        child=serializers.DecimalField(max_digits=80, decimal_places=0, read_only=True)
+    )
+    marginal_prices = serializers.ListField(child=serializers.DecimalField(max_digits=5, decimal_places=4))
 
     class Meta:
         model = Order
-        fields = ('date', 'net_outcome_tokens_sold')
+        fields = ('date', 'net_outcome_tokens_sold', 'marginal_prices',)
 
     def to_representation(self, instance):
-        response = super(MarketHistorySerializer, self).to_representation(instance)
+        response = super(MarketTradesSerializer, self).to_representation(instance)
         return remove_null_values(response)
 
 
-class MarketParticipantHistorySerializer(serializers.ModelSerializer):
+class MarketParticipantTradesSerializer(serializers.ModelSerializer):
     """Serializes the list of orders (trades) for the given sender address and market"""
     date = serializers.DateTimeField(source="creation_date_time", read_only=True)
     # net_outcome_tokens_sold = serializers.ListField(
@@ -276,7 +279,7 @@ class MarketParticipantHistorySerializer(serializers.ModelSerializer):
             None
 
     def to_representation(self, instance):
-        response = super(MarketParticipantHistorySerializer, self).to_representation(instance)
+        response = super(MarketParticipantTradesSerializer, self).to_representation(instance)
         return remove_null_values(response)
 
 

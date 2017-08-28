@@ -3,14 +3,12 @@ from django.shortcuts import get_object_or_404, get_list_or_404
 from rest_framework import generics
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from rest_framework.exceptions import ParseError
-from django.http import Http404
 from relationaldb.models import (
     UltimateOracle, CentralizedOracle, Event, Market, Order, OutcomeTokenBalance
 )
 from .serializers import (
     UltimateOracleSerializer, CentralizedOracleSerializer, EventSerializer, MarketSerializer,
-    MarketHistorySerializer, OutcomeTokenBalanceSerializer, MarketParticipantHistorySerializer
+    MarketTradesSerializer, OutcomeTokenBalanceSerializer, MarketParticipantTradesSerializer
 )
 from .filters import (
     CentralizedOracleFilter, UltimateOracleFilter, EventFilter, MarketFilter, DefaultPagination,
@@ -30,7 +28,7 @@ class CentralizedOracleFetchView(generics.RetrieveAPIView):
     serializer_class = CentralizedOracleSerializer
 
     def get_object(self):
-        return get_object_or_404(CentralizedOracle, address=self.kwargs['addr'])
+        return get_object_or_404(CentralizedOracle, address=self.kwargs['oracle_address'])
 
 
 class UltimateOracleListView(generics.ListAPIView):
@@ -45,7 +43,7 @@ class UltimateOracleFetchView(generics.RetrieveAPIView):
     serializer_class = UltimateOracleSerializer
 
     def get_object(self):
-        return get_object_or_404(UltimateOracle, address=self.kwargs['addr'])
+        return get_object_or_404(UltimateOracle, address=self.kwargs['oracle_address'])
 
 
 class EventListView(generics.ListAPIView):
@@ -60,7 +58,7 @@ class EventFetchView(generics.RetrieveAPIView):
     serializer_class = EventSerializer
 
     def get_object(self):
-        return get_object_or_404(Event, address=self.kwargs['addr'])
+        return get_object_or_404(Event, address=self.kwargs['event_address'])
 
 
 class MarketListView(generics.ListAPIView):
@@ -75,7 +73,7 @@ class MarketFetchView(generics.RetrieveAPIView):
     serializer_class = MarketSerializer
 
     def get_object(self):
-        return get_object_or_404(Market, address=self.kwargs['addr'])
+        return get_object_or_404(Market, address=self.kwargs['market_address'])
 
 
 @api_view(['GET'])
@@ -129,9 +127,9 @@ class AllMarketSharesView(generics.ListAPIView):
         )
 
 
-class MarketParticipantHistoryView(generics.ListAPIView):
+class MarketParticipantTradesView(generics.ListAPIView):
 
-    serializer_class = MarketParticipantHistorySerializer
+    serializer_class = MarketParticipantTradesSerializer
     pagination_class = DefaultPagination
 
     def get_queryset(self):
@@ -141,12 +139,15 @@ class MarketParticipantHistoryView(generics.ListAPIView):
         ).order_by('creation_date_time')
 
 
-class MarketHistoryView(generics.ListAPIView):
-    serializer_class = MarketHistorySerializer
+class MarketTradesView(generics.ListAPIView):
+    serializer_class = MarketTradesSerializer
     pagination_class = DefaultPagination
     filter_class = MarketHistoryFilter
 
     def get_queryset(self):
+        # Check if Market exists
+        get_list_or_404(Market, address=self.kwargs['market_address'])
+        # return trades
         return Order.objects.filter(
             market=self.kwargs['market_address'],
         )
