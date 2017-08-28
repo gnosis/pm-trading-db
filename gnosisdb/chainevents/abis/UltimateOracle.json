@@ -1,399 +1,399 @@
 [
-  {
-    "inputs": [],
-    "constant": true,
-    "name": "forwardedOracle",
-    "payable": false,
-    "outputs": [
-      {
-        "type": "address",
-        "name": ""
-      }
-    ],
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "constant": true,
-    "name": "frontRunnerPeriod",
-    "payable": false,
-    "outputs": [
-      {
-        "type": "uint256",
-        "name": ""
-      }
-    ],
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "constant": true,
-    "name": "frontRunner",
-    "payable": false,
-    "outputs": [
-      {
-        "type": "int256",
-        "name": ""
-      }
-    ],
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "constant": true,
-    "name": "totalAmount",
-    "payable": false,
-    "outputs": [
-      {
-        "type": "uint256",
-        "name": ""
-      }
-    ],
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "constant": false,
-    "name": "isFrontRunnerPeriodOver",
-    "payable": false,
-    "outputs": [
-      {
-        "type": "bool",
-        "name": ""
-      }
-    ],
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "type": "int256",
-        "name": ""
-      }
-    ],
-    "constant": true,
-    "name": "totalOutcomeAmounts",
-    "payable": false,
-    "outputs": [
-      {
-        "type": "uint256",
-        "name": ""
-      }
-    ],
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "constant": false,
-    "name": "withdraw",
-    "payable": false,
-    "outputs": [
-      {
-        "type": "uint256",
-        "name": "amount"
-      }
-    ],
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "constant": true,
-    "name": "forwardedOutcomeSetTimestamp",
-    "payable": false,
-    "outputs": [
-      {
-        "type": "uint256",
-        "name": ""
-      }
-    ],
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "constant": false,
-    "name": "isChallengePeriodOver",
-    "payable": false,
-    "outputs": [
-      {
-        "type": "bool",
-        "name": ""
-      }
-    ],
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "constant": false,
-    "name": "setForwardedOutcome",
-    "payable": false,
-    "outputs": [],
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "constant": true,
-    "name": "getOutcome",
-    "payable": false,
-    "outputs": [
-      {
-        "type": "int256",
-        "name": ""
-      }
-    ],
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "constant": true,
-    "name": "frontRunnerSetTimestamp",
-    "payable": false,
-    "outputs": [
-      {
-        "type": "uint256",
-        "name": ""
-      }
-    ],
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "constant": true,
-    "name": "forwardedOutcome",
-    "payable": false,
-    "outputs": [
-      {
-        "type": "int256",
-        "name": ""
-      }
-    ],
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "constant": true,
-    "name": "challengeAmount",
-    "payable": false,
-    "outputs": [
-      {
-        "type": "uint256",
-        "name": ""
-      }
-    ],
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "constant": false,
-    "name": "isChallenged",
-    "payable": false,
-    "outputs": [
-      {
-        "type": "bool",
-        "name": ""
-      }
-    ],
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "type": "int256",
-        "name": "_outcome"
-      }
-    ],
-    "constant": false,
-    "name": "challengeOutcome",
-    "payable": false,
-    "outputs": [],
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "constant": true,
-    "name": "collateralToken",
-    "payable": false,
-    "outputs": [
-      {
-        "type": "address",
-        "name": ""
-      }
-    ],
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "type": "address",
-        "name": ""
-      },
-      {
-        "type": "int256",
-        "name": ""
-      }
-    ],
-    "constant": true,
-    "name": "outcomeAmounts",
-    "payable": false,
-    "outputs": [
-      {
-        "type": "uint256",
-        "name": ""
-      }
-    ],
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "constant": true,
-    "name": "isOutcomeSet",
-    "payable": false,
-    "outputs": [
-      {
-        "type": "bool",
-        "name": ""
-      }
-    ],
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "constant": true,
-    "name": "spreadMultiplier",
-    "payable": false,
-    "outputs": [
-      {
-        "type": "uint8",
-        "name": ""
-      }
-    ],
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "constant": true,
-    "name": "challengePeriod",
-    "payable": false,
-    "outputs": [
-      {
-        "type": "uint256",
-        "name": ""
-      }
-    ],
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "type": "int256",
-        "name": "_outcome"
-      },
-      {
-        "type": "uint256",
-        "name": "amount"
-      }
-    ],
-    "constant": false,
-    "name": "voteForOutcome",
-    "payable": false,
-    "outputs": [],
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "type": "address",
-        "name": "_forwardedOracle"
-      },
-      {
-        "type": "address",
-        "name": "_collateralToken"
-      },
-      {
-        "type": "uint8",
-        "name": "_spreadMultiplier"
-      },
-      {
-        "type": "uint256",
-        "name": "_challengePeriod"
-      },
-      {
-        "type": "uint256",
-        "name": "_challengeAmount"
-      },
-      {
-        "type": "uint256",
-        "name": "_frontRunnerPeriod"
-      }
-    ],
-    "type": "constructor",
-    "payable": false
-  },
-  {
-    "inputs": [
-      {
-        "indexed": false,
-        "type": "int256",
-        "name": "outcome"
-      }
-    ],
-    "type": "event",
-    "name": "ForwardedOracleOutcomeAssignment",
-    "anonymous": false
-  },
-  {
-    "inputs": [
-      {
-        "indexed": true,
-        "type": "address",
-        "name": "sender"
-      },
-      {
-        "indexed": false,
-        "type": "int256",
-        "name": "outcome"
-      }
-    ],
-    "type": "event",
-    "name": "OutcomeChallenge",
-    "anonymous": false
-  },
-  {
-    "inputs": [
-      {
-        "indexed": true,
-        "type": "address",
-        "name": "sender"
-      },
-      {
-        "indexed": false,
-        "type": "int256",
-        "name": "outcome"
-      },
-      {
-        "indexed": false,
-        "type": "uint256",
-        "name": "amount"
-      }
-    ],
-    "type": "event",
-    "name": "OutcomeVote",
-    "anonymous": false
-  },
-  {
-    "inputs": [
-      {
-        "indexed": true,
-        "type": "address",
-        "name": "sender"
-      },
-      {
-        "indexed": false,
-        "type": "uint256",
-        "name": "amount"
-      }
-    ],
-    "type": "event",
-    "name": "Withdrawal",
-    "anonymous": false
-  }
-]
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "forwardedOracle",
+      "outputs": [
+        {
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "frontRunnerPeriod",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "frontRunner",
+      "outputs": [
+        {
+          "name": "",
+          "type": "int256"
+        }
+      ],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "totalAmount",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [],
+      "name": "isFrontRunnerPeriodOver",
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "",
+          "type": "int256"
+        }
+      ],
+      "name": "totalOutcomeAmounts",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [],
+      "name": "withdraw",
+      "outputs": [
+        {
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "forwardedOutcomeSetTimestamp",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [],
+      "name": "isChallengePeriodOver",
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [],
+      "name": "setForwardedOutcome",
+      "outputs": [],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "getOutcome",
+      "outputs": [
+        {
+          "name": "",
+          "type": "int256"
+        }
+      ],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "frontRunnerSetTimestamp",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "forwardedOutcome",
+      "outputs": [
+        {
+          "name": "",
+          "type": "int256"
+        }
+      ],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "challengeAmount",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [],
+      "name": "isChallenged",
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_outcome",
+          "type": "int256"
+        }
+      ],
+      "name": "challengeOutcome",
+      "outputs": [],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "collateralToken",
+      "outputs": [
+        {
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "",
+          "type": "address"
+        },
+        {
+          "name": "",
+          "type": "int256"
+        }
+      ],
+      "name": "outcomeAmounts",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "isOutcomeSet",
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "spreadMultiplier",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint8"
+        }
+      ],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "challengePeriod",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_outcome",
+          "type": "int256"
+        },
+        {
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "voteForOutcome",
+      "outputs": [],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "name": "_forwardedOracle",
+          "type": "address"
+        },
+        {
+          "name": "_collateralToken",
+          "type": "address"
+        },
+        {
+          "name": "_spreadMultiplier",
+          "type": "uint8"
+        },
+        {
+          "name": "_challengePeriod",
+          "type": "uint256"
+        },
+        {
+          "name": "_challengeAmount",
+          "type": "uint256"
+        },
+        {
+          "name": "_frontRunnerPeriod",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "type": "constructor"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "name": "outcome",
+          "type": "int256"
+        }
+      ],
+      "name": "ForwardedOracleOutcomeAssignment",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "name": "sender",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "name": "outcome",
+          "type": "int256"
+        }
+      ],
+      "name": "OutcomeChallenge",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "name": "sender",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "name": "outcome",
+          "type": "int256"
+        },
+        {
+          "indexed": false,
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "OutcomeVote",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "name": "sender",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "Withdrawal",
+      "type": "event"
+    }
+  ]

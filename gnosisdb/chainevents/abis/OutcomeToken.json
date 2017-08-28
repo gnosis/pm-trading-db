@@ -1,255 +1,255 @@
 [
-  {
-    "inputs": [
-      {
-        "type": "address",
-        "name": "spender"
-      },
-      {
-        "type": "uint256",
-        "name": "value"
-      }
-    ],
-    "constant": false,
-    "name": "approve",
-    "payable": false,
-    "outputs": [
-      {
-        "type": "bool",
-        "name": ""
-      }
-    ],
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "constant": true,
-    "name": "totalSupply",
-    "payable": false,
-    "outputs": [
-      {
-        "type": "uint256",
-        "name": ""
-      }
-    ],
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "type": "address",
-        "name": "from"
-      },
-      {
-        "type": "address",
-        "name": "to"
-      },
-      {
-        "type": "uint256",
-        "name": "value"
-      }
-    ],
-    "constant": false,
-    "name": "transferFrom",
-    "payable": false,
-    "outputs": [
-      {
-        "type": "bool",
-        "name": ""
-      }
-    ],
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "type": "address",
-        "name": "owner"
-      }
-    ],
-    "constant": true,
-    "name": "balanceOf",
-    "payable": false,
-    "outputs": [
-      {
-        "type": "uint256",
-        "name": ""
-      }
-    ],
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "type": "address",
-        "name": "_for"
-      },
-      {
-        "type": "uint256",
-        "name": "outcomeTokenCount"
-      }
-    ],
-    "constant": false,
-    "name": "issue",
-    "payable": false,
-    "outputs": [],
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "type": "address",
-        "name": "to"
-      },
-      {
-        "type": "uint256",
-        "name": "value"
-      }
-    ],
-    "constant": false,
-    "name": "transfer",
-    "payable": false,
-    "outputs": [
-      {
-        "type": "bool",
-        "name": ""
-      }
-    ],
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "type": "address",
-        "name": "owner"
-      },
-      {
-        "type": "address",
-        "name": "spender"
-      }
-    ],
-    "constant": true,
-    "name": "allowance",
-    "payable": false,
-    "outputs": [
-      {
-        "type": "uint256",
-        "name": ""
-      }
-    ],
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "constant": true,
-    "name": "eventContract",
-    "payable": false,
-    "outputs": [
-      {
-        "type": "address",
-        "name": ""
-      }
-    ],
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "type": "address",
-        "name": "_for"
-      },
-      {
-        "type": "uint256",
-        "name": "outcomeTokenCount"
-      }
-    ],
-    "constant": false,
-    "name": "revoke",
-    "payable": false,
-    "outputs": [],
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "type": "constructor",
-    "payable": false
-  },
-  {
-    "inputs": [
-      {
-        "indexed": true,
-        "type": "address",
-        "name": "owner"
-      },
-      {
-        "indexed": false,
-        "type": "uint256",
-        "name": "amount"
-      }
-    ],
-    "type": "event",
-    "name": "Issuance",
-    "anonymous": false
-  },
-  {
-    "inputs": [
-      {
-        "indexed": true,
-        "type": "address",
-        "name": "owner"
-      },
-      {
-        "indexed": false,
-        "type": "uint256",
-        "name": "amount"
-      }
-    ],
-    "type": "event",
-    "name": "Revocation",
-    "anonymous": false
-  },
-  {
-    "inputs": [
-      {
-        "indexed": true,
-        "type": "address",
-        "name": "from"
-      },
-      {
-        "indexed": true,
-        "type": "address",
-        "name": "to"
-      },
-      {
-        "indexed": false,
-        "type": "uint256",
-        "name": "value"
-      }
-    ],
-    "type": "event",
-    "name": "Transfer",
-    "anonymous": false
-  },
-  {
-    "inputs": [
-      {
-        "indexed": true,
-        "type": "address",
-        "name": "owner"
-      },
-      {
-        "indexed": true,
-        "type": "address",
-        "name": "spender"
-      },
-      {
-        "indexed": false,
-        "type": "uint256",
-        "name": "value"
-      }
-    ],
-    "type": "event",
-    "name": "Approval",
-    "anonymous": false
-  }
-]
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "spender",
+          "type": "address"
+        },
+        {
+          "name": "value",
+          "type": "uint256"
+        }
+      ],
+      "name": "approve",
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "totalSupply",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "from",
+          "type": "address"
+        },
+        {
+          "name": "to",
+          "type": "address"
+        },
+        {
+          "name": "value",
+          "type": "uint256"
+        }
+      ],
+      "name": "transferFrom",
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "owner",
+          "type": "address"
+        }
+      ],
+      "name": "balanceOf",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_for",
+          "type": "address"
+        },
+        {
+          "name": "outcomeTokenCount",
+          "type": "uint256"
+        }
+      ],
+      "name": "issue",
+      "outputs": [],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "to",
+          "type": "address"
+        },
+        {
+          "name": "value",
+          "type": "uint256"
+        }
+      ],
+      "name": "transfer",
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "owner",
+          "type": "address"
+        },
+        {
+          "name": "spender",
+          "type": "address"
+        }
+      ],
+      "name": "allowance",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "eventContract",
+      "outputs": [
+        {
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_for",
+          "type": "address"
+        },
+        {
+          "name": "outcomeTokenCount",
+          "type": "uint256"
+        }
+      ],
+      "name": "revoke",
+      "outputs": [],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "payable": false,
+      "type": "constructor"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "name": "owner",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "Issuance",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "name": "owner",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "Revocation",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "name": "from",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "name": "to",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "name": "value",
+          "type": "uint256"
+        }
+      ],
+      "name": "Transfer",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "name": "owner",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "name": "spender",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "name": "value",
+          "type": "uint256"
+        }
+      ],
+      "name": "Approval",
+      "type": "event"
+    }
+  ]

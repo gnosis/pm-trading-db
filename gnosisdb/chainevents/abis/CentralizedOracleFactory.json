@@ -1,42 +1,42 @@
 [
-  {
-    "inputs": [
-      {
-        "type": "bytes",
-        "name": "ipfsHash"
-      }
-    ],
-    "constant": false,
-    "name": "createCentralizedOracle",
-    "payable": false,
-    "outputs": [
-      {
-        "type": "address",
-        "name": "centralizedOracle"
-      }
-    ],
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "indexed": true,
-        "type": "address",
-        "name": "creator"
-      },
-      {
-        "indexed": false,
-        "type": "address",
-        "name": "centralizedOracle"
-      },
-      {
-        "indexed": false,
-        "type": "bytes",
-        "name": "ipfsHash"
-      }
-    ],
-    "type": "event",
-    "name": "CentralizedOracleCreation",
-    "anonymous": false
-  }
-]
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "ipfsHash",
+          "type": "bytes"
+        }
+      ],
+      "name": "createCentralizedOracle",
+      "outputs": [
+        {
+          "name": "centralizedOracle",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "name": "creator",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "name": "centralizedOracle",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "name": "ipfsHash",
+          "type": "bytes"
+        }
+      ],
+      "name": "CentralizedOracleCreation",
+      "type": "event"
+    }
+  ]

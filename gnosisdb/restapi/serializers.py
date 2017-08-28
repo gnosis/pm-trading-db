@@ -271,7 +271,7 @@ class MarketParticipantHistorySerializer(serializers.ModelSerializer):
     def get_profit(self, obj):
         order_type = self.get_order_type(obj)
         if order_type == 'SELL':
-            return obj.sellorder.cost
+            return obj.sellorder.profit
         else:
             None
 
