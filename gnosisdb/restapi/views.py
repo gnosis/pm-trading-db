@@ -13,7 +13,9 @@ from .serializers import (
     MarketHistorySerializer, OutcomeTokenBalanceSerializer, MarketParticipantHistorySerializer
 )
 from .filters import (
-    CentralizedOracleFilter, UltimateOracleFilter, EventFilter, MarketFilter, DefaultPagination)
+    CentralizedOracleFilter, UltimateOracleFilter, EventFilter, MarketFilter, DefaultPagination,
+    MarketHistoryFilter
+)
 
 
 class CentralizedOracleListView(generics.ListAPIView):
@@ -140,26 +142,11 @@ class MarketParticipantHistoryView(generics.ListAPIView):
 
 
 class MarketHistoryView(generics.ListAPIView):
-    """
-    Returns the list of orders by providing the market address, as well as the 'From' and 'To'
-    parameters referring the order creation date.
-    """
-    queryset = Order.objects.all()
     serializer_class = MarketHistorySerializer
     pagination_class = DefaultPagination
+    filter_class = MarketHistoryFilter
 
     def get_queryset(self):
-        if 'market' in self.request.query_params and 'from' in self.request.query_params \
-                and 'to' in self.request.query_params:
-            return Order.objects.filter(market=self.request.query_params['market'], creation_date_time__gte=self.request.query_params['from'],
-                                        creation_date_time__lte=self.request.query_params['to']).order_by('creation_date_time')
-        elif 'market' in self.request.query_params and 'from' in self.request.query_params:
-            return Order.objects.filter(market=self.request.query_params['market'], creation_date_time__gte=self.request.query_params['from']).order_by('creation_date_time')
-        elif 'market' in self.request.query_params:
-            balances = Order.objects.filter(market=self.request.query_params['market']).order_by('creation_date_time')
-            if balances.count():
-                return balances
-            else:
-                raise Http404('Unknown Market')
-        else:
-            raise ParseError()
+        return Order.objects.filter(
+            market=self.kwargs['market_address'],
+        )

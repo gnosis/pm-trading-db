@@ -1,6 +1,6 @@
 from django_filters import rest_framework as filters
 from rest_framework.pagination import LimitOffsetPagination
-from relationaldb.models import CentralizedOracle, UltimateOracle, Event, Market
+from relationaldb.models import CentralizedOracle, UltimateOracle, Event, Market, Order
 
 
 class DefaultPagination(LimitOffsetPagination):
@@ -94,3 +94,17 @@ class MarketFilter(filters.FilterSet):
         model = Market
         fields = ('creator', 'creation_date_time', 'market_maker', 'event_oracle_factory', 'event_oracle_creator',
                   'event_oracle_creation_date_time', 'event_oracle_is_outcome_set')
+
+
+class MarketHistoryFilter(filters.FilterSet):
+    creation_date_time = filters.DateTimeFromToRangeFilter()
+
+    ordering = filters.OrderingFilter(
+        fields=(
+            ('creation_date_time', 'creation_date_order'),
+        )
+    )
+
+    class Meta:
+        model = Order
+        fields = ('creation_date_time',)

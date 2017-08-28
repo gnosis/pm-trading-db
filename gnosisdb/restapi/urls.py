@@ -15,7 +15,7 @@ urlpatterns = [
     url(r'^markets/(?P<addr>[a-fA-F0-9]+)/$', views.MarketFetchView.as_view(), name='markets-by-name'),
     url(r'^markets/(?P<market_address>[a-fA-F0-9]+)/shares/$', views.AllMarketSharesView.as_view(), name='all-shares'),
     url(r'^markets/(?P<market_address>[a-fA-F0-9]+)/shares/(?P<owner_address>[a-fA-F0-9]+)/$', views.MarketSharesView.as_view(), name='shares-by-owner'),
+    url(r'^markets/(?P<market_address>[a-fA-F0-9]+)/trades/$', views.MarketHistoryView.as_view(), name='trades-by-market'),
     url(r'^markets/(?P<market_address>[a-fA-F0-9]+)/trades/(?P<owner_address>[a-fA-F0-9]+)/$', views.MarketParticipantHistoryView.as_view(), name='trades-by-owner'),
     url(r'^factories/$', views.factories_view, name='factories'),
-    url(r'^history/$', views.MarketHistoryView.as_view(), name='history-by-market'),
 ]

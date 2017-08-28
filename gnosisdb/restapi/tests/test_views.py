@@ -210,14 +210,16 @@ class TestViews(APITestCase):
         order.marginal_prices = [0.5, 0.5]
         order.save()
 
-        url = reverse('api:history-by-market') + '?market=' + market.address
+        url = reverse('api:trades-by-market', kwargs={'market_address': market.address})
         history_data = self.client.get(url, content_type='application/json')
         self.assertEquals(history_data.status_code, status.HTTP_200_OK)
         self.assertEquals(len(json.loads(history_data.content).get('results')), 1)
 
         from_date = (creation_date_time - timedelta(days=1)).strftime('%Y-%m-%d %H:%M:%S')
         to_date = (creation_date_time + timedelta(days=1)).strftime('%Y-%m-%d %H:%M:%S')
-        url = reverse('api:history-by-market') + '?market=' + market.address + '&from=' + from_date + '&to=' + to_date
+        url = reverse('api:trades-by-market',
+                      kwargs={'market_address': market.address})
+        url += '?creation_date_time_0=' + from_date + '&creation_date_time_1='+to_date
         history_data = self.client.get(url, content_type='application/json')
         self.assertEquals(history_data.status_code, status.HTTP_200_OK)
         self.assertEquals(len(json.loads(history_data.content).get('results')), 1)
@@ -225,28 +227,29 @@ class TestViews(APITestCase):
         # test querying date with no orders
         from_date = (creation_date_time - timedelta(days=5)).strftime('%Y-%m-%d %H:%M:%S')
         to_date = (creation_date_time - timedelta(days=4)).strftime('%Y-%m-%d %H:%M:%S')
-        url =  reverse('api:history-by-market') + '?market=' + market.address + '&from=' + from_date + '&to=' + to_date
+        url = reverse('api:trades-by-market',
+                      kwargs={'market_address': market.address})
+        url += '?creation_date_time_0=' + from_date + '&creation_date_time_1=' + to_date
         history_data = self.client.get(url, content_type='application/json')
         self.assertEquals(history_data.status_code, status.HTTP_200_OK)
         self.assertEquals(len(json.loads(history_data.content).get('results')), 0)
 
         # test querying date passing only the from param
         from_date = (creation_date_time - timedelta(days=5)).strftime('%Y-%m-%d %H:%M:%S')
-        url =  reverse('api:history-by-market') + '?market=' + market.address + '&from=' + from_date
+        url = reverse('api:trades-by-market',
+                      kwargs={'market_address': market.address})
+        url += '?creation_date_time_0=' + from_date
         history_data = self.client.get(url, content_type='application/json')
         self.assertEquals(history_data.status_code, status.HTTP_200_OK)
         self.assertEquals(len(json.loads(history_data.content).get('results')), 1)
 
     def test_history_unknown_market(self):
         market = MarketFactory()
-        url = reverse('api:history-by-market') + '?market=' + market.address
+        url = reverse('api:trades-by-market', kwargs={'market_address': market.address})
         history_data = self.client.get(url, content_type='application/json')
-        self.assertEquals(history_data.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEquals(history_data.status_code, status.HTTP_200_OK)
+        self.assertEquals(len(json.loads(history_data.content).get('results')), 0)
 
-    def test_history_without_market(self):
-        url = reverse('api:history-by-market')
-        history_data = self.client.get(url, content_type='application/json')
-        self.assertEquals(history_data.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_market_participant_history(self):
         outcome_token = OutcomeTokenFactory()
