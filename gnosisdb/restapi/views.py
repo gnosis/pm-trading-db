@@ -12,7 +12,7 @@ from .serializers import (
 )
 from .filters import (
     CentralizedOracleFilter, UltimateOracleFilter, EventFilter, MarketFilter, DefaultPagination,
-    MarketHistoryFilter
+    MarketTradesFilter
 )
 
 
@@ -142,7 +142,7 @@ class MarketParticipantTradesView(generics.ListAPIView):
 class MarketTradesView(generics.ListAPIView):
     serializer_class = MarketTradesSerializer
     pagination_class = DefaultPagination
-    filter_class = MarketHistoryFilter
+    filter_class = MarketTradesFilter
 
     def get_queryset(self):
         # Check if Market exists

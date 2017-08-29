@@ -1,6 +1,7 @@
 from django_filters import rest_framework as filters
 from rest_framework.pagination import LimitOffsetPagination
 from relationaldb.models import CentralizedOracle, UltimateOracle, Event, Market, Order
+from datetime import datetime, timedelta
 
 
 class DefaultPagination(LimitOffsetPagination):
@@ -100,7 +101,21 @@ class MarketFilter(filters.FilterSet):
                   'resolution_date_time')
 
 
-class MarketHistoryFilter(filters.FilterSet):
+# class MarketTradesFilter(filters.FilterSet):
+#     creation_date_time = filters.DateFilter(name='creation_date_time', method='filter_creation_date_time')
+#
+#     ordering = filters.OrderingFilter(
+#         fields=(
+#             ('creation_date_time', 'creation_date_order'),
+#         )
+#     )
+#
+#     class Meta:
+#         model = Order
+#         fields = ('creation_date_time',)
+
+class MarketTradesFilter(filters.FilterSet):
+
     creation_date_time = filters.DateTimeFromToRangeFilter()
 
     ordering = filters.OrderingFilter(
@@ -112,3 +127,12 @@ class MarketHistoryFilter(filters.FilterSet):
     class Meta:
         model = Order
         fields = ('creation_date_time',)
+
+    def __init__(self, data=None, *args, **kwargs):
+        # if filterset is bound, use initial values as defaults
+        if data is not None and not 'creation_date_time_0' in data and not 'creation_date_time_1' in data:
+            data = data.copy()
+            data['creation_date_time_0'] = (datetime.now() - timedelta(days=14)).strftime('%Y-%m-%d %H:%M:%S')
+            data['creation_date_time_1'] = datetime.now()
+
+        super(MarketTradesFilter, self).__init__(data, *args, **kwargs)
