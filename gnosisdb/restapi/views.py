@@ -151,3 +151,13 @@ class MarketTradesView(generics.ListAPIView):
         return Order.objects.filter(
             market=self.kwargs['market_address'],
         )
+
+class AccountTradesView(generics.ListAPIView):
+    serializer_class = MarketTradesSerializer
+    pagination_class = DefaultPagination
+    filter_class = MarketTradesFilter
+
+    def get_queryset(self):
+        return Order.objects.filter(
+            sender=self.kwargs['account_address']
+        )

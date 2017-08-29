@@ -300,3 +300,21 @@ class TestViews(APITestCase):
         )
         self.assertEquals(response.status_code, status.HTTP_200_OK)
         self.assertEquals(len(json.loads(response.content).get('results')), 2)
+
+    def test_trades_by_owner(self):
+        account1 = '{:040d}'.format(13)
+        account2 = '{:040d}'.format(14)
+
+        url = reverse('api:trades-by-account', kwargs={'account_address': account1})
+        empty_trades_response = self.client.get(url, content_type='application/json')
+        self.assertEquals(len(json.loads(empty_trades_response.content).get('results')), 0)
+
+        BuyOrderFactory(sender=account1)
+
+        url = reverse('api:trades-by-account', kwargs={'account_address': account1})
+        trades_response = self.client.get(url, content_type='application/json')
+        self.assertEquals(len(json.loads(trades_response.content).get('results')), 1)
+
+        url = reverse('api:trades-by-account', kwargs={'account_address': account2})
+        no_trades_response = self.client.get(url, content_type='application/json')
+        self.assertEquals(len(json.loads(no_trades_response.content).get('results')), 0)
