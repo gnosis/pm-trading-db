@@ -81,19 +81,23 @@ class MarketFilter(filters.FilterSet):
     event_oracle_factory = filters.AllValuesMultipleFilter(name='event__oracle__factory')
     event_oracle_creator = filters.AllValuesMultipleFilter(name='event__oracle__creator')
     event_oracle_creation_date_time = filters.DateTimeFromToRangeFilter(name='event__oracle__creation_date_time')
+    # TODO refactor, maybe duplicate resolution_date from event_description to market
+    resolution_date_time = filters.DateTimeFromToRangeFilter(name='event__oracle__centralizedoracle__event_description__resolution_date')
     event_oracle_is_outcome_set = filters.BooleanFilter(name='event__oracle__is_outcome_set')
 
     ordering = filters.OrderingFilter(
         fields=(
             ('creation_date_time', 'creation_date_order'),
-            ('event__oracle__creation_date_time', 'event_oracle_creation_date_order')
+            ('event__oracle__creation_date_time', 'event_oracle_creation_date_order'),
+            ('resolution_date_time', 'resolution_date_order'),
         )
     )
 
     class Meta:
         model = Market
         fields = ('creator', 'creation_date_time', 'market_maker', 'event_oracle_factory', 'event_oracle_creator',
-                  'event_oracle_creation_date_time', 'event_oracle_is_outcome_set')
+                  'event_oracle_creation_date_time', 'event_oracle_is_outcome_set',
+                  'resolution_date_time')
 
 
 class MarketHistoryFilter(filters.FilterSet):

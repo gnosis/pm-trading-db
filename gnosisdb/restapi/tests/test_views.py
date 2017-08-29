@@ -109,6 +109,24 @@ class TestViews(APITestCase):
         self.assertEquals(market_search_response.status_code, status.HTTP_200_OK)
         self.assertEquals(json.loads(market_search_response.content).get('contract').get('address'), add_0x_prefix(markets[0].address))
 
+    def test_markets_by_resolution_date(self):
+        # test empty events response
+        empty_markets_response = self.client.get(reverse('api:markets'), content_type='application/json')
+        self.assertEquals(len(json.loads(empty_markets_response.content).get('results')), 0)
+
+        oracle = CentralizedOracleFactory()
+        event = CategoricalEventFactory(oracle=oracle)
+        market = MarketFactory(event=event)
+        from_date = (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d %H:%M:%S')
+
+        url = reverse('api:markets') + '?resolution_date_time_0=' + from_date
+        correct_date_time_range_response = self.client.get(url, content_type='application/json')
+        self.assertEquals(len(json.loads(correct_date_time_range_response.content).get('results')), 1)
+
+        url = reverse('api:markets') + '?resolution_date_time_0=' + from_date + '&resolution_date_time_1=' + from_date
+        empty_date_time_range_response = self.client.get(url, content_type='application/json')
+        self.assertEquals(len(json.loads(empty_date_time_range_response.content).get('results')), 0)
+
     def test_market_trading_volume(self):
 
         # create markets
