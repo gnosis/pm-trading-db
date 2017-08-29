@@ -18,5 +18,6 @@ urlpatterns = [
     url(r'^markets/(0x)?(?P<market_address>[a-fA-F0-9]+)/trades/$', views.MarketTradesView.as_view(), name='trades-by-market'),
     url(r'^markets/(0x)?(?P<market_address>[a-fA-F0-9]+)/trades/(0x)?(?P<owner_address>[a-fA-F0-9]+)/$', views.MarketParticipantTradesView.as_view(), name='trades-by-owner'),
     url(r'^account/(0x)?(?P<account_address>[a-fA-F0-9]+)/trades/$', views.AccountTradesView.as_view(), name='trades-by-account'),
+    url(r'^account/(0x)?(?P<account_address>[a-fA-F0-9]+)/shares/$', views.AccountSharesView.as_view(), name='shares-by-account'),
     url(r'^factories/$', views.factories_view, name='factories'),
 ]

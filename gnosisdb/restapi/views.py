@@ -161,3 +161,13 @@ class AccountTradesView(generics.ListAPIView):
         return Order.objects.filter(
             sender=self.kwargs['account_address']
         )
+
+
+class AccountSharesView(generics.ListAPIView):
+    serializer_class = OutcomeTokenBalanceSerializer
+    pagination_class = DefaultPagination
+
+    def get_queryset(self):
+        return OutcomeTokenBalance.objects.filter(
+            owner=self.kwargs['account_address'],
+        )

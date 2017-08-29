@@ -301,7 +301,7 @@ class TestViews(APITestCase):
         self.assertEquals(response.status_code, status.HTTP_200_OK)
         self.assertEquals(len(json.loads(response.content).get('results')), 2)
 
-    def test_trades_by_owner(self):
+    def test_trades_by_account(self):
         account1 = '{:040d}'.format(13)
         account2 = '{:040d}'.format(14)
 
@@ -318,3 +318,22 @@ class TestViews(APITestCase):
         url = reverse('api:trades-by-account', kwargs={'account_address': account2})
         no_trades_response = self.client.get(url, content_type='application/json')
         self.assertEquals(len(json.loads(no_trades_response.content).get('results')), 0)
+
+
+    def test_shares_by_account(self):
+        account1 = '{:040d}'.format(13)
+        account2 = '{:040d}'.format(14)
+
+        url = reverse('api:shares-by-account', kwargs={'account_address': account1})
+        empty_shares_response = self.client.get(url, content_type='application/json')
+        self.assertEquals(len(json.loads(empty_shares_response.content).get('results')), 0)
+
+        OutcomeTokenBalanceFactory(owner=account1)
+
+        url = reverse('api:shares-by-account', kwargs={'account_address': account1})
+        shares_response = self.client.get(url, content_type='application/json')
+        self.assertEquals(len(json.loads(shares_response.content).get('results')), 1)
+
+        url = reverse('api:shares-by-account', kwargs={'account_address': account2})
+        no_shares_response = self.client.get(url, content_type='application/json')
+        self.assertEquals(len(json.loads(no_shares_response.content).get('results')), 0)
