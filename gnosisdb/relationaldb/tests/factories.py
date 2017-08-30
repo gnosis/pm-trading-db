@@ -97,7 +97,7 @@ class EventDescriptionFactory(factory_boy.DjangoModelFactory):
     class Meta:
         model = models.EventDescription
 
-    title = factory_boy.Sequence(lambda _: faker.words(5))
+    title = factory_boy.Sequence(lambda _: ''.join(faker.words(5)))
     description = factory_boy.Sequence(lambda _: faker.words(5))
     resolution_date = FuzzyDateTime(datetime.now(pytz.utc))
     ipfs_hash = factory_boy.Sequence(lambda n: '{:046d}'.format(n))

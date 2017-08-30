@@ -285,8 +285,18 @@ class MarketParticipantTradesSerializer(serializers.ModelSerializer):
 
 class OutcomeTokenBalanceSerializer(serializers.ModelSerializer):
 
-    outcomeToken = OutcomeTokenSerializer(source="outcome_token")
+    outcome_token = OutcomeTokenSerializer()
+    event_description = serializers.SerializerMethodField()
 
     class Meta:
         model = OutcomeTokenBalance
-        fields = ('outcomeToken', 'owner', 'balance', )
+        fields = ('outcome_token', 'owner', 'balance', 'event_description',)
+
+    def get_event_description(self, obj):
+        try:
+            centralized_oracle = CentralizedOracle.objects.get(address=obj.outcome_token.event.oracle.address)
+            event_description = centralized_oracle.event_description
+            result = EventDescriptionSerializer(event_description).to_representation(event_description)
+            return result
+        except CentralizedOracle.DoesNotExist:
+            return {}

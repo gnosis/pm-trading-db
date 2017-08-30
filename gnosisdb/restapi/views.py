@@ -152,6 +152,7 @@ class MarketTradesView(generics.ListAPIView):
             market=self.kwargs['market_address'],
         )
 
+
 class AccountTradesView(generics.ListAPIView):
     serializer_class = MarketTradesSerializer
     pagination_class = DefaultPagination

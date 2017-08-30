@@ -319,7 +319,6 @@ class TestViews(APITestCase):
         no_trades_response = self.client.get(url, content_type='application/json')
         self.assertEquals(len(json.loads(no_trades_response.content).get('results')), 0)
 
-
     def test_shares_by_account(self):
         account1 = '{:040d}'.format(13)
         account2 = '{:040d}'.format(14)
@@ -328,11 +327,20 @@ class TestViews(APITestCase):
         empty_shares_response = self.client.get(url, content_type='application/json')
         self.assertEquals(len(json.loads(empty_shares_response.content).get('results')), 0)
 
-        OutcomeTokenBalanceFactory(owner=account1)
+        oracle = CentralizedOracleFactory()
+        event = CategoricalEventFactory(oracle=oracle)
+        market = MarketFactory(event=event, creator=account1)
+        outcome_token = OutcomeTokenFactory(event=market.event)
+        OutcomeTokenBalanceFactory(owner=market.creator, outcome_token=outcome_token)
+        # OutcomeTokenBalanceFactory(owner=account1)
 
         url = reverse('api:shares-by-account', kwargs={'account_address': account1})
         shares_response = self.client.get(url, content_type='application/json')
         self.assertEquals(len(json.loads(shares_response.content).get('results')), 1)
+        self.assertEquals(
+            json.loads(shares_response.content).get('results')[0].get('eventDescription').get('title'),
+            oracle.event_description.title
+        )
 
         url = reverse('api:shares-by-account', kwargs={'account_address': account2})
         no_shares_response = self.client.get(url, content_type='application/json')
