@@ -146,6 +146,19 @@ class TestViews(APITestCase):
 
         self.assertEqual(json.loads(market_response_data2.content)['results'][0]['tradingVolume'], "12")
 
+    def test_market_marginal_prices(self):
+        categorical_event = CategoricalEventFactory()
+        outcome_token = OutcomeTokenFactory(event=categorical_event)
+        market = MarketFactory(event=categorical_event)
+        sender_address = '{:040d}'.format(100)
+
+        # Buy Order
+        order_one = BuyOrderFactory(market=market, sender=sender_address)
+        order_two = BuyOrderFactory(market=market, sender=sender_address)
+        market_response = self.client.get(reverse('api:markets-by-name', kwargs={'market_address': market.address}), content_type='application/json')
+        market_data = json.loads(market_response.content)
+        self.assertEquals(market_data.get('marginalPrices'), order_two.marginal_prices)
+
     def test_markets_with_event_description(self):
         # test empty events response
         empty_markets_response = self.client.get(reverse('api:markets'), content_type='application/json')
