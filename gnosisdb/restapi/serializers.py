@@ -216,7 +216,7 @@ class MarketSerializer(serializers.ModelSerializer):
             try:
                 categorical_event = CategoricalEvent.objects.get(address=obj.event.address)
                 n_outcome_tokens = categorical_event.outcometoken_set.count()
-                marginal_prices = [1/n_outcome_tokens for x in range(0, n_outcome_tokens)]
+                marginal_prices = [1.0/n_outcome_tokens for x in range(0, n_outcome_tokens)]
             except CategoricalEvent.DoesNotExist:
                 pass
 
