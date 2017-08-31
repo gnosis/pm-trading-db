@@ -184,10 +184,12 @@ class MarketSerializer(serializers.ModelSerializer):
     stage = serializers.IntegerField()
     trading_volume = serializers.SerializerMethodField()
     collected_fees = serializers.DecimalField(max_digits=80, decimal_places=0)
+    marginal_prices = serializers.SerializerMethodField()
 
     class Meta:
         model = Market
-        fields = ('contract', 'event', 'market_maker', 'fee', 'funding', 'net_outcome_tokens_sold', 'stage', 'trading_volume', 'collected_fees',)
+        fields = ('contract', 'event', 'market_maker', 'fee', 'funding', 'net_outcome_tokens_sold',
+                  'stage', 'trading_volume', 'collected_fees', 'marginal_prices',)
 
     def to_representation(self, instance):
         response = super(MarketSerializer, self).to_representation(instance)
@@ -202,6 +204,29 @@ class MarketSerializer(serializers.ModelSerializer):
             return str(orders.aggregate(Sum('cost'))['cost__sum'])
         else:
             return "0"
+
+    def get_marginal_prices(selfself, obj):
+        """Get the marginal prices of the last order on the market"""
+        marginal_prices = []
+        orders = Order.objects.filter(market=obj.address).order_by('-creation_date_time')
+
+        if orders.count():
+            marginal_prices = orders[0].marginal_prices
+        else:
+            try:
+                categorical_event = CategoricalEvent.objects.get(address=obj.event.address)
+                n_outcome_tokens = categorical_event.outcometoken_set.count()
+                marginal_prices = [1/n_outcome_tokens for x in range(0, n_outcome_tokens)]
+            except CategoricalEvent.DoesNotExist:
+                pass
+
+            try:
+                scalar_event = ScalarEvent.objects.get(address=obj.event.address)
+                marginal_prices = [0.5, 0.5]
+            except ScalarEvent.DoesNotExist:
+                pass
+
+        return marginal_prices
 
 
 class OutcomeTokenSerializer(serializers.ModelSerializer):
