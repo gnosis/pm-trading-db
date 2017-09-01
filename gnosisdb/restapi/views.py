@@ -154,6 +154,9 @@ class MarketTradesView(generics.ListAPIView):
 
 
 class AccountTradesView(generics.ListAPIView):
+    """
+    Returns the orders (trades) for the given account address
+    """
     serializer_class = MarketTradesSerializer
     pagination_class = DefaultPagination
     filter_class = MarketTradesFilter
@@ -165,6 +168,9 @@ class AccountTradesView(generics.ListAPIView):
 
 
 class AccountSharesView(generics.ListAPIView):
+    """
+    Returns the shares for the given account address
+    """
     serializer_class = OutcomeTokenBalanceSerializer
     pagination_class = DefaultPagination
 
