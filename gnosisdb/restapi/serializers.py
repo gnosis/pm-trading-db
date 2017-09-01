@@ -4,8 +4,9 @@ from relationaldb.models import (
     ScalarEventDescription, CategoricalEventDescription, OutcomeTokenBalance, OutcomeToken,
     CentralizedOracle, UltimateOracle, Market, Order, ScalarEvent, CategoricalEvent, BuyOrder
 )
-from gnosisdb.utils import remove_null_values, add_0x_prefix
+from gnosisdb.utils import remove_null_values, add_0x_prefix, get_order_type, get_order_cost, get_order_profit
 from django.db.models import Sum
+
 
 class ContractSerializer(serializers.BaseSerializer):
     def to_representation(self, instance):
@@ -237,16 +238,41 @@ class OutcomeTokenSerializer(serializers.ModelSerializer):
 
 
 class MarketTradesSerializer(serializers.ModelSerializer):
-    """Serializes the list of orders (trades) of the given market"""
+    """Serializes the list of orders (trades) for the given market"""
     date = serializers.DateTimeField(source="creation_date_time", read_only=True)
     net_outcome_tokens_sold = serializers.ListField(
         child=serializers.DecimalField(max_digits=80, decimal_places=0, read_only=True)
     )
     marginal_prices = serializers.ListField(child=serializers.DecimalField(max_digits=5, decimal_places=4))
+    outcome_token = OutcomeTokenSerializer()
+    outcome_token_count = serializers.DecimalField(max_digits=80, decimal_places=0)
+    order_type = serializers.SerializerMethodField()
+    cost = serializers.SerializerMethodField()
+    profit = serializers.SerializerMethodField()
+    event_description = serializers.SerializerMethodField()
 
     class Meta:
         model = Order
-        fields = ('date', 'net_outcome_tokens_sold', 'marginal_prices',)
+        fields = ('date', 'net_outcome_tokens_sold', 'marginal_prices', 'outcome_token',
+                  'outcome_token_count', 'order_type', 'cost', 'profit', 'event_description',)
+
+    def get_order_type(self, obj):
+        return get_order_type(obj)
+
+    def get_cost(self, obj):
+        return str(get_order_cost(obj))
+
+    def get_profit(self, obj):
+        return str(get_order_profit(obj))
+
+    def get_event_description(self, obj):
+        try:
+            centralized_oracle = CentralizedOracle.objects.get(address=obj.outcome_token.event.oracle.address)
+            event_description = centralized_oracle.event_description
+            result = EventDescriptionSerializer(event_description).to_representation(event_description)
+            return result
+        except CentralizedOracle.DoesNotExist:
+            return {}
 
     def to_representation(self, instance):
         response = super(MarketTradesSerializer, self).to_representation(instance)
@@ -278,30 +304,13 @@ class MarketParticipantTradesSerializer(serializers.ModelSerializer):
         return add_0x_prefix(obj.sender)
 
     def get_order_type(self, obj):
-        if hasattr(obj, 'sellorder'):
-            return 'SELL'
-        elif hasattr(obj, 'shortsellorder'):
-            return 'SHORT SELL'
-        elif hasattr(obj, 'buyorder'):
-            return 'BUY'
-        else:
-            return 'UNKNOWN'
+        return get_order_type(obj)
 
     def get_cost(self, obj):
-        order_type = self.get_order_type(obj)
-        if order_type == 'BUY':
-            return obj.buyorder.cost
-        elif order_type == 'SHORT SELL':
-            return obj.shortsellorder.cost
-        else:
-            None
+        return str(get_order_cost(obj))
 
     def get_profit(self, obj):
-        order_type = self.get_order_type(obj)
-        if order_type == 'SELL':
-            return obj.sellorder.profit
-        else:
-            None
+        return str(get_order_profit(obj))
 
     def to_representation(self, instance):
         response = super(MarketParticipantTradesSerializer, self).to_representation(instance)
