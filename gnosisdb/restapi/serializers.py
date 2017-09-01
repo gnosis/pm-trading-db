@@ -244,6 +244,8 @@ class MarketTradesSerializer(serializers.ModelSerializer):
         child=serializers.DecimalField(max_digits=80, decimal_places=0, read_only=True)
     )
     marginal_prices = serializers.ListField(child=serializers.DecimalField(max_digits=5, decimal_places=4))
+    outcome_token = OutcomeTokenSerializer()
+    outcome_token_count = serializers.DecimalField(max_digits=80, decimal_places=0)
     order_type = serializers.SerializerMethodField()
     cost = serializers.SerializerMethodField()
     profit = serializers.SerializerMethodField()
@@ -251,16 +253,17 @@ class MarketTradesSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Order
-        fields = ('date', 'net_outcome_tokens_sold', 'marginal_prices', 'order_type', 'cost', 'profit', 'event_description',)
+        fields = ('date', 'net_outcome_tokens_sold', 'marginal_prices', 'outcome_token',
+                  'outcome_token_count', 'order_type', 'cost', 'profit', 'event_description',)
 
     def get_order_type(self, obj):
         return get_order_type(obj)
 
     def get_cost(self, obj):
-        return get_order_cost(obj)
+        return str(get_order_cost(obj))
 
     def get_profit(self, obj):
-        return get_order_profit(obj)
+        return str(get_order_profit(obj))
 
     def get_event_description(self, obj):
         try:
@@ -304,10 +307,10 @@ class MarketParticipantTradesSerializer(serializers.ModelSerializer):
         return get_order_type(obj)
 
     def get_cost(self, obj):
-        return get_order_cost(obj)
+        return str(get_order_cost(obj))
 
     def get_profit(self, obj):
-        return get_order_profit(obj)
+        return str(get_order_profit(obj))
 
     def to_representation(self, instance):
         response = super(MarketParticipantTradesSerializer, self).to_representation(instance)
