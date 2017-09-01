@@ -194,7 +194,7 @@ IPFS_HOST = 'http://ipfs'  # 'ipfs'
 IPFS_PORT = 5001
 
 # LMSR Market Maker Address
-LMSR_MARKET_MAKER = '2f2be9db638cb31d4143cbc1525b0e104f7ed597'
+LMSR_MARKET_MAKER = '9561c133dd8580860b6b7e504bc5aa500f0f06a7'
 
 
 # GnosisDB Contract Addresses
