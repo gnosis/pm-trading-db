@@ -355,9 +355,9 @@ class TestViews(APITestCase):
             decoded_response.get('results')[0].get('eventDescription').get('title'),
             oracle.event_description.title
         )
-        self.assertListEqual(
-            decoded_response.get('results')[0].get('marginalPrices'),
-            [0.5, 0.5]
+        self.assertEquals(
+            decoded_response.get('results')[0].get('marginalPrice'),
+            0.5
         )
 
         url = reverse('api:shares-by-account', kwargs={'account_address': account2})
