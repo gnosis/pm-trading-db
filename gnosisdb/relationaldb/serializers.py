@@ -377,14 +377,6 @@ class MarketSerializer(ContractCreatedByFactorySerializer, serializers.ModelSeri
             # scalar, creating an array of size 2
             net_outcome_tokens_sold = [0, 0]
 
-        # if isinstance(validated_data.get('event'), models.CategoricalEvent):
-        #     # categorical
-        #     n_outcome_tokens = validated_data.get('event').outcometoken_set.count()
-        #     net_outcome_tokens_sold = [0] * n_outcome_tokens
-        # else:
-        #     # scalar, creating an array of size 2
-        #     net_outcome_tokens_sold = [0, 0]
-
         validated_data.update({'net_outcome_tokens_sold': net_outcome_tokens_sold})
         market = models.Market.objects.create(**validated_data)
         return market

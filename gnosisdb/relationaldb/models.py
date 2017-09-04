@@ -143,7 +143,7 @@ class Market(ContractCreatedByFactory):
         (2, 'MarketClosed'),
     )
 
-    event = models.ForeignKey(Event, related_name='market_oracle')
+    event = models.ForeignKey(Event, related_name='markets')
     market_maker = models.CharField(max_length=40, db_index=True) # the address of the market maker
     fee = models.PositiveIntegerField()
     funding = models.DecimalField(max_digits=80, decimal_places=0, null=True)

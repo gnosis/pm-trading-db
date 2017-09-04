@@ -345,14 +345,19 @@ class TestViews(APITestCase):
         market = MarketFactory(event=event, creator=account1)
         outcome_token = OutcomeTokenFactory(event=market.event)
         OutcomeTokenBalanceFactory(owner=market.creator, outcome_token=outcome_token)
-        # OutcomeTokenBalanceFactory(owner=account1)
+        BuyOrderFactory(outcome_token=outcome_token, sender=account1, market=market)
 
         url = reverse('api:shares-by-account', kwargs={'account_address': account1})
         shares_response = self.client.get(url, content_type='application/json')
-        self.assertEquals(len(json.loads(shares_response.content).get('results')), 1)
+        decoded_response = json.loads(shares_response.content)
+        self.assertEquals(len(decoded_response.get('results')), 1)
         self.assertEquals(
-            json.loads(shares_response.content).get('results')[0].get('eventDescription').get('title'),
+            decoded_response.get('results')[0].get('eventDescription').get('title'),
             oracle.event_description.title
+        )
+        self.assertListEqual(
+            decoded_response.get('results')[0].get('marginalPrices'),
+            [0.5, 0.5]
         )
 
         url = reverse('api:shares-by-account', kwargs={'account_address': account2})

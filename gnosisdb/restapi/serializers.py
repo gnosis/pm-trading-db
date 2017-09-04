@@ -321,10 +321,11 @@ class OutcomeTokenBalanceSerializer(serializers.ModelSerializer):
 
     outcome_token = OutcomeTokenSerializer()
     event_description = serializers.SerializerMethodField()
+    marginal_prices = serializers.SerializerMethodField()
 
     class Meta:
         model = OutcomeTokenBalance
-        fields = ('outcome_token', 'owner', 'balance', 'event_description',)
+        fields = ('outcome_token', 'owner', 'balance', 'event_description', 'marginal_prices', )
 
     def get_event_description(self, obj):
         try:
@@ -334,3 +335,27 @@ class OutcomeTokenBalanceSerializer(serializers.ModelSerializer):
             return result
         except CentralizedOracle.DoesNotExist:
             return {}
+
+    def get_marginal_prices(self, obj):
+        """Get the marginal prices of the last order on the market"""
+        marginal_prices = []
+        orders = Order.objects.filter(market=obj.outcome_token.event.markets.all()[0].address).order_by('-creation_date_time')
+
+        if orders.count():
+            marginal_prices = orders[0].marginal_prices
+        else:
+            event = obj.outcome_token.event.address
+            try:
+                categorical_event = CategoricalEvent.objects.get(address=event)
+                n_outcome_tokens = categorical_event.outcometoken_set.count()
+                marginal_prices = [1.0 / n_outcome_tokens for x in range(0, n_outcome_tokens)]
+            except CategoricalEvent.DoesNotExist:
+                pass
+
+            try:
+                scalar_event = ScalarEvent.objects.get(address=event)
+                marginal_prices = [0.5, 0.5]
+            except ScalarEvent.DoesNotExist:
+                pass
+
+        return marginal_prices
