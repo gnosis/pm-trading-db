@@ -184,13 +184,14 @@ class MarketSerializer(serializers.ModelSerializer):
     net_outcome_tokens_sold = serializers.ListField(child=serializers.DecimalField(max_digits=80, decimal_places=0, read_only=True))
     stage = serializers.IntegerField()
     trading_volume = serializers.SerializerMethodField()
+    withdrawn_fees = serializers.DecimalField(max_digits=80, decimal_places=0)
     collected_fees = serializers.DecimalField(max_digits=80, decimal_places=0)
     marginal_prices = serializers.SerializerMethodField()
 
     class Meta:
         model = Market
         fields = ('contract', 'event', 'market_maker', 'fee', 'funding', 'net_outcome_tokens_sold',
-                  'stage', 'trading_volume', 'collected_fees', 'marginal_prices',)
+                  'stage', 'trading_volume', 'withdrawn_fees', 'collected_fees', 'marginal_prices',)
 
     def to_representation(self, instance):
         response = super(MarketSerializer, self).to_representation(instance)
