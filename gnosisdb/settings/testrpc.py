@@ -1,23 +1,24 @@
 from gnosisdb.settings.local import *
 from gnosisdb.chainevents.abis import abi_file_path, load_json_file
 
-# Insert your rpc config here
-ETHEREUM_NODE_HOST= '192.168.1.120'
+# TestRPC
+# insert your rpc config here, ex. localhost - 0.0.0.0 - 192.168.0.1
+ETHEREUM_NODE_HOST= 'testrpc'
 ETHEREUM_NODE_PORT = 8545
 ETHEREUM_NODE_SSL = 0
 
 # IPFS
-IPFS_HOST = 'https://ipfs.infura.io'  # 'ipfs'
+# You can choose between ipfs container address and 'https://ipfs.infura.io'
+IPFS_HOST = 'ipfs'
 IPFS_PORT = 5001
 
-
 # LMSR Market Maker Address
-LMSR_MARKET_MAKER = '9561c133dd8580860b6b7e504bc5aa500f0f06a7'
+LMSR_MARKET_MAKER = '2f2be9db638cb31d4143cbc1525b0e104f7ed597'
 
 # GnosisDB Contract Addresses
 ETH_EVENTS = [
     {
-        'ADDRESSES': ['cfeb869f69431e42cdb54a4f4f105c19c080a601'],
+        'ADDRESSES': ['15fdb1d1d083ae5593c7904285ed7f264e10dd3f'],
         'EVENT_ABI': load_json_file(abi_file_path('CentralizedOracleFactory.json')),
         'EVENT_DATA_RECEIVER': 'chainevents.event_receivers.CentralizedOracleFactoryReceiver',
         'NAME': 'centralizedOracleFactory',
@@ -31,14 +32,14 @@ ETH_EVENTS = [
         'PUBLISH': True,
     },
     {
-        'ADDRESSES': ['67b5656d60a809915323bf2c40a8bef15a152e3e'],
+        'ADDRESSES': ['be2238e8d2bf13188a2a24b41301d7dbda4076be'],
         'EVENT_ABI': load_json_file(abi_file_path('EventFactory.json')),
         'EVENT_DATA_RECEIVER': 'chainevents.event_receivers.EventFactoryReceiver',
         'NAME': 'eventFactory',
         'PUBLISH': True,
     },
     {
-        'ADDRESSES': ['e982e462b094850f12af94d21d470e21be9d0e9c'],
+        'ADDRESSES': ['371684dfcb1f938c9bdc12bab0856e2cd719f389'],
         'EVENT_ABI': load_json_file(abi_file_path('StandardMarketFactory.json')),
         'EVENT_DATA_RECEIVER': 'chainevents.event_receivers.MarketFactoryReceiver',
         'NAME': 'standardMarketFactory',
