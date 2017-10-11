@@ -359,4 +359,4 @@ class OutcomeTokenBalanceSerializer(serializers.ModelSerializer):
             except ScalarEvent.DoesNotExist:
                 pass
 
-        return len(marginal_prices)+1 > obj.outcome_token.index and marginal_prices[obj.outcome_token.index] or None
+        return marginal_prices[obj.outcome_token.index] if len(marginal_prices)+1 > obj.outcome_token.index else None
