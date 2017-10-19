@@ -5,12 +5,12 @@ from django.conf import settings
 from chainevents.event_receivers import (
     CentralizedOracleFactoryReceiver, UltimateOracleFactoryReceiver, EventFactoryReceiver, MarketFactoryReceiver,
     CentralizedOracleInstanceReceiver, EventInstanceReceiver, UltimateOracleInstanceReceiver, OutcomeTokenInstanceReceiver,
-    MarketInstanceReceiver
+    MarketInstanceReceiver, UportIdentityManagerInstanceReceiver
 )
 
 from relationaldb.models import (
     CentralizedOracle, UltimateOracle, ScalarEvent, CategoricalEvent, Market, OutcomeToken,
-    Event, OutcomeVoteBalance, BuyOrder, SellOrder
+    Event, OutcomeVoteBalance, BuyOrder, SellOrder, TournamentParticipant
 )
 
 from relationaldb.tests.factories import (
@@ -733,3 +733,39 @@ class TestEventReceiver(TestCase):
         MarketInstanceReceiver().save(outcome_token_purchase_event, block)
         market_check = Market.objects.get(address=market.address)
         self.assertEquals(market_check.collected_fees, market.collected_fees+fees+fees)
+
+    def test_create_tournament_participant(self):
+        identity = 'ebe4dd7a4a9e712e742862719aa04709cc6d80a6'
+        participant_event = {
+            'name': 'IdentityCreated',
+            'address': 'abbcd5b340c80b5f1c0545c04c987b87310296ae',
+            'params': [
+                {
+                    'name': 'identity',
+                    'value': identity
+                },
+                {
+                    'name': 'creator',
+                    'value': '50858f2c7873fac9398ed9c195d185089caa7967'
+                },
+                {
+                    'name': 'owner',
+                    'value': '8f357b2c8071c2254afbc65907997f9adea6cc78',
+                },
+                {
+                    'name': 'recoveryKey',
+                    'value': 'b67c2d2fcfa3e918e3f9a5218025ebdd12d26212'
+                }
+            ]
+        }
+
+        block = {
+            'number': 1,
+            'timestamp': self.to_timestamp(datetime.now())
+        }
+
+        self.assertEqual(TournamentParticipant.objects.all().count(), 0)
+        # Save event
+        UportIdentityManagerInstanceReceiver().save(participant_event, block)
+        # Check that collected fees was incremented
+        self.assertEqual(TournamentParticipant.objects.all().count(), 1)
