@@ -181,7 +181,7 @@ class OutcomeTokenInstanceReceiver(AbstractEventReceiver):
                 logger.warning(serializer.errors)
 
 
-class UportIdentityManagerInstanceReceiver(AbstractEventReceiver):
+class UportIdentityManagerReceiver(AbstractEventReceiver):
     events = {
         'IdentityCreated': TournamentParticipantSerializer,  # sum to totalSupply, update data
     }

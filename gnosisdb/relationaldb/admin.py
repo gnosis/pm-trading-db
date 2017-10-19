@@ -5,6 +5,7 @@ from .models import OutcomeToken, OutcomeTokenBalance
 from .models import Market, CategoricalEvent, ScalarEvent
 from .models import BuyOrder, SellOrder, ShortSellOrder
 from .models import OutcomeVoteBalance
+from .models import TournamentParticipant
 
 admin.site.register(Market)
 admin.site.register(CategoricalEvent)
@@ -20,3 +21,4 @@ admin.site.register(BuyOrder)
 admin.site.register(SellOrder)
 admin.site.register(ShortSellOrder)
 admin.site.register(OutcomeVoteBalance)
+admin.site.register(TournamentParticipant)

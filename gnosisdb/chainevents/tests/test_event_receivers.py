@@ -5,7 +5,7 @@ from django.conf import settings
 from chainevents.event_receivers import (
     CentralizedOracleFactoryReceiver, UltimateOracleFactoryReceiver, EventFactoryReceiver, MarketFactoryReceiver,
     CentralizedOracleInstanceReceiver, EventInstanceReceiver, UltimateOracleInstanceReceiver, OutcomeTokenInstanceReceiver,
-    MarketInstanceReceiver, UportIdentityManagerInstanceReceiver
+    MarketInstanceReceiver, UportIdentityManagerReceiver
 )
 
 from relationaldb.models import (
@@ -766,6 +766,6 @@ class TestEventReceiver(TestCase):
 
         self.assertEqual(TournamentParticipant.objects.all().count(), 0)
         # Save event
-        UportIdentityManagerInstanceReceiver().save(participant_event, block)
+        UportIdentityManagerReceiver().save(participant_event, block)
         # Check that collected fees was incremented
         self.assertEqual(TournamentParticipant.objects.all().count(), 1)
