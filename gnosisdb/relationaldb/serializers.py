@@ -1005,3 +1005,15 @@ class FeeWithdrawalSerializer(ContractNotTimestampted, serializers.ModelSerializ
             return market
         except models.Market.DoesNotExist:
             raise serializers.ValidationError('Market with address {} does not exist.' % validated_data.get('address'))
+
+
+class TournamentParticipantSerializer(ContractCreatedByFactorySerializer, serializers.ModelSerializer):
+    """
+    Serializes the Uport new Identitity event
+    """
+    class Meta:
+        model = models.TournamentParticipant
+        fields = ContractCreatedByFactorySerializer.Meta.fields + ('identity',)
+
+    identity = serializers.CharField(max_length=40, source='address')
+    address = serializers.CharField(max_length=40, source='factory')

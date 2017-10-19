@@ -197,3 +197,9 @@ class SellOrderFactory(OrderFactory):
     profit = factory_boy.Sequence(lambda n: n)
     outcome_token_profit = factory_boy.Sequence(lambda n: n)
     fees = 0
+
+class TournamentParticipantFactory(ContractCreatedByFactory):
+    class Meta:
+        model = models.TournamentParticipant
+    # name = factory_boy.Sequence(lambda _: ''.join(faker.words(3)))
+    # ipfs_hash = factory_boy.Sequence(lambda n: '{:046d}'.format(n))

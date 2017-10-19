@@ -7,10 +7,11 @@ from relationaldb.tests.factories import (
 from relationaldb.serializers import (
     OutcomeTokenIssuanceSerializer, ScalarEventSerializer, UltimateOracleSerializer, OutcomeTokenRevocationSerializer,
     CategoricalEventSerializer, MarketSerializer, IPFSEventDescriptionDeserializer, CentralizedOracleSerializer,
-    CentralizedOracleInstanceSerializer, OutcomeTokenInstanceSerializer, OutcomeTokenTransferSerializer
+    CentralizedOracleInstanceSerializer, OutcomeTokenInstanceSerializer, OutcomeTokenTransferSerializer,
+    TournamentParticipantSerializer
 )
 
-from relationaldb.models import OutcomeTokenBalance, OutcomeToken, ScalarEventDescription
+from relationaldb.models import OutcomeTokenBalance, OutcomeToken, ScalarEventDescription, TournamentParticipant
 from rest_framework.serializers import ValidationError
 from django.conf import settings
 from ipfs.ipfs import Ipfs
@@ -773,3 +774,43 @@ class TestSerializers(TestCase):
         self.assertIsNotNone(instance)
         self.assertEqual(instance.owner, event.address)
         self.assertEqual(instance.balance, 20)
+
+    def test_save_tournament_participant(self):
+        identity = 'ebe4dd7a4a9e712e742862719aa04709cc6d80a6'
+        oracle = OracleFactory()
+        block = {
+            'number': oracle.creation_block,
+            'timestamp': mktime(oracle.creation_date_time.timetuple())
+        }
+
+        participant_event = {
+            'name': 'IdentityCreated',
+            'address': 'abbcd5b340c80b5f1c0545c04c987b87310296ae',
+            'params': [
+                {
+                    'name': 'identity',
+                    'value': identity
+                },
+                {
+                    'name': 'creator',
+                    'value': '50858f2c7873fac9398ed9c195d185089caa7967'
+                },
+                {
+                    'name': 'owner',
+                    'value': '8f357b2c8071c2254afbc65907997f9adea6cc78',
+                },
+                {
+                    'name': 'recoveryKey',
+                    'value': 'b67c2d2fcfa3e918e3f9a5218025ebdd12d26212'
+                }
+            ]
+        }
+
+        s = TournamentParticipantSerializer(data=participant_event, block=block)
+        self.assertTrue(s.is_valid(), s.errors)
+        self.assertEqual(TournamentParticipant.objects.all().count(), 0)
+        instance = s.save()
+
+        self.assertEqual(TournamentParticipant.objects.all().count(), 1)
+        self.assertIsNotNone(instance)
+        self.assertEqual(instance.address, identity)

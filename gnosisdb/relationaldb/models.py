@@ -178,3 +178,8 @@ class SellOrder(Order):
 
 class ShortSellOrder(Order):
     cost = models.DecimalField(max_digits=80, decimal_places=0)
+
+
+class TournamentParticipant(ContractCreatedByFactory):
+    pass
+    # name = models.CharField(max_length=40, null=True) # not possible right now
