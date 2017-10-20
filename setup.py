@@ -10,8 +10,6 @@ os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 # reqs = [str(ir.req) for ir in install_reqs]
 
 requirements = [
-    'pymongo',
-    'jsonschema',
     'bitcoin==1.1.42',
     'djangorestframework',
     'django-ether-logs',
