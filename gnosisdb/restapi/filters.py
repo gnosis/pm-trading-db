@@ -5,8 +5,8 @@ from datetime import datetime, timedelta
 
 
 class DefaultPagination(LimitOffsetPagination):
-    max_limit = 50
-    default_limit = 25
+    max_limit = 200
+    default_limit = 100
 
 
 class CentralizedOracleFilter(filters.FilterSet):
