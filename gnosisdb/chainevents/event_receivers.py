@@ -8,7 +8,7 @@ from relationaldb.serializers import (
     OutcomeChallengeSerializer, OutcomeVoteSerializer, WithdrawalSerializer, OutcomeTokenTransferSerializer,
     OutcomeTokenPurchaseSerializer, OutcomeTokenSaleSerializer, OutcomeTokenShortSaleOrderSerializer,
     MarketFundingSerializer, MarketClosingSerializer, FeeWithdrawalSerializer, TournamentParticipantSerializer,
-    TournamentTokenIssuanceSerializer
+    TournamentTokenIssuanceSerializer, TournamentTokenTransferSerializer
 )
 
 from celery.utils.log import get_task_logger
@@ -199,6 +199,7 @@ class UportIdentityManagerReceiver(AbstractEventReceiver):
 class TournamentTokenReceiver(AbstractEventReceiver):
     events = {
         'Issuance': TournamentTokenIssuanceSerializer,  # sum to participant balance
+        'Transfer': TournamentTokenTransferSerializer
     }
 
     def save(self, decoded_event, block_info=None):

@@ -8,7 +8,7 @@ from relationaldb.serializers import (
     OutcomeTokenIssuanceSerializer, ScalarEventSerializer, UltimateOracleSerializer, OutcomeTokenRevocationSerializer,
     CategoricalEventSerializer, MarketSerializer, IPFSEventDescriptionDeserializer, CentralizedOracleSerializer,
     CentralizedOracleInstanceSerializer, OutcomeTokenInstanceSerializer, OutcomeTokenTransferSerializer,
-    TournamentParticipantSerializer, TournamentTokenIssuanceSerializer
+    TournamentParticipantSerializer, TournamentTokenIssuanceSerializer, TournamentTokenTransferSerializer
 )
 
 from relationaldb.models import OutcomeTokenBalance, OutcomeToken, ScalarEventDescription, TournamentParticipant
@@ -841,3 +841,35 @@ class TestSerializers(TestCase):
         self.assertIsNotNone(instance)
         self.assertEqual(instance.address, participant.address)
         self.assertEqual(instance.balance, participant.balance + 123)
+
+    def test_tournament_token_transfer(self):
+        # Test the token transfer serializer
+        participant1 = TournamentParticipantFactory()
+        participant2 = TournamentParticipantFactory()
+
+        transfer_event = {
+            'name': 'Transfer',
+            'address': 'not needed',
+            'params': [
+                {
+                    'name': 'from',
+                    'value': participant1.address
+                },
+                {
+                    'name': 'to',
+                    'value': participant2.address
+                },
+                {
+                    'name': 'value',
+                    'value': 150,
+                }
+            ]
+        }
+
+        transfer_serializer = TournamentTokenTransferSerializer(data=transfer_event)
+        self.assertTrue(transfer_serializer.is_valid(), transfer_serializer.errors)
+        instance = transfer_serializer.save()
+        self.assertEqual(TournamentParticipant.objects.get(address=participant2.address).balance.__float__(), float(participant2.balance+150))
+        self.assertEqual(TournamentParticipant.objects.get(address=participant1.address).balance.__float__(), float(participant1.balance-150))
+
+

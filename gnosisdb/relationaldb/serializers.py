@@ -1026,7 +1026,7 @@ class TournamentTokenIssuanceSerializer(ContractNotTimestampted, serializers.Mod
 
     class Meta:
         model = models.TournamentParticipant
-        fields = ('owner', 'amount')
+        fields = ('owner', 'amount',)
 
     owner = serializers.CharField(max_length=40)
     amount = serializers.IntegerField()
@@ -1039,3 +1039,39 @@ class TournamentTokenIssuanceSerializer(ContractNotTimestampted, serializers.Mod
             return participant
         except:
             raise serializers.ValidationError('Participant with address {} does not exist.' % validated_data.get('owner'))
+
+
+class TournamentTokenTransferSerializer(ContractNotTimestampted, serializers.ModelSerializer):
+    """
+    Serializes the token transfer event
+    https://github.com/gnosis/gnosis-contracts/blob/master/contracts/Tokens/Token.sol#L11
+    """
+
+    class Meta:
+        model = models.TournamentParticipant
+        fields = ('from_participant', 'to_participant', 'value',)
+
+    from_participant = serializers.CharField(max_length=40)
+    to_participant = serializers.CharField(max_length=40)
+    value = serializers.IntegerField()
+
+    def __init__(self, *args, **kwargs):
+        super(TournamentTokenTransferSerializer, self).__init__(*args, **kwargs)
+        self.initial_data['from_participant'] = self.initial_data.pop('from')
+        self.initial_data['to_participant'] = self.initial_data.pop('to')
+
+    def create(self, validated_data):
+        try:
+            from_user = models.TournamentParticipant.objects.get(address=validated_data.get('from_participant'))
+            from_user.balance -= validated_data.get('value')
+            from_user.save()
+        except:
+            raise serializers.ValidationError('Participant sender with address {} does not exist.' % validated_data.get('from_participant'))
+
+        try:
+            to_user = models.TournamentParticipant.objects.get(address=validated_data.get('to_participant'))
+            to_user.balance += validated_data.get('value')
+            to_user.save()
+            return from_user
+        except:
+            raise serializers.ValidationError('Participant receiver with address {} does not exist.' % validated_data.get('to_participant'))
