@@ -1017,3 +1017,25 @@ class TournamentParticipantSerializer(ContractCreatedByFactorySerializer, serial
 
     identity = serializers.CharField(max_length=40, source='address')
     address = serializers.CharField(max_length=40, source='factory')
+
+
+class TournamentTokenIssuanceSerializer(ContractNotTimestampted, serializers.ModelSerializer):
+    """
+    Serializes the issuance of new Tournament Tokens
+    """
+
+    class Meta:
+        model = models.TournamentParticipant
+        fields = ('owner', 'amount')
+
+    owner = serializers.CharField(max_length=40)
+    amount = serializers.IntegerField()
+
+    def create(self, validated_data):
+        try:
+            participant = models.TournamentParticipant.objects.get(address=validated_data.get('owner'))
+            participant.balance += validated_data.get('amount')
+            participant.save()
+            return participant
+        except:
+            raise serializers.ValidationError('Participant with address {} does not exist.' % validated_data.get('owner'))

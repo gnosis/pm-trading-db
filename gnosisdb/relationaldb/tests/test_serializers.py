@@ -2,13 +2,13 @@ from unittest import TestCase
 from relationaldb.tests.factories import (
     OracleFactory, CentralizedOracleFactory, UltimateOracleFactory, EventFactory,
     MarketFactory, EventDescriptionFactory, OutcomeTokenFactory, OutcomeTokenBalanceFactory,
-    ScalarEventDescriptionFactory, CategoricalEventFactory
+    ScalarEventDescriptionFactory, CategoricalEventFactory, TournamentParticipantFactory
 )
 from relationaldb.serializers import (
     OutcomeTokenIssuanceSerializer, ScalarEventSerializer, UltimateOracleSerializer, OutcomeTokenRevocationSerializer,
     CategoricalEventSerializer, MarketSerializer, IPFSEventDescriptionDeserializer, CentralizedOracleSerializer,
     CentralizedOracleInstanceSerializer, OutcomeTokenInstanceSerializer, OutcomeTokenTransferSerializer,
-    TournamentParticipantSerializer
+    TournamentParticipantSerializer, TournamentTokenIssuanceSerializer
 )
 
 from relationaldb.models import OutcomeTokenBalance, OutcomeToken, ScalarEventDescription, TournamentParticipant
@@ -814,3 +814,30 @@ class TestSerializers(TestCase):
         self.assertEqual(TournamentParticipant.objects.all().count(), 1)
         self.assertIsNotNone(instance)
         self.assertEqual(instance.address, identity)
+
+
+    def test_tournament_issuance(self):
+        participant = TournamentParticipantFactory()
+        participant_event = {
+            'name': 'Issuance',
+            'address': 'not needed',
+            'params': [
+                {
+                    'name': 'owner',
+                    'value': participant.address
+                },
+                {
+                    'name': 'amount',
+                    'value': 123
+                }
+            ]
+        }
+        self.assertEqual(TournamentParticipant.objects.get(address=participant.address).balance, participant.balance)
+        s = TournamentTokenIssuanceSerializer(data=participant_event)
+        self.assertTrue(s.is_valid(), s.errors)
+        self.assertEqual(TournamentParticipant.objects.get(address=participant.address).balance, participant.balance)
+        instance = s.save()
+
+        self.assertIsNotNone(instance)
+        self.assertEqual(instance.address, participant.address)
+        self.assertEqual(instance.balance, participant.balance + 123)

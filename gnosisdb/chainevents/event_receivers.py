@@ -7,7 +7,8 @@ from relationaldb.serializers import (
     OutcomeAssignmentOracleSerializer, ForwardedOracleOutcomeAssignmentSerializer,
     OutcomeChallengeSerializer, OutcomeVoteSerializer, WithdrawalSerializer, OutcomeTokenTransferSerializer,
     OutcomeTokenPurchaseSerializer, OutcomeTokenSaleSerializer, OutcomeTokenShortSaleOrderSerializer,
-    MarketFundingSerializer, MarketClosingSerializer, FeeWithdrawalSerializer, TournamentParticipantSerializer
+    MarketFundingSerializer, MarketClosingSerializer, FeeWithdrawalSerializer, TournamentParticipantSerializer,
+    TournamentTokenIssuanceSerializer
 )
 
 from celery.utils.log import get_task_logger
@@ -183,12 +184,26 @@ class OutcomeTokenInstanceReceiver(AbstractEventReceiver):
 
 class UportIdentityManagerReceiver(AbstractEventReceiver):
     events = {
-        'IdentityCreated': TournamentParticipantSerializer,  # sum to totalSupply, update data
+        'IdentityCreated': TournamentParticipantSerializer,
     }
 
     def save(self, decoded_event, block_info):
         if self.events.get(decoded_event.get('name')):
             serializer = self.events.get(decoded_event.get('name'))(data=decoded_event, block=block_info)
+            if serializer.is_valid():
+                serializer.save()
+            else:
+                logger.warning(serializer.errors)
+
+
+class TournamentTokenReceiver(AbstractEventReceiver):
+    events = {
+        'Issuance': TournamentTokenIssuanceSerializer,  # sum to participant balance
+    }
+
+    def save(self, decoded_event, block_info=None):
+        if self.events.get(decoded_event.get('name')):
+            serializer = self.events.get(decoded_event.get('name'))(data=decoded_event)
             if serializer.is_valid():
                 serializer.save()
             else:

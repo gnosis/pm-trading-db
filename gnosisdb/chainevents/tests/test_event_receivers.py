@@ -5,7 +5,7 @@ from django.conf import settings
 from chainevents.event_receivers import (
     CentralizedOracleFactoryReceiver, UltimateOracleFactoryReceiver, EventFactoryReceiver, MarketFactoryReceiver,
     CentralizedOracleInstanceReceiver, EventInstanceReceiver, UltimateOracleInstanceReceiver, OutcomeTokenInstanceReceiver,
-    MarketInstanceReceiver, UportIdentityManagerReceiver
+    MarketInstanceReceiver, UportIdentityManagerReceiver, TournamentTokenReceiver
 )
 
 from relationaldb.models import (
@@ -16,7 +16,7 @@ from relationaldb.models import (
 from relationaldb.tests.factories import (
     UltimateOracleFactory, CentralizedOracleFactory,
     OracleFactory, EventFactory, MarketFactory, OutcomeTokenFactory,
-    OutcomeVoteBalanceFactory, CategoricalEventFactory
+    OutcomeVoteBalanceFactory, CategoricalEventFactory, TournamentParticipantFactory
 )
 from datetime import datetime
 from time import mktime
@@ -769,3 +769,25 @@ class TestEventReceiver(TestCase):
         UportIdentityManagerReceiver().save(participant_event, block)
         # Check that collected fees was incremented
         self.assertEqual(TournamentParticipant.objects.all().count(), 1)
+
+    def test_issue_tournament_tokens(self):
+        participant = TournamentParticipantFactory()
+        participant_event = {
+            'name': 'Issuance',
+            'address': 'not needed',
+            'params': [
+                {
+                    'name': 'owner',
+                    'value': participant.address
+                },
+                {
+                    'name': 'amount',
+                    'value': 123
+                }
+            ]
+        }
+
+        self.assertEqual(TournamentParticipant.objects.get(address=participant.address).balance, 0)
+        # Save event
+        TournamentTokenReceiver().save(participant_event)
+        self.assertEqual(TournamentParticipant.objects.get(address=participant.address).balance, 123)

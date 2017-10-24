@@ -201,5 +201,6 @@ class SellOrderFactory(OrderFactory):
 class TournamentParticipantFactory(ContractCreatedByFactory):
     class Meta:
         model = models.TournamentParticipant
+    balance = factory_boy.Sequence(lambda n: (n*100))
     # name = factory_boy.Sequence(lambda _: ''.join(faker.words(3)))
     # ipfs_hash = factory_boy.Sequence(lambda n: '{:046d}'.format(n))

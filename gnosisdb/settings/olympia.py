@@ -45,6 +45,13 @@ ETH_EVENTS = [
         'PUBLISH': True,
     },
     {
+        'ADDRESSES': ['72f80f429d8a8fbaf9e9f2f1baa1a3940c3beb8f'],
+        'EVENT_ABI': load_json_file(abi_file_path('TournamentToken.json')),
+        'EVENT_DATA_RECEIVER': 'chainevents.event_receivers.TournamentTokenReceiver',
+        'NAME': 'OlympiaToken',
+        'PUBLISH': True,
+    },
+    {
         'ADDRESSES_GETTER': 'chainevents.address_getters.MarketAddressGetter',
         'EVENT_ABI': load_json_file(abi_file_path('StandardMarket.json')),
         'EVENT_DATA_RECEIVER': 'chainevents.event_receivers.MarketInstanceReceiver',

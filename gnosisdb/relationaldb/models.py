@@ -181,5 +181,5 @@ class ShortSellOrder(Order):
 
 
 class TournamentParticipant(ContractCreatedByFactory):
-    pass
+    balance = models.DecimalField(max_digits=80, decimal_places=0, default=0)
     # name = models.CharField(max_length=40, null=True) # not possible right now
