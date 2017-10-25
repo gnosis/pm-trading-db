@@ -14,7 +14,7 @@ psycopg2==2.7.1
 celery==3.1.25
 faker==0.7.15
 requests[security]==2.17.3
-web3[tester]==3.7.1
+# web3[tester]==3.7.1
 djangorestframework-camel-case==0.2.0
 ipfsapi==0.4.1
 six==1.10.0
@@ -23,7 +23,7 @@ docutils==0.14rc1
 gunicorn==19.7.1
 whitenoise==3.3.0
 gevent==1.0.1
--e git+https://github.com/gnosis/django-eth-events.git@4e29424094a8b2a97168dd496a30f5d03700b8e3#egg=django-eth-events
+-e git+https://github.com/gnosis/django-eth-events.git@03ea45177dd9a9437898fe80e1e41f09ba61109b#egg=django-eth-events
 django-environ==0.4.3
 django-cors-headers==2.1.0
 mpmath==0.19

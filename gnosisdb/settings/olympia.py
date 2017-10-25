@@ -13,6 +13,9 @@ IPFS_PORT = 5001
 # LMSR Market Maker Address
 LMSR_MARKET_MAKER = '9561c133dd8580860b6b7e504bc5aa500f0f06a7'
 
+TOURNAMENT_TOKEN = '254dffcd3277c0b1660f6d42efbb754edababc2b'
+ETHEREUM_PRIVATE_KEY = '4f3edf983ac636a65a842ce7c78d9aa706d3b113bce9c46f30d7d21715b23b1d'
+
 # GnosisDB Contract Addresses
 ETH_EVENTS = [
     {
@@ -45,7 +48,7 @@ ETH_EVENTS = [
         'PUBLISH': True,
     },
     {
-        'ADDRESSES': ['72f80f429d8a8fbaf9e9f2f1baa1a3940c3beb8f'],
+        'ADDRESSES': [TOURNAMENT_TOKEN],
         'EVENT_ABI': load_json_file(abi_file_path('TournamentToken.json')),
         'EVENT_DATA_RECEIVER': 'chainevents.event_receivers.TournamentTokenReceiver',
         'NAME': 'OlympiaToken',
