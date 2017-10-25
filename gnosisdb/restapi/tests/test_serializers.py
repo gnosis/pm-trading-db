@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, absolute_import
 from django.core.urlresolvers import reverse
-from rest_framework.test import APITestCase
 from rest_framework import status
+from rest_framework.test import APITestCase
 from relationaldb.tests.factories import (
-    ScalarEventFactory, CategoricalEventFactory, UltimateOracleFactory, CentralizedOracleFactory
+    ScalarEventFactory, CategoricalEventFactory, UltimateOracleFactory, CentralizedOracleFactory,
+    TournamentParticipantFactory
 )
 import json
 
@@ -33,3 +34,11 @@ class TestSerializers(APITestCase):
         centralized_response = self.client.get(reverse('api:centralized-oracles'), content_type='application/json')
         self.assertEquals(json.loads(ultimate_response.content).get('results')[0].get('type'), 'ULTIMATE')
         self.assertEquals(json.loads(centralized_response.content).get('results')[0].get('type'), 'CENTRALIZED')
+
+    def test_tournament_serializer(self):
+        participant1 = TournamentParticipantFactory()
+        participant2 = TournamentParticipantFactory()
+
+        scoreboard_response = self.client.get(reverse('api:scoreboard'), content_type='application/json')
+        self.assertEquals(scoreboard_response.status_code, status.HTTP_200_OK)
+        self.assertEquals(len(json.loads(scoreboard_response.content).get('results')), 2)

@@ -181,5 +181,11 @@ class ShortSellOrder(Order):
 
 
 class TournamentParticipant(ContractCreatedByFactory):
+    """Olympia tournament participant"""
     balance = models.DecimalField(max_digits=80, decimal_places=0, default=0)
-    # name = models.CharField(max_length=40, null=True) # not possible right now
+    current_rank = models.IntegerField(default=0) # current rank position
+    past_rank = models.IntegerField(default=0) # previous rank position
+    diff_rank = models.IntegerField(default=0) # difference between current and previous rank position
+    score = models.DecimalField(max_digits=80, decimal_places=0, default=0) # sum of OLY balance and predicted profit
+    predicted_profit = models.DecimalField(max_digits=80, decimal_places=0, default=0) # outcome tokens current price
+    predictions = models.IntegerField(default=0) # number of events the user is participating in
