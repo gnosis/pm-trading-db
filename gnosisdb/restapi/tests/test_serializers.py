@@ -42,3 +42,4 @@ class TestSerializers(APITestCase):
         scoreboard_response = self.client.get(reverse('api:scoreboard'), content_type='application/json')
         self.assertEquals(scoreboard_response.status_code, status.HTTP_200_OK)
         self.assertEquals(len(json.loads(scoreboard_response.content).get('results')), 2)
+        self.assertTrue('account' in json.loads(scoreboard_response.content).get('results')[0])

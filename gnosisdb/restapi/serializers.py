@@ -374,3 +374,5 @@ class OlympiaScoreboardSerializer(serializers.ModelSerializer):
         [setattr(p, 'account', p.address) for p in self.instance]
 
     contract = ContractSerializer(source='*', many=False, read_only=True)
+    account = serializers.CharField(max_length=20)
+
