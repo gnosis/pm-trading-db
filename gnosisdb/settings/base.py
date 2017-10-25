@@ -141,6 +141,7 @@ REST_FRAMEWORK = {
         'djangorestframework_camel_case.render.CamelCaseJSONRenderer',
         'rest_framework.renderers.BrowsableAPIRenderer',
     ),
+    'PAGE_SIZE': 100,
 }
 
 # Celery
