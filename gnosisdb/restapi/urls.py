@@ -20,4 +20,6 @@ urlpatterns = [
     url(r'^account/(0x)?(?P<account_address>[a-fA-F0-9]+)/trades/$', views.AccountTradesView.as_view(), name='trades-by-account'),
     url(r'^account/(0x)?(?P<account_address>[a-fA-F0-9]+)/shares/$', views.AccountSharesView.as_view(), name='shares-by-account'),
     url(r'^factories/$', views.factories_view, name='factories'),
+
+    url(r'^scoreboard/$', views.ScoreboardView.as_view(), name='scoreboard'),
 ]

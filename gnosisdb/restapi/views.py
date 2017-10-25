@@ -4,11 +4,13 @@ from rest_framework import generics
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from relationaldb.models import (
-    UltimateOracle, CentralizedOracle, Event, Market, Order, OutcomeTokenBalance
+    UltimateOracle, CentralizedOracle, Event, Market, Order, OutcomeTokenBalance,
+    TournamentParticipant
 )
 from .serializers import (
     UltimateOracleSerializer, CentralizedOracleSerializer, EventSerializer, MarketSerializer,
-    MarketTradesSerializer, OutcomeTokenBalanceSerializer, MarketParticipantTradesSerializer
+    MarketTradesSerializer, OutcomeTokenBalanceSerializer, MarketParticipantTradesSerializer,
+    OlympiaScoreboardSerializer
 )
 from .filters import (
     CentralizedOracleFilter, UltimateOracleFilter, EventFilter, MarketFilter, DefaultPagination,
@@ -178,3 +180,13 @@ class AccountSharesView(generics.ListAPIView):
         return OutcomeTokenBalance.objects.filter(
             owner=self.kwargs['account_address'],
         )
+
+# ========================================================
+#                 Olympia
+# ========================================================
+
+class ScoreboardView(generics.ListAPIView):
+    """Olympia tournament scoreboard view"""
+    serializer_class = OlympiaScoreboardSerializer
+    pagination_class = DefaultPagination
+    queryset = TournamentParticipant.objects.all()

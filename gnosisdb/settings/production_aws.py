@@ -50,23 +50,14 @@ IPFS_HOST = os.environ['IPFS_HOST']
 IPFS_PORT = os.environ['IPFS_PORT']
 
 # ------------------------------------------------------------------------------
-# RABBIT MQ
+# SQS
 # ------------------------------------------------------------------------------
-RABBIT_HOSTNAME = os.environ['RABBIT_HOSTNAME']
-RABBIT_USER = os.environ['RABBIT_USER']
-RABBIT_PASSWORD = os.environ['RABBIT_PASSWORD']
-RABBIT_PORT = os.environ['RABBIT_PORT']
-RABBIT_QUEUE = os.environ['RABBIT_QUEUE']
-BROKER_URL = 'amqp://{user}:{password}@{hostname}:{port}/{queue}'.format(
-    user=RABBIT_USER,
-    password=RABBIT_PASSWORD,
-    hostname=RABBIT_HOSTNAME,
-    port=RABBIT_PORT,
-    queue=RABBIT_QUEUE
-)
-
-TOURNAMENT_TOKEN = '254dffcd3277c0b1660f6d42efbb754edababc2b'
-ETHEREUM_PRIVATE_KEY = '4f3edf983ac636a65a842ce7c78d9aa706d3b113bce9c46f30d7d21715b23b1d'
+CELERY_DEFAULT_QUEUE = os.environ['SQS_DEFAULT_QUEUE']
+BROKER_URL = os.environ['SQS_BROKER_URL']
+BROKER_TRANSPORT_OPTIONS = {
+    'region': os.environ['SQS_REGION'],
+    'polling_interval': os.environ['SQS_POLLING_INTERVAL']
+}
 
 # ------------------------------------------------------------------------------
 # LMSR MARKET MAKER Address
@@ -76,43 +67,35 @@ LMSR_MARKET_MAKER = os.environ['LMSR_MARKET_MAKER']
 # ------------------------------------------------------------------------------
 # GNOSIS ETHEREUM CONTRACTS
 # ------------------------------------------------------------------------------
-
 ETH_EVENTS = [
     {
-        'ADDRESSES': ['b3289eaac0fe3ed15df177f925c6f8ceeb908b8f'],
+        'ADDRESSES': [os.environ['CENTRALIZED_ORACLE_FACTORY']],
         'EVENT_ABI': load_json_file(abi_file_path('CentralizedOracleFactory.json')),
         'EVENT_DATA_RECEIVER': 'chainevents.event_receivers.CentralizedOracleFactoryReceiver',
         'NAME': 'centralizedOracleFactory',
         'PUBLISH': True,
     },
     {
-        'ADDRESSES': ['0f60faf69f3ac146e1e557247583bc0c84f9f086'],
+        'ADDRESSES': [os.environ['ULTIMATE_ORACLE_FACTORY']],
+        'EVENT_ABI': load_json_file(abi_file_path('UltimateOracleFactory.json')),
+        'EVENT_DATA_RECEIVER': 'chainevents.event_receivers.UltimateOracleFactoryReceiver',
+        'NAME': 'ultimateOracleFactory',
+        'PUBLISH': True,
+    },
+    {
+        'ADDRESSES': [os.environ['EVENT_FACTORY']],
         'EVENT_ABI': load_json_file(abi_file_path('EventFactory.json')),
         'EVENT_DATA_RECEIVER': 'chainevents.event_receivers.EventFactoryReceiver',
         'NAME': 'eventFactory',
         'PUBLISH': True,
     },
     {
-        'ADDRESSES': ['eaa325bacae405fd5b45e9cf695d391f1c624a2f'],
+        'ADDRESSES': [os.environ['MARKET_FACTORY']],
         'EVENT_ABI': load_json_file(abi_file_path('StandardMarketFactory.json')),
         'EVENT_DATA_RECEIVER': 'chainevents.event_receivers.MarketFactoryReceiver',
         'NAME': 'standardMarketFactory',
         'PUBLISH': True,
         'PUBLISH_UNDER': 'marketFactories'
-    },
-    {
-        'ADDRESSES': ['abbcd5b340c80b5f1c0545c04c987b87310296ae'],
-        'EVENT_ABI': load_json_file(abi_file_path('UportIdentityManager.json')),
-        'EVENT_DATA_RECEIVER': 'chainevents.event_receivers.UportIdentityManagerReceiver',
-        'NAME': 'UportIdentityManagerInstanceReceiver',
-        'PUBLISH': True,
-    },
-    {
-        'ADDRESSES': [TOURNAMENT_TOKEN],
-        'EVENT_ABI': load_json_file(abi_file_path('TournamentToken.json')),
-        'EVENT_DATA_RECEIVER': 'chainevents.event_receivers.TournamentTokenReceiver',
-        'NAME': 'OlympiaToken',
-        'PUBLISH': True,
     },
     {
         'ADDRESSES_GETTER': 'chainevents.address_getters.MarketAddressGetter',

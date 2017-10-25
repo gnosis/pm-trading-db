@@ -2,7 +2,8 @@ from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import serializers
 from relationaldb.models import (
     ScalarEventDescription, CategoricalEventDescription, OutcomeTokenBalance, OutcomeToken,
-    CentralizedOracle, UltimateOracle, Market, Order, ScalarEvent, CategoricalEvent, BuyOrder
+    CentralizedOracle, UltimateOracle, Market, Order, ScalarEvent, CategoricalEvent, BuyOrder,
+    TournamentParticipant
 )
 from gnosisdb.utils import remove_null_values, add_0x_prefix, get_order_type, get_order_cost, get_order_profit
 from django.db.models import Sum
@@ -360,3 +361,18 @@ class OutcomeTokenBalanceSerializer(serializers.ModelSerializer):
                 pass
 
         return marginal_prices[obj.outcome_token.index] if len(marginal_prices)+1 > obj.outcome_token.index else None
+
+
+class OlympiaScoreboardSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = TournamentParticipant
+        fields = ('account', 'contract', 'balance', 'current_rank', 'past_rank', 'diff_rank', 'score', 'predicted_profit', 'predictions',)
+
+    def __init__(self, *args, **kwargs):
+        super(OlympiaScoreboardSerializer, self).__init__(*args, **kwargs)
+        [setattr(p, 'account', p.address) for p in self.instance]
+
+    contract = ContractSerializer(source='*', many=False, read_only=True)
+    account = serializers.CharField(max_length=20)
+
