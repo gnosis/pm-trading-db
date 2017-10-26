@@ -71,6 +71,12 @@ BROKER_URL = 'amqp://{user}:{password}@{hostname}:{port}/{queue}'.format(
 LMSR_MARKET_MAKER = os.environ['LMSR_MARKET_MAKER']
 
 # ------------------------------------------------------------------------------
+# Tournament settings
+# ------------------------------------------------------------------------------
+TOURNAMENT_TOKEN = os.environ['TOURNAMENT_TOKEN']
+ETHEREUM_PRIVATE_KEY = os.environ['ETHEREUM_PRIVATE_KEY']
+
+# ------------------------------------------------------------------------------
 # GNOSIS ETHEREUM CONTRACTS
 # ------------------------------------------------------------------------------
 ETH_EVENTS = [
@@ -102,6 +108,20 @@ ETH_EVENTS = [
         'NAME': 'standardMarketFactory',
         'PUBLISH': True,
         'PUBLISH_UNDER': 'marketFactories'
+    },
+    {
+        'ADDRESSES': [os.environ['UPORT_IDENTITY_MANAGER']],
+        'EVENT_ABI': load_json_file(abi_file_path('UportIdentityManager.json')),
+        'EVENT_DATA_RECEIVER': 'chainevents.event_receivers.UportIdentityManagerReceiver',
+        'NAME': 'UportIdentityManagerInstanceReceiver',
+        'PUBLISH': True,
+    },
+    {
+        'ADDRESSES': [os.environ['TOURNAMENT_TOKEN']],
+        'EVENT_ABI': load_json_file(abi_file_path('TournamentToken.json')),
+        'EVENT_DATA_RECEIVER': 'chainevents.event_receivers.TournamentTokenReceiver',
+        'NAME': 'OlympiaToken',
+        'PUBLISH': True,
     },
     {
         'ADDRESSES_GETTER': 'chainevents.address_getters.MarketAddressGetter',
