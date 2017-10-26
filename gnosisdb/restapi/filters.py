@@ -75,8 +75,12 @@ class EventFilter(filters.FilterSet):
                   'oracle_creation_date_time', 'oracle_is_outcome_set')
 
 
+class AddressInFilter(filters.BaseInFilter, filters.CharFilter):
+    pass
+
+
 class MarketFilter(filters.FilterSet):
-    creator = filters.AllValuesMultipleFilter()
+    creator = AddressInFilter(lookup_expr='in')
     creation_date_time = filters.DateTimeFromToRangeFilter()
     market_maker = filters.AllValuesMultipleFilter()
     event_oracle_factory = filters.AllValuesMultipleFilter(name='event__oracle__factory')
