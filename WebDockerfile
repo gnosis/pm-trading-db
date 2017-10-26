@@ -11,7 +11,7 @@ RUN pip install -U setuptools
 
 ADD requirements.txt /tmp/requirements.txt
 RUN pip install -qr /tmp/requirements.txt
-RUN git clone https://github.com/denisgranha/web3.py && cd web3.py && git checkout 8f27afdd28c16c3fa61bfc7d5674e5ddf48bd738 && pip install -r requirements-dev.txt && pip install -e .
+RUN git clone https://github.com/denisgranha/web3.py && cd web3.py && git checkout 76a9fe6fa3076fd22e7db4cd287c87c661e681d8 && pip install -r requirements-dev.txt && pip install -e .
 
 COPY . /gnosisdb/
 WORKDIR /gnosisdb

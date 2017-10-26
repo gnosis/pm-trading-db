@@ -53,8 +53,9 @@ class Command(BaseCommand):
             signed = self.web3.eth.account.signTransaction(transaction, key)
             data = { "jsonrpc":"2.0","method":"eth_sendRawTransaction","params":["0x" + binascii.hexlify(str(signed.rawTransaction))], "id":1 }
             r = requests.post(provider_uri, json = data)
-            self.stdout.write(self.style.SUCCESS(str(r.status_code)))
-            self.stdout.write(self.style.SUCCESS(r.reason))
-            self.stdout.write(self.style.SUCCESS('Sent transaction {}'.format(binascii.hexlify(signed.hash))))
+            if r.status_code is 200:
+                self.stdout.write(self.style.SUCCESS('Sent transaction {}'.format(binascii.hexlify(signed.hash))))
+            else:
+                self.stdout.write(self.style.ERROR(r.reason))
         else:
             self.stdout.write(self.style.ERROR('python manage.py issue_tournament_tokens --user <0xaddress> --amount 100'))
