@@ -21,18 +21,29 @@ def send_email(message):
 def issue_tokens():
     with cache_lock('tournament_issuance', oid) as acquired:
         if acquired:
-            participants = TournamentParticipant.objects.filter(tokens_issued=False)
+            participants = TournamentParticipant.objects.filter(tokens_issued=False)[:50]
             if len(participants):
                 try:
                     participant_addresses = ",".join(participant.address for participant in participants)
                     call_command('issue_tournament_tokens', participant_addresses , settings.TOURNAMENT_TOKEN_ISSUANCE)
-                    participants.update(tokens_issued=True)
+                    for participant in participants:
+                        participant.tokens_issued = True
+                        participant.save()
                 except Exception as err:
                     logger.error(str(err))
                     send_email(traceback.format_exc())
             else:
                 logger.info("No new tournament participants")
 
+@shared_task
+def calculate_scoreboard():
+    with cache_lock('calculate_scoreboard', oid) as acquired:
+        if acquired:
+            try:
+                call_command('calculate_scoreboard')
+            except Exception as err:
+                logger.error(str(err))
+                send_email(traceback.format_exc())
 
 
 
