@@ -192,6 +192,7 @@ class UportIdentityManagerReceiver(AbstractEventReceiver):
             serializer = self.events.get(decoded_event.get('name'))(data=decoded_event, block=block_info)
             if serializer.is_valid():
                 serializer.save()
+                logger.info('Tournament Participant added: {}'.format(dumps(decoded_event)))
             else:
                 logger.warning(serializer.errors)
 
@@ -207,6 +208,7 @@ class TournamentTokenReceiver(AbstractEventReceiver):
             serializer = self.events.get(decoded_event.get('name'))(data=decoded_event)
             if serializer.is_valid():
                 serializer.save()
+                logger.info('Tournament token event triggered: {}'.format(dumps(decoded_event)))
             else:
                 logger.warning(serializer.errors)
 
