@@ -1,79 +1,13 @@
-from gnosisdb.settings.base import *
+from gnosisdb.settings.testrpc import *
 from gnosisdb.chainevents.abis import abi_file_path, load_json_file
-import os
-
-CELERY_SEND_TASK_ERROR_EMAILS = False
-
-SECRET_KEY = os.environ['SECRET_KEY']
-
-# See: https://docs.djangoproject.com/en/dev/ref/settings/#wsgi-application
-WSGI_APPLICATION = 'wsgi.application'
-
-INSTALLED_APPS += ("gunicorn", )
-
-if DEBUG is False:
-    STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'
-
-ALLOWED_HOSTS = ['.gnosis.pm', '127.0.0.1', 'localhost']
-
-# ------------------------------------------------------------------------------
-# EMAIL CONFIGURATION
-# ------------------------------------------------------------------------------
-EMAIL_HOST=os.environ['EMAIL_HOST']
-EMAIL_HOST_PASSWORD=os.environ['EMAIL_HOST_PASSWORD']
-EMAIL_HOST_USER=os.environ['EMAIL_HOST_USER']
-EMAIL_PORT=os.environ['EMAIL_PORT']
-EMAIL_USE_TLS = True
-EMAIL_SUBJECT_PREFIX = os.environ['EMAIL_SUBJECT_PREFIX']
-DEFAULT_FROM_EMAIL = os.environ['DEFAULT_FROM_EMAIL']
-SERVER_EMAIL = DEFAULT_FROM_EMAIL
-EMAIL_LOG_BACKEND = 'email_log.backends.EmailBackend'
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-
-ADMINS = (
-    ('Giacomo', 'giacomo.licari@gnosis.pm'),
-    ('Denis', 'denis@gnosis.pm'),
-    ('Stefan', 'stefan@gnosis.pm'),
-)
-
-# ------------------------------------------------------------------------------
-# ETHEREUM
-# ------------------------------------------------------------------------------
-ETHEREUM_NODE_HOST = os.environ['ETHEREUM_NODE_HOST']
-ETHEREUM_NODE_PORT = os.environ['ETHEREUM_NODE_PORT']
-ETHEREUM_NODE_SSL = bool(int(os.environ['ETHEREUM_NODE_SSL']))
-
-# ------------------------------------------------------------------------------
-# IPFS
-# ------------------------------------------------------------------------------
-IPFS_HOST = os.environ['IPFS_HOST']
-IPFS_PORT = os.environ['IPFS_PORT']
-
-# ------------------------------------------------------------------------------
-# RABBIT MQ
-# ------------------------------------------------------------------------------
-RABBIT_HOSTNAME = os.environ['RABBIT_HOSTNAME']
-RABBIT_USER = os.environ['RABBIT_USER']
-RABBIT_PASSWORD = os.environ['RABBIT_PASSWORD']
-RABBIT_PORT = os.environ['RABBIT_PORT']
-RABBIT_QUEUE = os.environ['RABBIT_QUEUE']
-BROKER_URL = 'amqp://{user}:{password}@{hostname}:{port}/{queue}'.format(
-    user=RABBIT_USER,
-    password=RABBIT_PASSWORD,
-    hostname=RABBIT_HOSTNAME,
-    port=RABBIT_PORT,
-    queue=RABBIT_QUEUE
-)
-
-# ------------------------------------------------------------------------------
-# LMSR MARKET MAKER Address
-# ------------------------------------------------------------------------------
-LMSR_MARKET_MAKER = os.environ['LMSR_MARKET_MAKER']
+ETHEREUM_NODE_HOST= '192.168.1.48'
+TOURNAMENT_TOKEN = '254dffcd3277c0b1660f6d42efbb754edababc2b'
+ETHEREUM_DEFAULT_ACCOUNT = '90F8bf6A479f320ead074411a4B0e7944Ea8c9C1'
 
 # ------------------------------------------------------------------------------
 # GNOSIS ETHEREUM CONTRACTS
 # ------------------------------------------------------------------------------
-# GnosisDB Contract Addresses
+
 ETH_EVENTS = [
     {
         'ADDRESSES': ['b3289eaac0fe3ed15df177f925c6f8ceeb908b8f'],
@@ -105,7 +39,7 @@ ETH_EVENTS = [
         'PUBLISH': True,
     },
     {
-        'ADDRESSES': ['72f80f429d8a8fbaf9e9f2f1baa1a3940c3beb8f'],
+        'ADDRESSES': [TOURNAMENT_TOKEN],
         'EVENT_ABI': load_json_file(abi_file_path('TournamentToken.json')),
         'EVENT_DATA_RECEIVER': 'chainevents.event_receivers.TournamentTokenReceiver',
         'NAME': 'OlympiaToken',
@@ -142,17 +76,3 @@ ETH_EVENTS = [
         'NAME': 'Ultimate Oracle Instances'
     },
 ]
-
-# ------------------------------------------------------------------------------
-# GNOSIS ETHEREUM CONTRACTS
-# ------------------------------------------------------------------------------
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': os.environ['DATABASE_NAME'],
-        'USER': os.environ['DATABASE_USER'],
-        'PASSWORD': os.environ['DATABASE_PASSWORD'],
-        'HOST': os.environ['DATABASE_HOST'],
-        'PORT': os.environ['DATABASE_PORT'],
-    }
-}
