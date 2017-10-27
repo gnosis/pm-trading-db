@@ -26,7 +26,9 @@ def issue_tokens():
                 try:
                     participant_addresses = ",".join(participant.address for participant in participants)
                     call_command('issue_tournament_tokens', participant_addresses , settings.TOURNAMENT_TOKEN_ISSUANCE)
-                    participants.update(tokens_issued=True)
+                    for participant in participants:
+                        participant.tokens_issued = True
+                        participant.save()
                 except Exception as err:
                     logger.error(str(err))
                     send_email(traceback.format_exc())
