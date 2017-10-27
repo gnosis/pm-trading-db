@@ -74,6 +74,7 @@ LMSR_MARKET_MAKER = os.environ['LMSR_MARKET_MAKER']
 # Tournament settings
 # ------------------------------------------------------------------------------
 TOURNAMENT_TOKEN = os.environ['TOURNAMENT_TOKEN']
+TOURNAMENT_TOKEN_ISSUANCE = os.environ['TOURNAMENT_TOKEN_ISSUANCE', '200000000000000000000']
 ETHEREUM_DEFAULT_ACCOUNT = os.environ['ETHEREUM_DEFAULT_ACCOUNT']
 
 # ------------------------------------------------------------------------------
