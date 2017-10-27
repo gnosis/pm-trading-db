@@ -5,6 +5,7 @@ from relationaldb.models import (
 )
 
 from django.db import connections
+from datetime import datetime
 
 
 class Command(BaseCommand):
@@ -27,7 +28,6 @@ class Command(BaseCommand):
 
     def calculate_scoreboard(self, users_predicted_values):
         """Updates the all the users values and calculates the scoreboard (rankings)"""
-
         self.stdout.write(self.style.SUCCESS('Starting updating users values'))
         # Update users data
         for address in users_predicted_values.keys():
@@ -56,7 +56,8 @@ class Command(BaseCommand):
         """Command entrypoint"""
 
         users_predicted_values = {}
-        self.stdout.write(self.style.SUCCESS('Starting process'))
+        start_time = datetime.now()
+        self.stdout.write(self.style.SUCCESS('Starting Scoreboard process, {}'.format(start_time.strftime("%Y-%m-%d %H:%M:%S"))))
 
         try:
             # Get the whitelisted markets creators
@@ -102,3 +103,9 @@ class Command(BaseCommand):
             self.calculate_scoreboard(users_predicted_values)
         except Exception as e:
             self.stdout.write(self.style.ERROR(e.message))
+        finally:
+            end_time = datetime.now()
+            delta = end_time-start_time
+            total_seconds = delta.total_seconds()
+            benchmark = divmod(total_seconds, 60)
+            self.stdout.write(self.style.SUCCESS('Scoreboard calculation took {} minutes and {} seconds'.format(benchmark[0], benchmark[1])))
