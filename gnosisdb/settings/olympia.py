@@ -1,8 +1,8 @@
 from gnosisdb.settings.testrpc import *
 from gnosisdb.chainevents.abis import abi_file_path, load_json_file
-ETHEREUM_NODE_HOST= '10.1.0.14'
+ETHEREUM_NODE_HOST= '192.168.1.48'
 TOURNAMENT_TOKEN = '254dffcd3277c0b1660f6d42efbb754edababc2b'
-ETHEREUM_PRIVATE_KEY = '4f3edf983ac636a65a842ce7c78d9aa706d3b113bce9c46f30d7d21715b23b1d'
+ETHEREUM_DEFAULT_ACCOUNT = '90F8bf6A479f320ead074411a4B0e7944Ea8c9C1'
 
 # ------------------------------------------------------------------------------
 # GNOSIS ETHEREUM CONTRACTS
