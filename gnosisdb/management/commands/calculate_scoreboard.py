@@ -69,7 +69,7 @@ class Command(BaseCommand):
             for user in users:
                 # Get balance
                 user_address = user.address.lower().replace('0x', '')
-                balance = 0
+                balance = user.balance
                 predicted_value = 0
                 predictions = 0 # number of markets the user is participating in
 
@@ -87,7 +87,6 @@ class Command(BaseCommand):
 
                     for order in orders:
                         outcome_token_index = order.outcome_token.index
-                        balance = outcome_token_balance.balance
                         marginal_price = order.marginal_prices[outcome_token_index]
                         predicted_value += (balance * marginal_price)
 
