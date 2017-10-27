@@ -189,4 +189,4 @@ class ScoreboardView(generics.ListAPIView):
     """Olympia tournament scoreboard view"""
     serializer_class = OlympiaScoreboardSerializer
     pagination_class = DefaultPagination
-    queryset = TournamentParticipant.objects.all().order_by('currentRank')
+    queryset = TournamentParticipant.objects.all().order_by('current_rank')
