@@ -74,7 +74,7 @@ LMSR_MARKET_MAKER = os.environ['LMSR_MARKET_MAKER']
 # Tournament settings
 # ------------------------------------------------------------------------------
 TOURNAMENT_TOKEN = os.environ['TOURNAMENT_TOKEN']
-ETHEREUM_PRIVATE_KEY = os.environ['ETHEREUM_PRIVATE_KEY']
+ETHEREUM_DEFAULT_ACCOUNT = os.environ['ETHEREUM_DEFAULT_ACCOUNT']
 
 # ------------------------------------------------------------------------------
 # GNOSIS ETHEREUM CONTRACTS
