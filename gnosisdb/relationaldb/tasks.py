@@ -21,7 +21,7 @@ def send_email(message):
 def issue_tokens():
     with cache_lock('tournament_issuance', oid) as acquired:
         if acquired:
-            participants = TournamentParticipant.objects.filter(tokens_issued=False)
+            participants = TournamentParticipant.objects.filter(tokens_issued=False)[:50]
             if len(participants):
                 try:
                     participant_addresses = ",".join(participant.address for participant in participants)
