@@ -13,7 +13,7 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='TournamentWhitelistedCreators',
+            name='TournamentWhitelistedCreator',
             fields=[
                 ('address', models.CharField(max_length=40, primary_key=True, serialize=False)),
                 ('enabled', models.BooleanField(default=True)),
