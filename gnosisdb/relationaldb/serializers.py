@@ -1032,13 +1032,12 @@ class TournamentTokenIssuanceSerializer(ContractNotTimestampted, serializers.Mod
     amount = serializers.IntegerField()
 
     def create(self, validated_data):
-        try:
-            participant = models.TournamentParticipant.objects.get(address=validated_data.get('owner'))
-            participant.balance += validated_data.get('amount')
-            participant.save()
-            return participant
-        except:
-            raise serializers.ValidationError('Participant with address {} does not exist.' % validated_data.get('owner'))
+        logger.info("issuance serializer")
+        participant = models.TournamentParticipant.objects.get(address=validated_data.get('owner'))
+        participant.balance += validated_data.get('amount')
+        participant.save()
+        return participant
+
 
 
 class TournamentTokenTransferSerializer(ContractNotTimestampted, serializers.ModelSerializer):
@@ -1061,17 +1060,12 @@ class TournamentTokenTransferSerializer(ContractNotTimestampted, serializers.Mod
         self.initial_data['to_participant'] = self.initial_data.pop('to')
 
     def create(self, validated_data):
-        try:
-            from_user = models.TournamentParticipant.objects.get(address=validated_data.get('from_participant'))
-            from_user.balance -= validated_data.get('value')
-            from_user.save()
-        except:
-            raise serializers.ValidationError('Participant sender with address {} does not exist.' % validated_data.get('from_participant'))
 
-        try:
-            to_user = models.TournamentParticipant.objects.get(address=validated_data.get('to_participant'))
-            to_user.balance += validated_data.get('value')
-            to_user.save()
-            return from_user
-        except:
-            raise serializers.ValidationError('Participant receiver with address {} does not exist.' % validated_data.get('to_participant'))
+        from_user = models.TournamentParticipant.objects.get(address=validated_data.get('from_participant'))
+        from_user.balance -= validated_data.get('value')
+        from_user.save()
+
+        to_user = models.TournamentParticipant.objects.get(address=validated_data.get('to_participant'))
+        to_user.balance += validated_data.get('value')
+        to_user.save()
+        return from_user

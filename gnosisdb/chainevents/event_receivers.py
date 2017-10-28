@@ -11,6 +11,8 @@ from relationaldb.serializers import (
     TournamentTokenIssuanceSerializer, TournamentTokenTransferSerializer
 )
 
+from relationaldb.models import TournamentParticipant
+
 from celery.utils.log import get_task_logger
 from json import dumps
 
@@ -207,7 +209,11 @@ class TournamentTokenReceiver(AbstractEventReceiver):
         if self.events.get(decoded_event.get('name')):
             serializer = self.events.get(decoded_event.get('name'))(data=decoded_event)
             if serializer.is_valid():
-                serializer.save()
+                try:
+                    serializer.save()
+                except TournamentParticipant.DoesNotExist:
+                    logger.info('Issuance to Participant with address that does not exist.')
+
                 logger.info('Tournament token event triggered: {}'.format(dumps(decoded_event)))
             else:
                 logger.warning(serializer.errors)
