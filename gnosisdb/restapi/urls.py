@@ -22,4 +22,5 @@ urlpatterns = [
     url(r'^factories/$', views.factories_view, name='factories'),
 
     url(r'^scoreboard/$', views.ScoreboardView.as_view(), name='scoreboard'),
+    url(r'^scoreboard/(0x)?(?P<account_address>[a-fA-F0-9]+)$', views.ScoreboardUserView.as_view(), name='scoreboard'),
 ]

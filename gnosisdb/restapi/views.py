@@ -190,3 +190,11 @@ class ScoreboardView(generics.ListAPIView):
     serializer_class = OlympiaScoreboardSerializer
     pagination_class = DefaultPagination
     queryset = TournamentParticipant.objects.all().order_by('current_rank')
+
+
+class ScoreboardUserView(generics.RetrieveAPIView):
+    """Olympia tournament scoreboard view of a given account"""
+    serializer_class = OlympiaScoreboardSerializer
+
+    def get_object(self):
+        return get_object_or_404(TournamentParticipant, address=self.kwargs['account_address'])

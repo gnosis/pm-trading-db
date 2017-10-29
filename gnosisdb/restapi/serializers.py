@@ -371,7 +371,10 @@ class OlympiaScoreboardSerializer(serializers.ModelSerializer):
 
     def __init__(self, *args, **kwargs):
         super(OlympiaScoreboardSerializer, self).__init__(*args, **kwargs)
-        [setattr(p, 'account', p.address) for p in self.instance]
+        if isinstance(self.instance, list):
+            [setattr(p, 'account', p.address) for p in self.instance]
+        else:
+            setattr(self.instance, 'account', self.instance.address)
 
     contract = ContractSerializer(source='*', many=False, read_only=True)
     account = serializers.CharField(max_length=20)
