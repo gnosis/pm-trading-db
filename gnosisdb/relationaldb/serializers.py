@@ -1021,7 +1021,7 @@ class TournamentParticipantSerializer(ContractCreatedByFactorySerializer, serial
     def create(self, validated_data):
         participants_amount = models.TournamentParticipant.objects.all().count()
         validated_data['current_rank'] = participants_amount + 1
-        validated_data['last_rank'] = participants_amount + 1
+        validated_data['past_rank'] = participants_amount + 1
         validated_data['diff_rank'] = 0
         return models.TournamentParticipant.objects.create(**validated_data)
 
