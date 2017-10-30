@@ -1035,9 +1035,12 @@ class TournamentTokenIssuanceSerializer(ContractNotTimestampted, serializers.Mod
         logger.info("issuance serializer")
         participant = models.TournamentParticipant.objects.get(address=validated_data.get('owner'))
         participant.balance += validated_data.get('amount')
+        participants_amount = models.TournamentParticipant.objects.all().count()
+        participant.current_rank = participants_amount + 1
+        participant.last_rank = participant.current_rank
+        participant.diff_rank = 0
         participant.save()
         return participant
-
 
 
 class TournamentTokenTransferSerializer(ContractNotTimestampted, serializers.ModelSerializer):
