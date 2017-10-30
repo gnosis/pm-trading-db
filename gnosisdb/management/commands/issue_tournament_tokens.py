@@ -34,7 +34,13 @@ class Command(BaseCommand):
             self.web3 = Web3(rpc_provider)
             abi = load_json_file(abi_file_path('TournamentToken.json'))
             token = self.web3.eth.contract(abi=abi, address=settings.TOURNAMENT_TOKEN)
-            tx = token.transact({'from': settings.ETHEREUM_DEFAULT_ACCOUNT}).issue(users, amount)
+            tx = token.transact(
+                {
+                    'from': settings.ETHEREUM_DEFAULT_ACCOUNT,
+                    'gasPrice': 30000000,
+                    'gas': 2000000
+                }
+            ).issue(users, amount)
             self.stdout.write(self.style.SUCCESS('Sent transaction {}'.format(tx)))
         else:
             self.stdout.write(
