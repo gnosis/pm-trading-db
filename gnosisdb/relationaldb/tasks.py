@@ -43,6 +43,9 @@ def issue_tokens():
 
 @shared_task
 def calculate_scoreboard():
+    """
+    The task executes the calculation of the scoreboard
+    """
     with cache_lock('calculate_scoreboard', oid) as acquired:
         if acquired:
             try:
@@ -50,6 +53,24 @@ def calculate_scoreboard():
             except Exception as err:
                 logger.error(str(err))
                 send_email(traceback.format_exc())
+
+
+@shared_task
+def db_dump():
+    """
+    The task creates a dump of the database
+    """
+    with cache_lock('dump_db', oid) as acquired:
+        if acquired:
+            try:
+                from subprocess import call
+                from datetime import datetime
+                filename = "gnosisdb_dump-{}.json".format(datetime.now().strftime('%Y-%m-%d_%H:%M:%S'))
+                call(["python", "manage.py", "dumpdata", "--all", "--indent=4", ">", filename])
+            except Exception as err:
+                logger.error(str(err))
+                send_email(traceback.format_exc())
+
 
 
 
