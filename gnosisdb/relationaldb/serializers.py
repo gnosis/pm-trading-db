@@ -1018,6 +1018,13 @@ class TournamentParticipantSerializer(ContractCreatedByFactorySerializer, serial
     identity = serializers.CharField(max_length=40, source='address')
     address = serializers.CharField(max_length=40, source='factory')
 
+    def create(self, validated_data):
+        participants_amount = models.TournamentParticipant.objects.all().count()
+        validated_data['current_rank'] = participants_amount + 1
+        validated_data['last_rank'] = participants_amount + 1
+        validated_data['diff_rank'] = 0
+        return models.TournamentParticipant.objects.create(**validated_data)
+
 
 class TournamentTokenIssuanceSerializer(ContractNotTimestampted, serializers.ModelSerializer):
     """
@@ -1035,10 +1042,6 @@ class TournamentTokenIssuanceSerializer(ContractNotTimestampted, serializers.Mod
         logger.info("issuance serializer")
         participant = models.TournamentParticipant.objects.get(address=validated_data.get('owner'))
         participant.balance += validated_data.get('amount')
-        participants_amount = models.TournamentParticipant.objects.all().count()
-        participant.current_rank = participants_amount + 1
-        participant.last_rank = participant.current_rank
-        participant.diff_rank = 0
         participant.save()
         return participant
 
