@@ -37,7 +37,7 @@ class Command(BaseCommand):
             tx = token.transact(
                 {
                     'from': settings.ETHEREUM_DEFAULT_ACCOUNT,
-                    'gasPrice': 30000000,
+                    'gasPrice': 50000000000,
                     'gas': 2000000
                 }
             ).issue(users, amount)
