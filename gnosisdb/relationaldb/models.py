@@ -199,8 +199,3 @@ class TournamentParticipant(ContractCreatedByFactory):
 class TournamentWhitelistedCreator(models.Model):
     address = models.CharField(max_length=40, primary_key=True)
     enabled = models.BooleanField(default=True)
-
-
-class TournamentParticipantIssuance(BlockTimeStamped):
-    participant = models.ForeignKey(TournamentParticipant)
-    amount = models.IntegerField()
