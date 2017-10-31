@@ -33,7 +33,6 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 ADMINS = (
     ('Giacomo', 'giacomo.licari@gnosis.pm'),
     ('Denis', 'denis@gnosis.pm'),
-    ('Stefan', 'stefan@gnosis.pm'),
 )
 
 # ------------------------------------------------------------------------------
