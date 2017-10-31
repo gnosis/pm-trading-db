@@ -170,3 +170,10 @@ DATABASES = {
         'PORT': os.environ['DATABASE_PORT'],
     }
 }
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+        'LOCATION': 'celery_locking',
+    }
+}
