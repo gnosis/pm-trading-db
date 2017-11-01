@@ -1019,11 +1019,16 @@ class TournamentParticipantSerializer(ContractCreatedByFactorySerializer, serial
     address = serializers.CharField(max_length=40, source='factory')
 
     def create(self, validated_data):
-        participants_amount = models.TournamentParticipant.objects.all().count()
-        validated_data['current_rank'] = participants_amount + 1
-        validated_data['past_rank'] = participants_amount + 1
-        validated_data['diff_rank'] = 0
-        return models.TournamentParticipant.objects.create(**validated_data)
+        # Whitelisted users have not to be saved
+        whitelisted_users = models.TournamentWhitelistedCreator.objects.all().values_list('address', flat=True)
+
+        if validated_data.get('address') not in whitelisted_users:
+            participants_amount = models.TournamentParticipant.objects.all().count()
+            validated_data['current_rank'] = participants_amount + 1
+            validated_data['past_rank'] = participants_amount + 1
+            validated_data['diff_rank'] = 0
+            return models.TournamentParticipant.objects.create(**validated_data)
+        return None
 
 
 class TournamentTokenIssuanceSerializer(ContractNotTimestampted, serializers.ModelSerializer):
