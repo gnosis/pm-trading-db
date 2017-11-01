@@ -1027,6 +1027,9 @@ class TournamentParticipantSerializer(ContractCreatedByFactorySerializer, serial
             validated_data['current_rank'] = participants_amount + 1
             validated_data['past_rank'] = participants_amount + 1
             validated_data['diff_rank'] = 0
+            validated_data.update({
+                'address': validated_data.get('address').lower()
+            })
             return models.TournamentParticipant.objects.create(**validated_data)
         return None
 

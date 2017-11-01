@@ -364,7 +364,7 @@ class OutcomeTokenBalanceSerializer(serializers.ModelSerializer):
 
 
 class OlympiaScoreboardSerializer(serializers.ModelSerializer):
-
+    """Serializes an olympia tournament participant"""
     class Meta:
         model = TournamentParticipant
         fields = ('account', 'contract', 'balance', 'current_rank', 'past_rank', 'diff_rank', 'score', 'predicted_profit', 'predictions',)
