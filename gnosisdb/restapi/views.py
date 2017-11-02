@@ -152,7 +152,7 @@ class MarketTradesView(generics.ListAPIView):
         # return trades
         return Order.objects.filter(
             market=self.kwargs['market_address'],
-        ).order_by('-creation_block')
+        ).order_by('creation_block')
 
 
 class AccountTradesView(generics.ListAPIView):
