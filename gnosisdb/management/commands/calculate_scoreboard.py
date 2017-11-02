@@ -1,7 +1,6 @@
 from django.core.management.base import BaseCommand
 from relationaldb.models import (
-    Event, TournamentWhitelistedCreator, TournamentParticipant, OutcomeTokenBalance, Order,
-    CategoricalEvent, ScalarEvent
+    Event, TournamentWhitelistedCreator, TournamentParticipant, OutcomeTokenBalance, Order
 )
 
 from django.db import connections
@@ -41,7 +40,7 @@ class Command(BaseCommand):
                 user.score = user.balance + user.predicted_profit
                 user.save()
             except Exception as e:
-                self.stdout.write(self.style.ERROR('Was not possible updating user {} due to: {}'.format(address, e.message)))
+                self.stdout.write(self.style.ERROR('Scoreboard Error: Was not possible updating user {} due to: {}'.format(address, e.message)))
 
         index = 0 # rank position (by adding +1)
         # Retrieve the users sorted by score DESC
@@ -102,7 +101,8 @@ class Command(BaseCommand):
             # Calculate scoreboard
             self.calculate_scoreboard(users_predicted_values)
         except Exception as e:
-            self.stdout.write(self.style.ERROR(e.message))
+            self.stdout.write(self.style.ERROR("Scoreboard Error: {}".format(e.message)))
+            raise e
         finally:
             end_time = datetime.now()
             delta = end_time-start_time
