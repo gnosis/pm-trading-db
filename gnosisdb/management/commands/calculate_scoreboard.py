@@ -32,13 +32,16 @@ class Command(BaseCommand):
         # Update users data
         for address in users_predicted_values.keys():
             dict_user = users_predicted_values.get(address)
-            user = TournamentParticipant.objects.get(address=address)
-            user.past_rank = user.current_rank
-            user.predicted_profit = dict_user.get('predicted_profit')
-            user.predictions = dict_user.get('predictions')
-            user.balance = dict_user.get('balance')
-            user.score = user.balance + user.predicted_profit
-            user.save()
+            try:
+                user = TournamentParticipant.objects.get(address=address)
+                user.past_rank = user.current_rank
+                user.predicted_profit = dict_user.get('predicted_profit')
+                user.predictions = dict_user.get('predictions')
+                user.balance = dict_user.get('balance')
+                user.score = user.balance + user.predicted_profit
+                user.save()
+            except Exception as e:
+                self.stdout.write(self.style.ERROR('Was not possible updating user {} due to: {}'.format(address, e.message)))
 
         index = 0 # rank position (by adding +1)
         # Retrieve the users sorted by score DESC
@@ -83,12 +86,10 @@ class Command(BaseCommand):
 
                 for outcome_token_balance in outcome_token_balances:
                     market = outcome_token_balance.outcome_token.event.markets.first()
-                    orders = Order.objects.filter(market=market.address, sender=user_address)
-
-                    for order in orders:
-                        outcome_token_index = order.outcome_token.index
-                        marginal_price = order.marginal_prices[outcome_token_index]
-                        predicted_value += (balance * marginal_price)
+                    order = Order.objects.filter(market=market.address, sender=user_address).order_by('-creation_date_time').first()
+                    outcome_token_index = order.outcome_token.index
+                    marginal_price = order.marginal_prices[outcome_token_index]
+                    predicted_value += (outcome_token_balance.balance * marginal_price)
 
                 predictions = Order.objects.filter(sender=user_address).distinct('market').count()
 

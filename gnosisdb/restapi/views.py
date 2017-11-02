@@ -5,7 +5,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from relationaldb.models import (
     UltimateOracle, CentralizedOracle, Event, Market, Order, OutcomeTokenBalance,
-    TournamentParticipant
+    TournamentParticipant, TournamentWhitelistedCreator
 )
 from .serializers import (
     UltimateOracleSerializer, CentralizedOracleSerializer, EventSerializer, MarketSerializer,
@@ -189,7 +189,9 @@ class ScoreboardView(generics.ListAPIView):
     """Olympia tournament scoreboard view"""
     serializer_class = OlympiaScoreboardSerializer
     pagination_class = DefaultPagination
-    queryset = TournamentParticipant.objects.all().order_by('current_rank')
+    queryset = TournamentParticipant.objects.all().order_by('current_rank').exclude(
+        address__in=TournamentWhitelistedCreator.objects.all().values_list('address', flat=True)
+    )
 
 
 class ScoreboardUserView(generics.RetrieveAPIView):
