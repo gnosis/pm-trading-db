@@ -48,7 +48,7 @@ class Command(BaseCommand):
         # Rank calcultation
         for user in users:
             user.current_rank = index+1
-            user.diff_rank = abs(user.current_rank-user.past_rank)
+            user.diff_rank = user.past_rank-user.current_rank
             user.save()
             index += 1
 
