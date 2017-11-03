@@ -1018,20 +1018,23 @@ class TournamentParticipantSerializer(ContractCreatedByFactorySerializer, serial
     identity = serializers.CharField(max_length=40, source='address')
     address = serializers.CharField(max_length=40, source='factory')
 
-    def create(self, validated_data):
+    def validate_identity(self, identity_address):
         # Whitelisted users have not to be saved
         whitelisted_users = models.TournamentWhitelistedCreator.objects.all().values_list('address', flat=True)
+        if identity_address in whitelisted_users:
+            raise serializers.ValidationError('Tournament participant {} is admin, wont be saved'.format(identity_address))
+        else:
+            return identity_address
 
-        if validated_data.get('address') not in whitelisted_users:
-            participants_amount = models.TournamentParticipant.objects.all().count()
-            validated_data['current_rank'] = participants_amount + 1
-            validated_data['past_rank'] = participants_amount + 1
-            validated_data['diff_rank'] = 0
-            validated_data.update({
-                'address': validated_data.get('address').lower()
-            })
-            return models.TournamentParticipant.objects.create(**validated_data)
-        return None
+    def create(self, validated_data):
+        participants_amount = models.TournamentParticipant.objects.all().count()
+        validated_data['current_rank'] = participants_amount + 1
+        validated_data['past_rank'] = participants_amount + 1
+        validated_data['diff_rank'] = 0
+        validated_data.update({
+            'address': validated_data.get('address').lower()
+        })
+        return models.TournamentParticipant.objects.create(**validated_data)
 
 
 class TournamentTokenIssuanceSerializer(ContractNotTimestampted, serializers.ModelSerializer):
