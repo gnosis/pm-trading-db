@@ -1073,13 +1073,22 @@ class TournamentTokenTransferSerializer(ContractNotTimestampted, serializers.Mod
         self.initial_data['from_participant'] = self.initial_data.pop('from')
         self.initial_data['to_participant'] = self.initial_data.pop('to')
 
-    def create(self, validated_data):
+    def validate_from_participant(self, from_participant):
+        # from_participant could not be a Tournament participant, we need to check it
+        # and remote it from validated_data in case it is not a participant
+        try:
+            from_user = models.TournamentParticipant.objects.get(address=from_participant)
+            return from_participant
+        except:
+            return None
 
-        from_user = models.TournamentParticipant.objects.get(address=validated_data.get('from_participant'))
-        from_user.balance -= validated_data.get('value')
-        from_user.save()
+    def create(self, validated_data):
+        if from_participant in validated_data:
+            from_user = models.TournamentParticipant.objects.get(address=validated_data.get('from_participant'))
+            from_user.balance -= validated_data.get('value')
+            from_user.save()
 
         to_user = models.TournamentParticipant.objects.get(address=validated_data.get('to_participant'))
         to_user.balance += validated_data.get('value')
         to_user.save()
-        return from_user
+        return to_user
