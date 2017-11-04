@@ -1086,12 +1086,18 @@ class TournamentTokenTransferSerializer(ContractNotTimestampted, serializers.Mod
             return None
 
     def create(self, validated_data):
-        if from_participant in validated_data:
+        if validated_data.get('from_participant'):
             from_user = models.TournamentParticipant.objects.get(address=validated_data.get('from_participant'))
             from_user.balance -= validated_data.get('value')
             from_user.save()
 
-        to_user = models.TournamentParticipant.objects.get(address=validated_data.get('to_participant'))
-        to_user.balance += validated_data.get('value')
-        to_user.save()
-        return to_user
+            to_user = models.TournamentParticipant.objects.get(address=validated_data.get('to_participant'))
+            to_user.balance += validated_data.get('value')
+            to_user.save()
+            return to_user
+        else:
+            to_user = models.TournamentParticipant.objects.get(address=validated_data.get('to_participant'))
+            to_user.balance += validated_data.get('value')
+            to_user.save()
+            return to_user
+
