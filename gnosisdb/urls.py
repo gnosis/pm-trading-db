@@ -8,6 +8,7 @@ schema_view = get_swagger_view(title='GnosisDB API')
 
 urlpatterns = [
     url(r'^$', schema_view),
+    url(r'', include('django_google_authenticator.urls')),
     url(r'^admin/', include(admin.site.urls)),
     url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
     url(r'^api/', include('gnosisdb.restapi.urls', namespace='api'))
