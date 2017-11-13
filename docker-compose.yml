@@ -5,7 +5,7 @@ services:
     hostname: ipfs
     build:
       context: .
-      dockerfile: IPFSDockerfile
+      dockerfile: docker/ipfs/Dockerfile
     ports:
       - "4001:4001"
       - "5001:5001"
@@ -25,7 +25,7 @@ services:
   web:
     build:
       context: .
-      dockerfile: WebDockerfile
+      dockerfile: docker/web/Dockerfile
     env_file:
       - .env
     links:
@@ -35,7 +35,7 @@ services:
       - ipfs
       - db
     working_dir: /gnosisdb/gnosisdb
-    command: sh ../run_django.sh
+    command: sh ../scripts/run_django.sh
     ports:
       - "8000:8000"
       - "27017"
@@ -43,8 +43,8 @@ services:
   worker:
     build:
       context: .
-      dockerfile: CeleryDockerfile
-    command: sh run_celery.sh
+      dockerfile: docker/celery/Dockerfile
+    command: sh scripts/run_celery.sh
     env_file:
       - .env
     volumes:
