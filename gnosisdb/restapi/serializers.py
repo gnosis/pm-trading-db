@@ -364,14 +364,17 @@ class OutcomeTokenBalanceSerializer(serializers.ModelSerializer):
 
 
 class OlympiaScoreboardSerializer(serializers.ModelSerializer):
-
+    """Serializes an olympia tournament participant"""
     class Meta:
         model = TournamentParticipant
         fields = ('account', 'contract', 'balance', 'current_rank', 'past_rank', 'diff_rank', 'score', 'predicted_profit', 'predictions',)
 
     def __init__(self, *args, **kwargs):
         super(OlympiaScoreboardSerializer, self).__init__(*args, **kwargs)
-        [setattr(p, 'account', p.address) for p in self.instance]
+        if isinstance(self.instance, list):
+            [setattr(p, 'account', p.address) for p in self.instance]
+        else:
+            setattr(self.instance, 'account', self.instance.address)
 
     contract = ContractSerializer(source='*', many=False, read_only=True)
     account = serializers.CharField(max_length=20)

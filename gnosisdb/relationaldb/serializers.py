@@ -1018,6 +1018,24 @@ class TournamentParticipantSerializer(ContractCreatedByFactorySerializer, serial
     identity = serializers.CharField(max_length=40, source='address')
     address = serializers.CharField(max_length=40, source='factory')
 
+    def validate_identity(self, identity_address):
+        # Whitelisted users have not to be saved
+        whitelisted_users = models.TournamentWhitelistedCreator.objects.all().values_list('address', flat=True)
+        if identity_address in whitelisted_users:
+            raise serializers.ValidationError('Tournament participant {} is admin, wont be saved'.format(identity_address))
+        else:
+            return identity_address
+
+    def create(self, validated_data):
+        participants_amount = models.TournamentParticipant.objects.all().count()
+        validated_data['current_rank'] = participants_amount + 1
+        validated_data['past_rank'] = participants_amount + 1
+        validated_data['diff_rank'] = 0
+        validated_data.update({
+            'address': validated_data.get('address').lower()
+        })
+        return models.TournamentParticipant.objects.create(**validated_data)
+
 
 class TournamentTokenIssuanceSerializer(ContractNotTimestampted, serializers.ModelSerializer):
     """
@@ -1032,13 +1050,11 @@ class TournamentTokenIssuanceSerializer(ContractNotTimestampted, serializers.Mod
     amount = serializers.IntegerField()
 
     def create(self, validated_data):
-        try:
-            participant = models.TournamentParticipant.objects.get(address=validated_data.get('owner'))
-            participant.balance += validated_data.get('amount')
-            participant.save()
-            return participant
-        except:
-            raise serializers.ValidationError('Participant with address {} does not exist.' % validated_data.get('owner'))
+        logger.info("issuance serializer")
+        participant = models.TournamentParticipant.objects.get(address=validated_data.get('owner'))
+        participant.balance += validated_data.get('amount')
+        participant.save()
+        return participant
 
 
 class TournamentTokenTransferSerializer(ContractNotTimestampted, serializers.ModelSerializer):
@@ -1060,18 +1076,28 @@ class TournamentTokenTransferSerializer(ContractNotTimestampted, serializers.Mod
         self.initial_data['from_participant'] = self.initial_data.pop('from')
         self.initial_data['to_participant'] = self.initial_data.pop('to')
 
-    def create(self, validated_data):
+    def validate_from_participant(self, from_participant):
+        # from_participant could not be a Tournament participant, we need to check it
+        # and remote it from validated_data in case it is not a participant
         try:
+            from_user = models.TournamentParticipant.objects.get(address=from_participant)
+            return from_participant
+        except:
+            return None
+
+    def create(self, validated_data):
+        if validated_data.get('from_participant'):
             from_user = models.TournamentParticipant.objects.get(address=validated_data.get('from_participant'))
             from_user.balance -= validated_data.get('value')
             from_user.save()
-        except:
-            raise serializers.ValidationError('Participant sender with address {} does not exist.' % validated_data.get('from_participant'))
 
-        try:
             to_user = models.TournamentParticipant.objects.get(address=validated_data.get('to_participant'))
             to_user.balance += validated_data.get('value')
             to_user.save()
-            return from_user
-        except:
-            raise serializers.ValidationError('Participant receiver with address {} does not exist.' % validated_data.get('to_participant'))
+            return to_user
+        else:
+            to_user = models.TournamentParticipant.objects.get(address=validated_data.get('to_participant'))
+            to_user.balance += validated_data.get('value')
+            to_user.save()
+            return to_user
+
