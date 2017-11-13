@@ -218,13 +218,13 @@ class MarketSerializer(serializers.ModelSerializer):
             try:
                 categorical_event = CategoricalEvent.objects.get(address=obj.event.address)
                 n_outcome_tokens = categorical_event.outcometoken_set.count()
-                marginal_prices = [1.0/n_outcome_tokens for x in range(0, n_outcome_tokens)]
+                marginal_prices = [str(1.0/n_outcome_tokens) for x in range(0, n_outcome_tokens)]
             except CategoricalEvent.DoesNotExist:
                 pass
 
             try:
                 scalar_event = ScalarEvent.objects.get(address=obj.event.address)
-                marginal_prices = [0.5, 0.5]
+                marginal_prices = ["0.5", "0.5"]
             except ScalarEvent.DoesNotExist:
                 pass
 
@@ -349,13 +349,13 @@ class OutcomeTokenBalanceSerializer(serializers.ModelSerializer):
             try:
                 categorical_event = CategoricalEvent.objects.get(address=event)
                 n_outcome_tokens = categorical_event.outcometoken_set.count()
-                marginal_prices = [1.0 / n_outcome_tokens for x in range(0, n_outcome_tokens)]
+                marginal_prices = [str(1.0 / n_outcome_tokens) for x in range(0, n_outcome_tokens)]
             except CategoricalEvent.DoesNotExist:
                 pass
 
             try:
                 scalar_event = ScalarEvent.objects.get(address=event)
-                marginal_prices = [0.5, 0.5]
+                marginal_prices = ["0.5", "0.5"]
             except ScalarEvent.DoesNotExist:
                 pass
 
