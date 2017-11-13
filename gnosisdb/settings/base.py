@@ -28,6 +28,7 @@ INSTALLED_APPS = (
     'django_eth_events',
     'rest_framework_swagger',
     'chainevents',
+    'django_google_authenticator',
 )
 
 MIDDLEWARE_CLASSES = [
