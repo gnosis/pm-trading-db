@@ -30,3 +30,4 @@ django-environ==0.4.3
 django-cors-headers==2.1.0
 mpmath==0.19
 boto==2.48.0
+kombu==4.1.0

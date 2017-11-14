@@ -15,6 +15,6 @@ if [ -f "$HOME/var/run/celery/celerybeat.pid" ]; then
 fi
 
 cd $PWD/gnosisdb
-
+export C_FORCE_ROOT=1
 echo "==> run Celery Worker <=="
 celery -A gnosisdb.apps worker -Q default -n default@%h --loglevel debug --workdir="$PWD" -c 1
