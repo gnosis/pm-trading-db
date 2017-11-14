@@ -14,4 +14,4 @@ RUN mkdir -p /root/var/run/celery
 
 COPY . /gnosisdb/
 WORKDIR /gnosisdb
-ENTRYPOINT ["/bin/sh", "scripts/run_dokku_web.sh"] 
+ENTRYPOINT ["/bin/sh", "scripts/run_dokku_web.sh"]

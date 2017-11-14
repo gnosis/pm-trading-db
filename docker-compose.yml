@@ -34,8 +34,9 @@ services:
     depends_on:
       - ipfs
       - db
-    working_dir: /gnosisdb/gnosisdb
-    command: sh ../scripts/run_django.sh
+    working_dir: /gnosisdb
+    entrypoint: /bin/bash
+    command: scripts/run_dokku_web.sh
     ports:
       - "8000:8000"
       - "27017"
@@ -44,7 +45,8 @@ services:
     build:
       context: .
       dockerfile: docker/celery/Dockerfile
-    command: sh scripts/run_celery.sh
+    entrypoint: /bin/bash
+    command: scripts/run_celery.sh
     env_file:
       - .env
     volumes:

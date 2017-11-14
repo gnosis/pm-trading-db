@@ -1,3 +1,4 @@
+#!/bin/sh
 echo "==> Migrating Django models ... "
 python gnosisdb/manage.py migrate --noinput
 echo "==> Collecting statics ... "

@@ -20,8 +20,8 @@ INSTALLED_APPS = (
     'django_filters',
     'corsheaders',
     'solo',
-    'gnosisdb',
     'djcelery',
+    'gnosisdb',
     'relationaldb',
     'rest_framework',
     'restapi',
@@ -145,8 +145,6 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 100,
 }
 
-# Celery
-INSTALLED_APPS += ('kombu.transport.django',)
 # ETHEREUM_NODE_HOST='192.168.0.103'
 ETHEREUM_NODE_HOST = '172.17.0.1'
 ETHEREUM_NODE_PORT = 8545
@@ -168,7 +166,6 @@ BROKER_CONNECTION_TIMEOUT = 10
 
 # Celery configuration
 CELERY_RESULT_SERIALIZER = 'json'
-CELERY_RESULT_BACKEND = 'djcelery.backends.cache:CacheBackend'
 # configure queues, currently we have only one
 CELERY_DEFAULT_QUEUE = 'default'
 

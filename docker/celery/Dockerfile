@@ -12,3 +12,4 @@ RUN pip install -qr /tmp/requirements.txt
 RUN mkdir -p /root/var/run/celery
 COPY . /gnosisdb/
 WORKDIR /gnosisdb
+ENTRYPOINT [ "/bin/sh" ]

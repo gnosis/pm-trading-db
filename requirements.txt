@@ -1,17 +1,18 @@
+anyjson==0.3.3
 bitcoin==1.1.42
 djangorestframework==3.6.3
 Django==1.11
-django-celery==3.2.1
 django-authtools==1.5.0
 django-model-utils==2.6.1
 django-filter==1.0.4
 django-solo==1.1.2
+django-celery==3.2.2
 ethereum==1.6.1
 ethereum-abi-utils==0.4.0
 ethereum-utils==0.2.0
 factory-boy==2.5.2
 psycopg2==2.7.1
-celery==3.1.25
+celery==4.1.0
 faker==0.7.15
 requests[security]==2.17.3
 web3[tester]==3.7.1
@@ -23,8 +24,9 @@ docutils==0.14rc1
 gunicorn==19.7.1
 whitenoise==3.3.0
 gevent==1.0.1
--e git+https://github.com/gnosis/django-eth-events.git@6b61029cb156cac0b8b4f487d84ad1432759c8d2#egg=django-eth-events
+-e git+https://github.com/gnosis/django-eth-events.git@1049ac42f885f42c8efc5f8638ce8114d4a8c540#egg=django-eth-events
 -e git+https://github.com/gnosis/django-google-authenticator@4b420c03e00a8a1d7838af70f51d5e71565aeead#egg=django_google_authenticator
 django-environ==0.4.3
 django-cors-headers==2.1.0
 mpmath==0.19
+boto==2.48.0
