@@ -14,9 +14,6 @@ if [ -f "$HOME/var/run/celery/celerybeat.pid" ]; then
 	echo "==> celerybeat.pid removed"
 fi
 
-# wait for RabbitMQ server and Postgres to start
-echo "==> call run_celery.sh <=="
-
 cd $PWD/gnosisdb
 
 echo "==> run Celery Worker <=="
