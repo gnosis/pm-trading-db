@@ -21,4 +21,4 @@ echo "==> with user: "
 whoami
 echo "<=="
 echo "==> Executing command: celery -A gnosisdb.apps worker -Q $SQS_QUEUE_NAME -n $SQS_QUEUE_NAME@%h --loglevel $CELERY_LOG_LEVEL --workdir=\"$PWD\" -c $CELERY_CONCURRENCY"
-celery -A gnosisdb.apps worker -Q $SQS_QUEUE_NAME -n $SQS_QUEUE_NAME@%h --loglevel $CELERY_LOG_LEVEL --workdir="$PWD" -c $CELERY_CONCURRENCY
+celery -A gnosisdb.apps worker -Q $SQS_QUEUE_NAME -n $SQS_QUEUE_NAME@%h -s $HOME/celerybeat-schedule --loglevel $CELERY_LOG_LEVEL --workdir="$PWD" -c $CELERY_CONCURRENCY
