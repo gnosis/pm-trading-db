@@ -10,7 +10,15 @@ RUN pip install pyOpenSSL cryptography idna certifi
 ADD requirements.txt /tmp/requirements.txt
 RUN pip install -qr /tmp/requirements.txt
 RUN mkdir -p /root/var/run/celery
+
+RUN addgroup celery
+RUN useradd -ms /bin/bash celery -g celery
+
+USER celery
+
 COPY . /gnosisdb/
 WORKDIR /gnosisdb
-ENV C_FORCE_ROOT 1
+
+
+
 ENTRYPOINT [ "/bin/sh" ]
