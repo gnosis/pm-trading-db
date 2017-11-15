@@ -21,6 +21,6 @@ echo "==> with user: "
 whoami
 echo "<=="
 echo "==> Executing command:"
-echo "celery -A gnosisdb.apps beat -S djcelery.schedulers.DatabaseScheduler --loglevel $CELERY_LOG_LEVEL --workdir=\"$PWD\" --pidfile=$HOME/celerybeat.pid"
+echo "celery -A gnosisdb.apps beat -S $CELERY_SCHEDULER --loglevel $CELERY_LOG_LEVEL --workdir=\"$PWD\" --pidfile=$HOME/celerybeat.pid"
 echo "<=="
-celery -A gnosisdb.apps beat -S djcelery.schedulers.DatabaseScheduler --loglevel $CELERY_LOG_LEVEL --workdir="$PWD" --pidfile=$HOME/celerybeat.pid
+celery -A gnosisdb.apps beat -S $CELERY_SCHEDULER --loglevel $CELERY_LOG_LEVEL --workdir="$PWD" --pidfile=$HOME/celerybeat.pid

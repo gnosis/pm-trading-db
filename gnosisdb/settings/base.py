@@ -20,7 +20,7 @@ INSTALLED_APPS = (
     'django_filters',
     'corsheaders',
     'solo',
-    'djcelery',
+    'django_celery_beat',
     'gnosisdb',
     'relationaldb',
     'rest_framework',
