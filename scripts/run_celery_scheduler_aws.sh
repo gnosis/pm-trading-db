@@ -17,4 +17,10 @@ fi
 cd $PWD/gnosisdb
 
 echo "==> run Celery Scheduler <=="
-celery -A gnosisdb.apps beat -S djcelery.schedulers.DatabaseScheduler --loglevel debug --workdir="$PWD" --pidfile="$HOME/var/run/celery/celerybeat.pid"
+echo "==> with user: "
+whoami
+echo "<=="
+echo "==> Executing command:"
+echo "celery -A gnosisdb.apps beat -S djcelery.schedulers.DatabaseScheduler --loglevel $CELERY_LOG_LEVEL --workdir=\"$PWD\" --pidfile=$HOME/celerybeat.pid"
+echo "<=="
+celery -A gnosisdb.apps beat -S djcelery.schedulers.DatabaseScheduler --loglevel $CELERY_LOG_LEVEL --workdir="$PWD" --pidfile=$HOME/celerybeat.pid

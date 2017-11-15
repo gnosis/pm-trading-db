@@ -19,5 +19,6 @@ cd $PWD/gnosisdb
 echo "==> run Celery Worker <=="
 echo "==> with user: "
 whoami
-echo "==> Executing command: celery -A gnosisdb.apps worker -Q default -n default@%h --loglevel debug --workdir=\"$PWD\" -c 1"
-celery -A gnosisdb.apps worker -Q default -n default@%h --loglevel debug --workdir="$PWD" -c 1
+echo "<=="
+echo "==> Executing command: celery -A gnosisdb.apps worker -Q $SQS_QUEUE_NAME -n $SQS_QUEUE_NAME@%h --loglevel $CELERY_LOG_LEVEL --workdir=\"$PWD\" -c $CELERY_CONCURRENCY"
+celery -A gnosisdb.apps worker -Q $SQS_QUEUE_NAME -n $SQS_QUEUE_NAME@%h --loglevel $CELERY_LOG_LEVEL --workdir="$PWD" -c $CELERY_CONCURRENCY
