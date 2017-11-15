@@ -1,4 +1,4 @@
-FROM jbenet/go-ipfs:latest
+FROM jbenet/go-ipfs:release
 COPY scripts/start_ipfs_cors /usr/local/bin/start_ipfs_cors
 ENTRYPOINT ["/sbin/tini", "--", "/usr/local/bin/start_ipfs_cors"]
 CMD ["daemon", "--migrate=true"]
