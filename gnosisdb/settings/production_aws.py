@@ -52,12 +52,27 @@ IPFS_PORT = os.environ['IPFS_PORT']
 # ------------------------------------------------------------------------------
 # SQS
 # ------------------------------------------------------------------------------
-CELERY_DEFAULT_QUEUE = os.environ['SQS_DEFAULT_QUEUE']
+
+SQS_QUEUE_NAME = os.environ['SQS_QUEUE_NAME']
 BROKER_URL = os.environ['SQS_BROKER_URL']
 BROKER_TRANSPORT_OPTIONS = {
     'region': os.environ['SQS_REGION'],
     'polling_interval': os.environ['SQS_POLLING_INTERVAL']
 }
+
+CELERY_DEFAULT_QUEUE = os.environ['CELERY_DEFAULT_QUEUE']
+
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_CONTENT_ENCODING = 'utf-8'
+CELERY_ENABLE_REMOTE_CONTROL = False
+CELERY_SEND_EVENTS = False
+
+TASK_APPS = (
+   'django_eth_events',
+)
+
 
 # ------------------------------------------------------------------------------
 # LMSR MARKET MAKER Address
