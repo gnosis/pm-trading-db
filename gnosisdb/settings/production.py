@@ -14,7 +14,7 @@ INSTALLED_APPS += ("gunicorn", )
 if DEBUG is False:
     STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'
 
-ALLOWED_HOSTS = ['.gnosis.pm', '127.0.0.1', 'localhost']
+ALLOWED_HOSTS = os.environ['ALLOWED_HOSTS'].split(',')
 
 # ------------------------------------------------------------------------------
 # EMAIL CONFIGURATION
