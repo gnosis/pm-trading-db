@@ -2,7 +2,8 @@ from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import serializers
 from relationaldb.models import (
     ScalarEventDescription, CategoricalEventDescription, OutcomeTokenBalance, OutcomeToken,
-    CentralizedOracle, UltimateOracle, Market, Order, ScalarEvent, CategoricalEvent, BuyOrder
+    CentralizedOracle, UltimateOracle, Market, Order, ScalarEvent, CategoricalEvent, BuyOrder,
+    TournamentParticipant
 )
 from gnosisdb.utils import remove_null_values, add_0x_prefix, get_order_type, get_order_cost, get_order_profit
 from django.db.models import Sum
@@ -218,13 +219,13 @@ class MarketSerializer(serializers.ModelSerializer):
             try:
                 categorical_event = CategoricalEvent.objects.get(address=obj.event.address)
                 n_outcome_tokens = categorical_event.outcometoken_set.count()
-                marginal_prices = [1.0/n_outcome_tokens for x in range(0, n_outcome_tokens)]
+                marginal_prices = [str(1.0/n_outcome_tokens) for x in range(0, n_outcome_tokens)]
             except CategoricalEvent.DoesNotExist:
                 pass
 
             try:
                 scalar_event = ScalarEvent.objects.get(address=obj.event.address)
-                marginal_prices = [0.5, 0.5]
+                marginal_prices = ["0.5", "0.5"]
             except ScalarEvent.DoesNotExist:
                 pass
 
@@ -349,14 +350,32 @@ class OutcomeTokenBalanceSerializer(serializers.ModelSerializer):
             try:
                 categorical_event = CategoricalEvent.objects.get(address=event)
                 n_outcome_tokens = categorical_event.outcometoken_set.count()
-                marginal_prices = [1.0 / n_outcome_tokens for x in range(0, n_outcome_tokens)]
+                marginal_prices = [str(1.0 / n_outcome_tokens) for x in range(0, n_outcome_tokens)]
             except CategoricalEvent.DoesNotExist:
                 pass
 
             try:
                 scalar_event = ScalarEvent.objects.get(address=event)
-                marginal_prices = [0.5, 0.5]
+                marginal_prices = ["0.5", "0.5"]
             except ScalarEvent.DoesNotExist:
                 pass
 
         return marginal_prices[obj.outcome_token.index] if len(marginal_prices)+1 > obj.outcome_token.index else None
+
+
+class OlympiaScoreboardSerializer(serializers.ModelSerializer):
+    """Serializes an olympia tournament participant"""
+    class Meta:
+        model = TournamentParticipant
+        fields = ('account', 'contract', 'balance', 'current_rank', 'past_rank', 'diff_rank', 'score', 'predicted_profit', 'predictions',)
+
+    def __init__(self, *args, **kwargs):
+        super(OlympiaScoreboardSerializer, self).__init__(*args, **kwargs)
+        if isinstance(self.instance, list):
+            [setattr(p, 'account', p.address) for p in self.instance]
+        else:
+            setattr(self.instance, 'account', self.instance.address)
+
+    contract = ContractSerializer(source='*', many=False, read_only=True)
+    account = serializers.CharField(max_length=20)
+

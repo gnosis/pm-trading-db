@@ -2,15 +2,16 @@ from unittest import TestCase
 from relationaldb.tests.factories import (
     OracleFactory, CentralizedOracleFactory, UltimateOracleFactory, EventFactory,
     MarketFactory, EventDescriptionFactory, OutcomeTokenFactory, OutcomeTokenBalanceFactory,
-    ScalarEventDescriptionFactory, CategoricalEventFactory
+    ScalarEventDescriptionFactory, CategoricalEventFactory, TournamentParticipantFactory
 )
 from relationaldb.serializers import (
     OutcomeTokenIssuanceSerializer, ScalarEventSerializer, UltimateOracleSerializer, OutcomeTokenRevocationSerializer,
     CategoricalEventSerializer, MarketSerializer, IPFSEventDescriptionDeserializer, CentralizedOracleSerializer,
-    CentralizedOracleInstanceSerializer, OutcomeTokenInstanceSerializer, OutcomeTokenTransferSerializer
+    CentralizedOracleInstanceSerializer, OutcomeTokenInstanceSerializer, OutcomeTokenTransferSerializer,
+    TournamentParticipantSerializer, TournamentTokenIssuanceSerializer, TournamentTokenTransferSerializer
 )
 
-from relationaldb.models import OutcomeTokenBalance, OutcomeToken, ScalarEventDescription
+from relationaldb.models import OutcomeTokenBalance, OutcomeToken, ScalarEventDescription, TournamentParticipant
 from rest_framework.serializers import ValidationError
 from django.conf import settings
 from ipfs.ipfs import Ipfs
@@ -773,3 +774,102 @@ class TestSerializers(TestCase):
         self.assertIsNotNone(instance)
         self.assertEqual(instance.owner, event.address)
         self.assertEqual(instance.balance, 20)
+
+    def test_save_tournament_participant(self):
+        identity = 'ebe4dd7a4a9e712e742862719aa04709cc6d80a6'
+        oracle = OracleFactory()
+        block = {
+            'number': oracle.creation_block,
+            'timestamp': mktime(oracle.creation_date_time.timetuple())
+        }
+
+        participant_event = {
+            'name': 'IdentityCreated',
+            'address': 'abbcd5b340c80b5f1c0545c04c987b87310296ae',
+            'params': [
+                {
+                    'name': 'identity',
+                    'value': identity
+                },
+                {
+                    'name': 'creator',
+                    'value': '50858f2c7873fac9398ed9c195d185089caa7967'
+                },
+                {
+                    'name': 'owner',
+                    'value': '8f357b2c8071c2254afbc65907997f9adea6cc78',
+                },
+                {
+                    'name': 'recoveryKey',
+                    'value': 'b67c2d2fcfa3e918e3f9a5218025ebdd12d26212'
+                }
+            ]
+        }
+
+        s = TournamentParticipantSerializer(data=participant_event, block=block)
+        self.assertTrue(s.is_valid(), s.errors)
+        self.assertEqual(TournamentParticipant.objects.all().count(), 0)
+        instance = s.save()
+
+        self.assertEqual(TournamentParticipant.objects.all().count(), 1)
+        self.assertIsNotNone(instance)
+        self.assertEqual(instance.address, identity)
+
+
+    def test_tournament_issuance(self):
+        participant = TournamentParticipantFactory()
+        participant_event = {
+            'name': 'Issuance',
+            'address': 'not needed',
+            'params': [
+                {
+                    'name': 'owner',
+                    'value': participant.address
+                },
+                {
+                    'name': 'amount',
+                    'value': 123
+                }
+            ]
+        }
+        self.assertEqual(TournamentParticipant.objects.get(address=participant.address).balance, participant.balance)
+        s = TournamentTokenIssuanceSerializer(data=participant_event)
+        self.assertTrue(s.is_valid(), s.errors)
+        self.assertEqual(TournamentParticipant.objects.get(address=participant.address).balance, participant.balance)
+        instance = s.save()
+
+        self.assertIsNotNone(instance)
+        self.assertEqual(instance.address, participant.address)
+        self.assertEqual(instance.balance, participant.balance + 123)
+
+    def test_tournament_token_transfer(self):
+        # Test the token transfer serializer
+        participant1 = TournamentParticipantFactory()
+        participant2 = TournamentParticipantFactory()
+
+        transfer_event = {
+            'name': 'Transfer',
+            'address': 'not needed',
+            'params': [
+                {
+                    'name': 'from',
+                    'value': participant1.address
+                },
+                {
+                    'name': 'to',
+                    'value': participant2.address
+                },
+                {
+                    'name': 'value',
+                    'value': 150,
+                }
+            ]
+        }
+
+        transfer_serializer = TournamentTokenTransferSerializer(data=transfer_event)
+        self.assertTrue(transfer_serializer.is_valid(), transfer_serializer.errors)
+        instance = transfer_serializer.save()
+        self.assertEqual(TournamentParticipant.objects.get(address=participant2.address).balance.__float__(), float(participant2.balance+150))
+        self.assertEqual(TournamentParticipant.objects.get(address=participant1.address).balance.__float__(), float(participant1.balance-150))
+
+

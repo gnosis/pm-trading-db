@@ -7,8 +7,11 @@ from relationaldb.serializers import (
     OutcomeAssignmentOracleSerializer, ForwardedOracleOutcomeAssignmentSerializer,
     OutcomeChallengeSerializer, OutcomeVoteSerializer, WithdrawalSerializer, OutcomeTokenTransferSerializer,
     OutcomeTokenPurchaseSerializer, OutcomeTokenSaleSerializer, OutcomeTokenShortSaleOrderSerializer,
-    MarketFundingSerializer, MarketClosingSerializer, FeeWithdrawalSerializer
+    MarketFundingSerializer, MarketClosingSerializer, FeeWithdrawalSerializer, TournamentParticipantSerializer,
+    TournamentTokenIssuanceSerializer, TournamentTokenTransferSerializer
 )
+
+from relationaldb.models import TournamentParticipant
 
 from celery.utils.log import get_task_logger
 from json import dumps
@@ -179,3 +182,39 @@ class OutcomeTokenInstanceReceiver(AbstractEventReceiver):
                 serializer.save()
             else:
                 logger.warning(serializer.errors)
+
+
+class UportIdentityManagerReceiver(AbstractEventReceiver):
+    events = {
+        'IdentityCreated': TournamentParticipantSerializer,
+    }
+
+    def save(self, decoded_event, block_info):
+        if self.events.get(decoded_event.get('name')):
+            serializer = self.events.get(decoded_event.get('name'))(data=decoded_event, block=block_info)
+            if serializer.is_valid():
+                serializer.save()
+                logger.info('Tournament Participant added: {}'.format(dumps(decoded_event)))
+            else:
+                logger.warning(serializer.errors)
+
+
+class TournamentTokenReceiver(AbstractEventReceiver):
+    events = {
+        'Issuance': TournamentTokenIssuanceSerializer,  # sum to participant balance
+        'Transfer': TournamentTokenTransferSerializer
+    }
+
+    def save(self, decoded_event, block_info=None):
+        if self.events.get(decoded_event.get('name')):
+            serializer = self.events.get(decoded_event.get('name'))(data=decoded_event)
+            if serializer.is_valid():
+                try:
+                    serializer.save()
+                except TournamentParticipant.DoesNotExist:
+                    logger.info('Issuance to Participant with address that does not exist.')
+
+                logger.info('Tournament token event triggered: {}'.format(dumps(decoded_event)))
+            else:
+                logger.warning(serializer.errors)
+

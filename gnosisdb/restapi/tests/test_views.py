@@ -5,7 +5,8 @@ from rest_framework.test import APITestCase
 from rest_framework import status
 from relationaldb.tests.factories import (
     CentralizedOracleFactory, UltimateOracleFactory, BuyOrderFactory,
-    MarketFactory, CategoricalEventFactory, OutcomeTokenFactory, OutcomeTokenBalanceFactory
+    MarketFactory, CategoricalEventFactory, OutcomeTokenFactory, OutcomeTokenBalanceFactory,
+    TournamentParticipantFactory
 )
 from relationaldb.models import CentralizedOracle, UltimateOracle, Market, ShortSellOrder, BuyOrder
 from datetime import datetime, timedelta
@@ -242,7 +243,7 @@ class TestViews(APITestCase):
         order.outcome_token_count = 1
         order.cost = 1
         order.net_outcome_tokens_sold = market.net_outcome_tokens_sold
-        order.marginal_prices = [0.5, 0.5]
+        order.marginal_prices = ["0.5000", "0.5000"]
         order.save()
 
         url = reverse('api:trades-by-market', kwargs={'market_address': market.address})
@@ -251,7 +252,7 @@ class TestViews(APITestCase):
         trades_data = json.loads(trades_response.content)
         self.assertEquals(trades_response.status_code, status.HTTP_200_OK)
         self.assertEquals(len(trades_data.get('results')), 1)
-        self.assertEquals(float(trades_data.get('results')[0].get('marginalPrices')[0]), order.marginal_prices[0])
+        self.assertEquals(trades_data.get('results')[0].get('marginalPrices')[0], order.marginal_prices[0])
 
         from_date = (creation_date_time - timedelta(days=1)).strftime('%Y-%m-%d %H:%M:%S')
         to_date = (creation_date_time + timedelta(days=1)).strftime('%Y-%m-%d %H:%M:%S')
@@ -363,3 +364,10 @@ class TestViews(APITestCase):
         url = reverse('api:shares-by-account', kwargs={'account_address': account2})
         no_shares_response = self.client.get(url, content_type='application/json')
         self.assertEquals(len(json.loads(no_shares_response.content).get('results')), 0)
+
+    def test_tournament_serializer(self):
+        participant1 = TournamentParticipantFactory()
+        scoreboard_response = self.client.get(reverse('api:scoreboard', kwargs={'account_address': participant1.address}), content_type='application/json')
+        self.assertEquals(scoreboard_response.status_code, status.HTTP_200_OK)
+        scoreboard_response = self.client.get(reverse('api:scoreboard', kwargs={'account_address': '0x0'}), content_type='application/json')
+        self.assertEquals(scoreboard_response.status_code, status.HTTP_404_NOT_FOUND)

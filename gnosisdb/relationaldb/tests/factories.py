@@ -197,3 +197,16 @@ class SellOrderFactory(OrderFactory):
     profit = factory_boy.Sequence(lambda n: n)
     outcome_token_profit = factory_boy.Sequence(lambda n: n)
     fees = 0
+
+
+class TournamentParticipantFactory(ContractCreatedByFactory):
+    class Meta:
+        model = models.TournamentParticipant
+
+    balance = factory_boy.Sequence(lambda n: (n*100))
+    current_rank = factory_boy.Sequence(lambda n: n)
+    past_rank = factory_boy.Sequence(lambda n: n)
+    diff_rank = factory_boy.Sequence(lambda n: n)
+    score = factory_boy.Sequence(lambda n: (n+1)*1e18)
+    predicted_profit = factory_boy.Sequence(lambda n: n)
+    predictions = factory_boy.Sequence(lambda n: n)

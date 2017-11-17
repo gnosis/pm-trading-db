@@ -4,11 +4,13 @@ from rest_framework import generics
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from relationaldb.models import (
-    UltimateOracle, CentralizedOracle, Event, Market, Order, OutcomeTokenBalance
+    UltimateOracle, CentralizedOracle, Event, Market, Order, OutcomeTokenBalance,
+    TournamentParticipant, TournamentWhitelistedCreator
 )
 from .serializers import (
     UltimateOracleSerializer, CentralizedOracleSerializer, EventSerializer, MarketSerializer,
-    MarketTradesSerializer, OutcomeTokenBalanceSerializer, MarketParticipantTradesSerializer
+    MarketTradesSerializer, OutcomeTokenBalanceSerializer, MarketParticipantTradesSerializer,
+    OlympiaScoreboardSerializer
 )
 from .filters import (
     CentralizedOracleFilter, UltimateOracleFilter, EventFilter, MarketFilter, DefaultPagination,
@@ -150,7 +152,7 @@ class MarketTradesView(generics.ListAPIView):
         # return trades
         return Order.objects.filter(
             market=self.kwargs['market_address'],
-        )
+        ).order_by('creation_block')
 
 
 class AccountTradesView(generics.ListAPIView):
@@ -178,3 +180,23 @@ class AccountSharesView(generics.ListAPIView):
         return OutcomeTokenBalance.objects.filter(
             owner=self.kwargs['account_address'],
         )
+
+# ========================================================
+#                 Olympia
+# ========================================================
+
+class ScoreboardView(generics.ListAPIView):
+    """Olympia tournament scoreboard view"""
+    serializer_class = OlympiaScoreboardSerializer
+    pagination_class = DefaultPagination
+    queryset = TournamentParticipant.objects.all().order_by('current_rank').exclude(
+        address__in=TournamentWhitelistedCreator.objects.all().values_list('address', flat=True)
+    )
+
+
+class ScoreboardUserView(generics.RetrieveAPIView):
+    """Olympia tournament scoreboard view of a given account"""
+    serializer_class = OlympiaScoreboardSerializer
+
+    def get_object(self):
+        return get_object_or_404(TournamentParticipant, address=self.kwargs['account_address'])

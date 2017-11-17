@@ -5,18 +5,18 @@ from django.conf import settings
 from chainevents.event_receivers import (
     CentralizedOracleFactoryReceiver, UltimateOracleFactoryReceiver, EventFactoryReceiver, MarketFactoryReceiver,
     CentralizedOracleInstanceReceiver, EventInstanceReceiver, UltimateOracleInstanceReceiver, OutcomeTokenInstanceReceiver,
-    MarketInstanceReceiver
+    MarketInstanceReceiver, UportIdentityManagerReceiver, TournamentTokenReceiver
 )
 
 from relationaldb.models import (
     CentralizedOracle, UltimateOracle, ScalarEvent, CategoricalEvent, Market, OutcomeToken,
-    Event, OutcomeVoteBalance, BuyOrder, SellOrder
+    Event, OutcomeVoteBalance, BuyOrder, SellOrder, TournamentParticipant
 )
 
 from relationaldb.tests.factories import (
     UltimateOracleFactory, CentralizedOracleFactory,
     OracleFactory, EventFactory, MarketFactory, OutcomeTokenFactory,
-    OutcomeVoteBalanceFactory, CategoricalEventFactory
+    OutcomeVoteBalanceFactory, CategoricalEventFactory, TournamentParticipantFactory
 )
 from datetime import datetime
 from time import mktime
@@ -733,3 +733,104 @@ class TestEventReceiver(TestCase):
         MarketInstanceReceiver().save(outcome_token_purchase_event, block)
         market_check = Market.objects.get(address=market.address)
         self.assertEquals(market_check.collected_fees, market.collected_fees+fees+fees)
+
+    def test_create_tournament_participant(self):
+        identity = 'ebe4dd7a4a9e712e742862719aa04709cc6d80a6'
+        participant_event = {
+            'name': 'IdentityCreated',
+            'address': 'abbcd5b340c80b5f1c0545c04c987b87310296ae',
+            'params': [
+                {
+                    'name': 'identity',
+                    'value': identity
+                },
+                {
+                    'name': 'creator',
+                    'value': '50858f2c7873fac9398ed9c195d185089caa7967'
+                },
+                {
+                    'name': 'owner',
+                    'value': '8f357b2c8071c2254afbc65907997f9adea6cc78',
+                },
+                {
+                    'name': 'recoveryKey',
+                    'value': 'b67c2d2fcfa3e918e3f9a5218025ebdd12d26212'
+                }
+            ]
+        }
+
+        block = {
+            'number': 1,
+            'timestamp': self.to_timestamp(datetime.now())
+        }
+
+        self.assertEqual(TournamentParticipant.objects.all().count(), 0)
+        # Save event
+        UportIdentityManagerReceiver().save(participant_event, block)
+        # Check that collected fees was incremented
+        self.assertEqual(TournamentParticipant.objects.all().count(), 1)
+
+    def test_issue_tournament_tokens(self):
+        participant = TournamentParticipantFactory()
+        participant_event = {
+            'name': 'Issuance',
+            'address': 'not needed',
+            'params': [
+                {
+                    'name': 'owner',
+                    'value': participant.address
+                },
+                {
+                    'name': 'amount',
+                    'value': 123
+                }
+            ]
+        }
+
+        self.assertEqual(TournamentParticipant.objects.get(address=participant.address).balance, 0)
+        # Save event
+        TournamentTokenReceiver().save(participant_event)
+        self.assertEqual(TournamentParticipant.objects.get(address=participant.address).balance, 123)
+
+    def test_transfer_tournament_tokens(self):
+        participant1 = TournamentParticipantFactory()
+        participant2 = TournamentParticipantFactory()
+        participant1_issuance_event = {
+            'name': 'Issuance',
+            'address': 'not needed',
+            'params': [
+                {
+                    'name': 'owner',
+                    'value': participant1.address
+                },
+                {
+                    'name': 'amount',
+                    'value': 150
+                }
+            ]
+        }
+
+        transfer_event = {
+            'name': 'Transfer',
+            'address': 'not needed',
+            'params': [
+                {
+                    'name': 'from',
+                    'value': participant1.address
+                },
+                {
+                    'name': 'to',
+                    'value': participant2.address
+                },
+                {
+                    'name': 'value',
+                    'value': 15
+                }
+            ]
+        }
+
+        # Save event
+        TournamentTokenReceiver().save(participant1_issuance_event)
+        TournamentTokenReceiver().save(transfer_event)
+        self.assertEqual(TournamentParticipant.objects.get(address=participant1.address).balance.__float__(), float(participant1.balance+150-15))
+        self.assertEqual(TournamentParticipant.objects.get(address=participant2.address).balance.__float__(), float(participant2.balance+15))
