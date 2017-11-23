@@ -18,6 +18,8 @@ fi
 echo "==> call run_celery.sh <=="
 
 cd $PWD/gnosisdb
+python manage.py createcachetable --noinput
+python manage.py migrate --noinput
 
 echo "==> run worker <=="
 celery -A gnosisdb.apps worker -Q default -n default@%h --loglevel debug --workdir="$PWD" -c 1 &
