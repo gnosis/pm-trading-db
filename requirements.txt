@@ -23,8 +23,8 @@ docutils==0.14rc1
 gunicorn==19.7.1
 whitenoise==3.3.0
 gevent==1.0.1
--e git+https://github.com/gnosis/django-eth-events.git@3f76f931186b3594efd5846cbff53a295e658779#egg=django-eth-events
--e git+https://github.com/gnosis/django-google-authenticator@4b420c03e00a8a1d7838af70f51d5e71565aeead#egg=django_google_authenticator
+django-eth-events==1.0
+django_google_authenticator==0.1
 django-environ==0.4.3
 django-cors-headers==2.1.0
 mpmath==0.19
