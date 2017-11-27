@@ -124,6 +124,7 @@ class CentralizedOracleFactory(OracleFactory):
         model = models.CentralizedOracle
 
     owner = factory_boy.Sequence(lambda n: '{:040d}'.format(n))
+    old_owner = None
     event_description = factory_boy.SubFactory(CategoricalEventDescriptionFactory)
 
 

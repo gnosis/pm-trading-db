@@ -110,6 +110,7 @@ class CategoricalEventDescription(EventDescription):
 class CentralizedOracle(Oracle):
     """Centralized oracle model"""
     owner = models.CharField(max_length=40, db_index=True) # owner can be updated
+    old_owner = models.CharField(max_length=40, default=None, null=True) # useful for rollback
     event_description = models.ForeignKey(EventDescription, unique=False, null=True)
 
 
