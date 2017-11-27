@@ -323,22 +323,116 @@ class TestRollabck(TestCase):
         self.assertEquals(len(orders_after_rollback), 0)
 
     def test_market_outcome_token_sale_rollback(self):
-        #===========================================
-        # Test outcome token sale
-        #===========================================
-        """outcome_token_sell_event = {
+        categorical_event = CategoricalEventFactory()
+        outcome_token = OutcomeTokenFactory(event=categorical_event, index=0)
+        market = MarketFactory(event=categorical_event)
+        seller_address = '{:040d}'.format(100)
+
+        block = {
+            'number': 1,
+            'timestamp': self.to_timestamp(datetime.now())
+        }
+        outcome_token_sell_event = {
             'name': 'OutcomeTokenSale',
             'address': market.address,
             'params': [
                 {'name': 'outcomeTokenProfit', 'value': 100},
                 {'name': 'marketFees', 'value': 10},
-                {'name': 'seller', 'value': sender_address},
+                {'name': 'seller', 'value': seller_address},
                 {'name': 'outcomeTokenIndex', 'value': 0},
                 {'name': 'outcomeTokenCount', 'value': 10},
             ]
-        }"""
+        }
+
+        MarketInstanceReceiver().save(outcome_token_sell_event, block)
+        orders_before_rollback = SellOrder.objects.filter(
+            creation_block=block.get('number'),
+            sender=seller_address
+        )
+        self.assertEquals(len(orders_before_rollback), 1)
+
+        # Outcome token sell rollback
+        MarketInstanceReceiver().rollback(outcome_token_sell_event, block)
+        orders_before_rollback = SellOrder.objects.filter(
+            creation_block=block.get('number'),
+            sender=seller_address
+        )
+        self.assertEquals(len(orders_before_rollback), 0)
+
+    def test_market_outcome_token_shortsale_rollback(self):
         pass
 
+    def test_market_funding_rollback(self):
+        market_factory = MarketFactory()
+        block = {
+            'number': 1,
+            'timestamp': self.to_timestamp(datetime.now())
+        }
+        market_funding_event = {
+            'name': 'MarketFunding',
+            'address': market_factory.address,
+            'params': [
+                {
+                    'name': 'funding',
+                    'value': 100
+                }
+            ]
+        }
+
+        MarketInstanceReceiver().save(market_funding_event)
+        market_without_rollback = Market.objects.get(address=market_factory.address)
+        self.assertEquals(market_without_rollback.stage, 1)
+        self.assertEquals(market_without_rollback.funding, 100)
+        # Rollback
+        MarketInstanceReceiver().rollback(market_funding_event, block)
+        market_with_rollback = Market.objects.get(address=market_factory.address)
+        self.assertEquals(market_with_rollback.stage, 0)
+        self.assertIsNone(market_with_rollback.funding)
+
+    def test_market_closing_rollback(self):
+        market_factory = MarketFactory()
+        block = {
+            'number': 1,
+            'timestamp': self.to_timestamp(datetime.now())
+        }
+        market_closing_event = {
+            'name': 'MarketClosing',
+            'address': market_factory.address,
+            'params': []
+        }
+
+        MarketInstanceReceiver().save(market_closing_event)
+        market_without_rollback = Market.objects.get(address=market_factory.address)
+        self.assertEquals(market_without_rollback.stage, 2)
+        # Rollback
+        MarketInstanceReceiver().rollback(market_closing_event, block)
+        market_with_rollback = Market.objects.get(address=market_factory.address)
+        self.assertEquals(market_with_rollback.stage, 1)
+
+    def test_market_fee_withdrawal_rollback(self):
+        market_factory = MarketFactory()
+        block = {
+            'number': 1,
+            'timestamp': self.to_timestamp(datetime.now())
+        }
+        market_withdraw_event = {
+            'name': 'FeeWithdrawal',
+            'address': market_factory.address,
+            'params': [
+                {
+                    'name': 'fees',
+                    'value': 10
+                }
+            ]
+        }
+
+        MarketInstanceReceiver().save(market_withdraw_event)
+        market_without_rollback = Market.objects.get(address=market_factory.address)
+        self.assertEquals(market_without_rollback.withdrawn_fees, market_factory.withdrawn_fees+10)
+        # Rollback
+        MarketInstanceReceiver().rollback(market_withdraw_event, block)
+        market_with_rollback = Market.objects.get(address=market_factory.address)
+        self.assertEquals(market_with_rollback.withdrawn_fees, market_factory.withdrawn_fees)
 
         """MarketFactoryReceiver().save(market_creation_event, block)
         market_without_rollback = Market.objects.get(event=event_factory.address)

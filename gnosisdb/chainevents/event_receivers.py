@@ -146,10 +146,17 @@ class MarketInstanceReceiver(AbstractEventReceiver):
             logger.warning(serializer.errors)
 
     def rollback(self, decoded_event, block_info):
+        instance = None
         serializer_class = self.events.get(decoded_event.get('name'))
-        instance = serializer_class.Meta.model.objects.get(
-            market=decoded_event.get('address')
-        )
+
+        if issubclass(serializer_class.Meta.model, Market):
+            instance = serializer_class.Meta.model.objects.get(
+                address=decoded_event.get('address')
+            )
+        else:
+            instance = serializer_class.Meta.model.objects.get(
+                market=decoded_event.get('address')
+            )
 
         serializer = serializer_class(instance, data=decoded_event, block=block_info)
         if serializer.is_valid():

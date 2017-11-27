@@ -962,7 +962,6 @@ class OutcomeTokenPurchaseSerializer(ContractEventTimestamped, serializers.Model
             )
             order.delete()
             market.save()
-            return order
         except models.Market.DoesNotExist:
             raise serializers.ValidationError('Market with address {} does not exist - nothing to revert' % self.validated_data.get('address'))
 
@@ -995,8 +994,8 @@ class OutcomeTokenSaleSerializer(ContractEventTimestamped, serializers.ModelSeri
 
             # Create Order
             order = models.SellOrder()
-            order.creation_date_time = validated_data['creation_date_time']
-            order.creation_block = validated_data['creation_block']
+            order.creation_date_time = validated_data.get('creation_date_time')
+            order.creation_block = validated_data.get('creation_block')
             order.market = market
             order.sender = validated_data.get('seller')
             order.outcome_token = outcome_token
@@ -1018,7 +1017,24 @@ class OutcomeTokenSaleSerializer(ContractEventTimestamped, serializers.ModelSeri
             raise serializers.ValidationError('Market with address {} does not exist.' % validated_data.get('address'))
 
     def rollback(self):
-        pass
+        try:
+            token_index = self.validated_data.get('outcomeTokenIndex')
+            token_count = self.validated_data.get('outcomeTokenCount')
+            market = models.Market.objects.get(address=self.validated_data.get('address'))
+            market.net_outcome_tokens_sold[token_index] += token_count
+            market.collected_fees -= self.validated_data.get('marketFees')
+
+            # Remove order
+            order = models.SellOrder.objects.get(
+                creation_block=self.validated_data.get('creation_block'),
+                sender=self.validated_data.get('seller'),
+                market=market
+            )
+
+            order.delete()
+            market.save()
+        except models.Market.DoesNotExist:
+            raise serializers.ValidationError('Market with address {} does not exist - nothing to revert' % self.validated_data.get('address'))
 
 
 class OutcomeTokenShortSaleOrderSerializer(ContractEventTimestamped, serializers.ModelSerializer):
@@ -1043,8 +1059,8 @@ class OutcomeTokenShortSaleOrderSerializer(ContractEventTimestamped, serializers
                 outcome_token = models.OutcomeToken.objects.get(index=validated_data.get('outcomeTokenIndex'))
                 # Create Order
                 order = models.ShortSellOrder()
-                order.creation_date_time = validated_data['creation_date_time']
-                order.creation_block = validated_data['creation_block']
+                order.creation_date_time = validated_data.get('creation_date_time')
+                order.creation_block = validated_data.get('creation_block')
                 order.market = market
                 order.sender = validated_data.get('buyer')
                 # order.outcome_token_index = validated_data.get('outcomeTokenIndex')
@@ -1061,7 +1077,20 @@ class OutcomeTokenShortSaleOrderSerializer(ContractEventTimestamped, serializers
             raise serializers.ValidationError('Market with address {} does not exist.' % validated_data.get('address'))
 
     def rollback(self):
-        pass
+        try:
+            market = models.Market.objects.get(address=self.validated_data.get('address'))
+            try:
+                # Remove order
+                order = models.ShortSellOrder.objects.get(
+                    creation_block=self.validated_data.get('creation_block'),
+                    sender=self.validated_data.get('buyer'),
+                    market=market
+                )
+                order.delete()
+            except models.OutcomeToken.DoesNotExist:
+                raise serializers.ValidationError('OutcomeToken with index {} does not exist - nothing to revert' % self.validated_data.get('outcomeTokenIndex'))
+        except models.Market.DoesNotExist:
+            raise serializers.ValidationError('Market with address {} does not exist - nothing to revert' % self.validated_data.get('address'))
 
 
 class MarketFundingSerializer(ContractNotTimestampted, serializers.ModelSerializer):
@@ -1086,7 +1115,13 @@ class MarketFundingSerializer(ContractNotTimestampted, serializers.ModelSerializ
             raise serializers.ValidationError('Market with address {} does not exist.' % validated_data.get('address'))
 
     def rollback(self):
-        pass
+        try:
+            market = models.Market.objects.get(address=self.validated_data.get('address'))
+            market.funding = None
+            market.stage = market.stages[0][0] # Market created
+            market.save()
+        except models.Market.DoesNotExist:
+            raise serializers.ValidationError('Market with address {} does not exist - nothing to revert' % self.validated_data.get('address'))
 
 
 class MarketClosingSerializer(ContractNotTimestampted, serializers.ModelSerializer):
@@ -1109,7 +1144,12 @@ class MarketClosingSerializer(ContractNotTimestampted, serializers.ModelSerializ
             raise serializers.ValidationError('Market with address {} does not exist.' % validated_data.get('address'))
 
     def rollback(self):
-        pass
+        try:
+            market = models.Market.objects.get(address=self.validated_data.get('address'))
+            market.stage = market.stages[1][0] # Market funded
+            market.save()
+        except models.Market.DoesNotExist:
+            raise serializers.ValidationError('Market with address {} does not exist - nothing to revert.' % self.validated_data.get('address'))
 
 
 class FeeWithdrawalSerializer(ContractNotTimestampted, serializers.ModelSerializer):
@@ -1133,4 +1173,9 @@ class FeeWithdrawalSerializer(ContractNotTimestampted, serializers.ModelSerializ
             raise serializers.ValidationError('Market with address {} does not exist.' % validated_data.get('address'))
 
     def rollback(self):
-        pass
+        try:
+            market = models.Market.objects.get(address=self.validated_data.get('address'))
+            market.withdrawn_fees -= self.validated_data.get('fees')
+            market.save()
+        except models.Market.DoesNotExist:
+            raise serializers.ValidationError('Market with address {} does not exist - nothing to revert' % self.validated_data.get('address'))
