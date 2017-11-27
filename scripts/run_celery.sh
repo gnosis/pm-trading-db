@@ -18,7 +18,7 @@ fi
 echo "==> call run_celery.sh <=="
 
 cd $PWD/gnosisdb
-python manage.py createcachetable --noinput
+python manage.py createcachetable
 python manage.py migrate --noinput
 
 echo "==> run worker <=="
