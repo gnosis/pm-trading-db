@@ -105,8 +105,46 @@ class MarketFactoryReceiver(SerializerEventReceiver):
         }
         primary_key_name = 'market'
 
+###########################
+# Instance Event Receivers
+###########################
 
-class MarketInstanceReceiver(SerializerEventReceiver):
+
+class BaseInstanceEventReceiver(SerializerEventReceiver):
+    class Meta:
+        events = {}
+        primary_key_name = {}
+
+    def rollback(self, decoded_event, block_info):
+        serializer_class = self.Meta.events.get(decoded_event.get('name'))
+
+        primary_key_name = self.Meta.primary_key_name.get(decoded_event.get('name'))
+        if type(primary_key_name) is str:
+            filter_dict = {primary_key_name: decoded_event.get('address')}
+        else:
+            filter_dict = {}
+            for pk_model, pk_event in primary_key_name.iteritems():
+                if pk_event == 'creation_block':
+                    filter_dict[pk_model] = block_info['number']
+                elif decoded_event.get(pk_event) is None:
+                    filter_dict[pk_model] = filter(lambda x: x.get('name') == pk_event, decoded_event.get('params'))[0].get('value')
+                else:
+                    filter_dict[pk_model] = decoded_event.get(pk_event)
+        instance = serializer_class.Meta.model.objects.get(
+            **filter_dict
+        )
+
+        serializer = serializer_class(instance, data=decoded_event, block=block_info)
+        if serializer.is_valid():
+            serializer.rollback()
+            logger.info('Event Receiver {} reverted: {}'.format(self.__class__.__name__, dumps(decoded_event)))
+        else:
+            logger.warning(
+                'INVALID Data for Event Receiver {} rollback: {}'.format(self.__class__.__name__, dumps(decoded_event)))
+            logger.warning(serializer.errors)
+
+
+class MarketInstanceReceiver(BaseInstanceEventReceiver):
 
     class Meta:
         events = {
@@ -118,49 +156,39 @@ class MarketInstanceReceiver(SerializerEventReceiver):
             'FeeWithdrawal': FeeWithdrawalSerializer
         }
 
-    def rollback(self, decoded_event, block_info):
-        instance = None
-        serializer_class = self.Meta.events.get(decoded_event.get('name'))
+        primary_key_name = {
+            'OutcomeTokenPurchase': {
+                'market': 'address',
+                'sender': 'buyer',
+                'creation_block': 'creation_block'
+            },
+            'OutcomeTokenSale': {
+                'market': 'address',
+                'sender': 'seller',
+                'creation_block': 'creation_block'
+            },
+            'OutcomeTokenShortSale': {
+                'market': 'address',
+                'sender': 'buyer',
+                'creation_block': 'creation_block'
+            },
+            'MarketFunding': 'address',
+            'MarketClosing': 'address',
+            'FeeWithdrawal': 'address'
+        }
 
-        if issubclass(serializer_class.Meta.model, Market):
-            instance = serializer_class.Meta.model.objects.get(
-                address=decoded_event.get('address')
-            )
-        else:
-            instance = serializer_class.Meta.model.objects.get(
-                market=decoded_event.get('address')
-            )
 
-        serializer = serializer_class(instance, data=decoded_event, block=block_info)
-        if serializer.is_valid():
-            serializer.rollback()
-            logger.info('Market Instance reverted: {}'.format(dumps(decoded_event)))
-        else:
-            logger.warning('INVALID Market Instance Result for rollback: {}'.format(dumps(decoded_event)))
-            logger.warning(serializer.errors)
-
-
-class CentralizedOracleInstanceReceiver(SerializerEventReceiver):
+class CentralizedOracleInstanceReceiver(BaseInstanceEventReceiver):
 
     class Meta:
         events = {
             'OwnerReplacement': OwnerReplacementSerializer,
             'OutcomeAssignment': OutcomeAssignmentOracleSerializer
         }
-
-    def rollback(self, decoded_event, block_info):
-        serializer_class = self.Meta.events.get(decoded_event.get('name'))
-        instance = serializer_class.Meta.model.objects.get(
-            address=decoded_event.get('address')
-        )
-
-        serializer = serializer_class(instance, data=decoded_event, block=block_info)
-        if serializer.is_valid():
-            serializer.rollback()
-            logger.info('Event Factory Result reverted: {}'.format(dumps(decoded_event)))
-        else:
-            logger.warning('INVALID Event Factory Result for rollback: {}'.format(dumps(decoded_event)))
-            logger.warning(serializer.errors)
+        primary_key_name = {
+            'OwnerReplacement': 'address',
+            'OutcomeAssignment': 'address'
+        }
 
 
 class UltimateOracleInstanceReceiver(AbstractEventReceiver):

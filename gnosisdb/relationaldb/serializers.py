@@ -87,7 +87,7 @@ class ContractCreatedByFactorySerializer(BlockTimestampedSerializer, ContractSer
         data = kwargs.pop('data')
         # Event params moved to root object
         new_data = {
-            'address': data[u'address'], # TODO comment this with Denis
+            'address': data[u'address'],
             'factory': data[u'address'],
             'creation_date_time': datetime.fromtimestamp(self.block.get('timestamp')),
             'creation_block': self.block.get('number')
