@@ -320,10 +320,7 @@ class ScalarEventSerializer(EventSerializer, serializers.ModelSerializer):
         return attrs
 
     def rollback(self):
-        instance = models.ScalarEvent.objects.get(
-            address=self.validated_data.get('address')
-        )
-        instance.delete()
+        self.instance.delete()
 
 
 class CategoricalEventSerializer(EventSerializer, serializers.ModelSerializer):
@@ -360,10 +357,7 @@ class CategoricalEventSerializer(EventSerializer, serializers.ModelSerializer):
         return super(CategoricalEventSerializer, self).create(validated_data)
 
     def rollback(self):
-        instance = models.CategoricalEvent.objects.get(
-            address=self.validated_data.get('address')
-        )
-        instance.delete()
+        self.instance.delete()
 
 
 class MarketSerializer(ContractCreatedByFactorySerializer, serializers.ModelSerializer):
