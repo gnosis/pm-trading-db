@@ -55,6 +55,7 @@ class TestRollabck(TestCase):
         oracle_one_address = oracle_one.address[1:-7] + 'GIACOMO'
 
         oracle_one_event = {
+            'name': 'CentralizedOracleCreation',
             'address': oracle_one.factory[1:-7] + 'GIACOMO',
             'params': [
                 {
@@ -238,6 +239,7 @@ class TestRollabck(TestCase):
         }
 
         market_creation_event = {
+            'name': 'StandardMarketCreation',
             'address': oracle_factory.factory[1:-7] + 'GIACOMO',
             'params': [
                 {

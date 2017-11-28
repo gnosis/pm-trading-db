@@ -52,6 +52,7 @@ class TestEventReceiver(TestCase):
         oracle_address = oracle.address[1:-7] + 'GIACOMO'
 
         oracle_event = {
+            'name': 'CentralizedOracleCreation',
             'address': oracle.factory[1:-7] + 'GIACOMO',
             'params': [
                 {
@@ -230,6 +231,7 @@ class TestEventReceiver(TestCase):
         }
 
         market_dict = {
+            'name': 'StandardMarketCreation',
             'address': oracle.factory[1:-7] + 'GIACOMO',
             'params': [
                 {
