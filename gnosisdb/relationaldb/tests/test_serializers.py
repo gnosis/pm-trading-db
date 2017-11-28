@@ -1,8 +1,8 @@
 from unittest import TestCase
 from relationaldb.tests.factories import (
-    OracleFactory, CentralizedOracleFactory, UltimateOracleFactory, EventFactory,
-    MarketFactory, EventDescriptionFactory, OutcomeTokenFactory, OutcomeTokenBalanceFactory,
-    ScalarEventDescriptionFactory, CategoricalEventFactory
+    CentralizedOracleFactory, UltimateOracleFactory, EventFactory, MarketFactory, OutcomeTokenFactory,
+    OutcomeTokenBalanceFactory, ScalarEventDescriptionFactory, CategoricalEventFactory, ScalarEventFactory,
+    CategoricalEventDescriptionFactory
 )
 from relationaldb.serializers import (
     OutcomeTokenIssuanceSerializer, ScalarEventSerializer, UltimateOracleSerializer, OutcomeTokenRevocationSerializer,
@@ -11,7 +11,6 @@ from relationaldb.serializers import (
 )
 
 from relationaldb.models import OutcomeTokenBalance, OutcomeToken, ScalarEventDescription
-from rest_framework.serializers import ValidationError
 from django.conf import settings
 from ipfs.ipfs import Ipfs
 from time import mktime
@@ -24,7 +23,6 @@ class TestSerializers(TestCase):
 
     def test_create_centralized_oracle(self):
         oracle = CentralizedOracleFactory()
-        event_description_json = None
 
         block = {
             'number': oracle.creation_block,
@@ -32,7 +30,7 @@ class TestSerializers(TestCase):
         }
 
         oracle_event = {
-            'address': oracle.factory[0:-7] + 'GIACOMO',
+            'address': oracle.factory,
             'params': [
                 {
                     'name': 'creator',
@@ -40,7 +38,7 @@ class TestSerializers(TestCase):
                 },
                 {
                     'name': 'centralizedOracle',
-                    'value': oracle.address[1:-7] + 'GIACOMO',
+                    'value': oracle.address,
                 },
                 {
                     'name': 'ipfsHash',
@@ -48,7 +46,7 @@ class TestSerializers(TestCase):
                 }
             ]
         }
-
+        oracle.delete()
         s = CentralizedOracleSerializer(data=oracle_event, block=block)
         # ipfs_hash not saved to IPFS
         self.assertFalse(s.is_valid(), s.errors)
@@ -71,7 +69,6 @@ class TestSerializers(TestCase):
 
     def test_create_centralized_oracle_scalar_event_with_outcomes(self):
         oracle = CentralizedOracleFactory()
-        event_description_json = None
 
         block = {
             'number': oracle.creation_block,
@@ -128,23 +125,25 @@ class TestSerializers(TestCase):
         oracle.event_description.outcomes = ['Yes', 'No', 'Third']
         oracle.event_description.save()
 
+        event = CategoricalEventFactory(oracle=oracle)
+
         # Categorical Event with different outcomes
 
         block = {
-            'number': oracle.creation_block,
-            'timestamp': mktime(oracle.creation_date_time.timetuple())
+            'number': event.creation_block,
+            'timestamp': mktime(event.creation_date_time.timetuple())
         }
 
         categorical_event = {
-            'address': oracle.factory,
+            'address': event.factory,
             'params': [
                 {
                     'name': 'creator',
-                    'value': oracle.creator
+                    'value': event.creator
                 },
                 {
                     'name': 'collateralToken',
-                    'value': oracle.creator
+                    'value': event.creator
                 },
                 {
                     'name': 'oracle',
@@ -156,10 +155,12 @@ class TestSerializers(TestCase):
                 },
                 {
                     'name': 'categoricalEvent',
-                    'value': oracle.factory[1:-11] + 'CATEGORICAL',
+                    'value': event.address,
                 }
             ]
         }
+
+        event.delete()
 
         s = CategoricalEventSerializer(data=categorical_event, block=block)
         self.assertFalse(s.is_valid())
@@ -171,25 +172,27 @@ class TestSerializers(TestCase):
 
     def test_create_scalar_with_categorical_description(self):
 
-        oracle = CentralizedOracleFactory()
+        event_description = CategoricalEventDescriptionFactory()
+        oracle = CentralizedOracleFactory(event_description=event_description)
 
-        # Categorical Event with different outcomes
+        # Scalar Event with different outcomes
+        event = ScalarEventFactory()
 
         block = {
-            'number': oracle.creation_block,
-            'timestamp': mktime(oracle.creation_date_time.timetuple())
+            'number': event.creation_block,
+            'timestamp': mktime(event.creation_date_time.timetuple())
         }
 
         scalar_event = {
-            'address': oracle.factory,
+            'address': event.factory,
             'params': [
                 {
                     'name': 'creator',
-                    'value': oracle.creator
+                    'value': event.creator
                 },
                 {
                     'name': 'collateralToken',
-                    'value': oracle.creator
+                    'value': event.creator
                 },
                 {
                     'name': 'oracle',
@@ -197,19 +200,20 @@ class TestSerializers(TestCase):
                 },
                 {
                     'name': 'upperBound',
-                    'value': 1
+                    'value': event.upper_bound
                 },
                 {
                     'name': 'lowerBound',
-                    'value': 0
+                    'value': event.lower_bound
                 },
                 {
                     'name': 'scalarEvent',
-                    'value': oracle.factory[1:-6] + 'SCALAR',
+                    'value': event.address,
                 }
             ]
         }
 
+        event.delete()
         s = ScalarEventSerializer(data=scalar_event, block=block)
         self.assertFalse(s.is_valid())
         scalar_event['params'][3]['value'] = 3
@@ -221,6 +225,7 @@ class TestSerializers(TestCase):
         instance = s2.save()
         self.assertIsNotNone(instance)
 
+    # TODO remove
     def test_deserialize_ultimate_oracle(self):
         forwarded_oracle = CentralizedOracleFactory()
         ultimate_oracle = UltimateOracleFactory()
@@ -271,6 +276,7 @@ class TestSerializers(TestCase):
         s = UltimateOracleSerializer(data=oracle_event, block=block)
         self.assertTrue(s.is_valid(), s.errors)
 
+    # TODO remove
     def test_create_ultimate_oracle(self):
         forwarded_oracle = CentralizedOracleFactory()
         ultimate_oracle = UltimateOracleFactory()
@@ -324,6 +330,7 @@ class TestSerializers(TestCase):
         self.assertIsNotNone(instance)
         self.assertIsNotNone(instance.pk)
 
+    # TODO remove
     def test_create_ultimate_oracle_no_forwarded(self):
         forwarded_oracle = CentralizedOracleFactory()
         ultimate_oracle = UltimateOracleFactory()
@@ -375,20 +382,21 @@ class TestSerializers(TestCase):
         self.assertFalse(s.is_valid())
 
     def test_create_scalar_event(self):
-        event = EventFactory()
-        oracle = OracleFactory()
+        event = ScalarEventFactory()
+        event_description = ScalarEventDescriptionFactory()
+        oracle = CentralizedOracleFactory(event_description=event_description)
 
         block = {
-            'number': oracle.creation_block,
-            'timestamp': mktime(oracle.creation_date_time.timetuple())
+            'number': event.creation_block,
+            'timestamp': mktime(event.creation_date_time.timetuple())
         }
 
         scalar_event = {
-            'address': oracle.factory[1:-8] + 'GIACOMO1',
+            'address': event.factory,
             'params': [
                 {
                     'name': 'creator',
-                    'value': oracle.creator
+                    'value': event.creator
                 },
                 {
                     'name': 'collateralToken',
@@ -408,13 +416,13 @@ class TestSerializers(TestCase):
                 }
             ]
         }
-
+        event.delete()
         s = ScalarEventSerializer(data=scalar_event, block=block)
         self.assertFalse(s.is_valid(), s.errors)
 
         scalar_event.get('params').append({
             'name': 'scalarEvent',
-            'value': event.address[1:-8] + 'GIACOMO2'
+            'value': event.address
         })
 
         s = ScalarEventSerializer(data=scalar_event, block=block)
@@ -423,24 +431,24 @@ class TestSerializers(TestCase):
         self.assertIsNotNone(instance)
 
     def test_create_categorical_event(self):
-        event_factory = EventFactory()
-        oracle = OracleFactory()
+        event = CategoricalEventFactory()
+        oracle = CentralizedOracleFactory()
 
         block = {
-            'number': oracle.creation_block,
-            'timestamp': mktime(oracle.creation_date_time.timetuple())
+            'number': event.creation_block,
+            'timestamp': mktime(event.creation_date_time.timetuple())
         }
 
         categorical_event = {
-            'address': oracle.factory[1:-7] + 'GIACOMO',
+            'address': event.factory,
             'params': [
                 {
                     'name': 'creator',
-                    'value': oracle.creator
+                    'value': event.creator
                 },
                 {
                     'name': 'collateralToken',
-                    'value': event_factory.collateral_token
+                    'value': event.collateral_token
                 },
                 {
                     'name': 'oracle',
@@ -448,17 +456,17 @@ class TestSerializers(TestCase):
                 },
                 {
                     'name': 'outcomeCount',
-                    'value': 1
+                    'value': 2
                 }
             ]
         }
-
+        event.delete()
         s = CategoricalEventSerializer(data=categorical_event, block=block)
         self.assertFalse(s.is_valid(), s.errors)
 
         categorical_event.get('params').append({
             'name': 'categoricalEvent',
-            'value': event_factory.address[1:-7] + 'GIACOMO'
+            'value': event.address
         })
 
         s = CategoricalEventSerializer(data=categorical_event, block=block)
@@ -468,57 +476,58 @@ class TestSerializers(TestCase):
 
     def test_create_market(self):
         oracle = CentralizedOracleFactory()
-        event_factory = CategoricalEventFactory(oracle=oracle)
-        market_factory = MarketFactory()
+        event = CategoricalEventFactory(oracle=oracle)
+        market = MarketFactory()
 
         block = {
-            'number': oracle.creation_block,
-            'timestamp': mktime(oracle.creation_date_time.timetuple())
+            'number': market.creation_block,
+            'timestamp': mktime(market.creation_date_time.timetuple())
         }
 
         market_dict = {
-            'address': oracle.factory[1:-7] + 'GIACOMO',
+            'address': market.factory,
             'params': [
                 {
                     'name': 'creator',
-                    'value': oracle.creator
+                    'value': market.creator
                 },
                 {
                     'name': 'centralizedOracle',
-                    'value': oracle.address[1:-7] + 'GIACOMO',
+                    'value': oracle.address,
                 },
                 {
                     'name': 'marketMaker',
-                    'value': market_factory.market_maker
+                    'value': market.market_maker
                 },
                 {
                     'name': 'fee',
-                    'value': market_factory.fee
+                    'value': market.fee
                 },
                 {
                     'name': 'market',
-                    'value': market_factory.address[0:-7] + 'MARKET'
+                    'value': market.address
                 }
             ]
         }
+        market.delete()
 
         s = MarketSerializer(data=market_dict, block=block)
         self.assertFalse(s.is_valid(), s.errors)
 
         market_dict.get('params').append({
             'name': 'eventContract',
-            'value': event_factory.address[1:-9] + 'xGIACOMOx'
+            'value': market.address
         })
 
         market_dict.get('params').append({
             'name': 'fee',
-            'value': market_factory.fee
+            'value': market.fee
         })
 
         s = MarketSerializer(data=market_dict, block=block)
         self.assertFalse(s.is_valid(), s.errors)
 
-        market_dict.get('params')[-2]['value'] = event_factory.address
+        market_dict.get('params')[-2]['value'] = event.address
 
         s = MarketSerializer(data=market_dict, block=block)
         self.assertFalse(s.is_valid(), s.errors)
@@ -532,12 +541,13 @@ class TestSerializers(TestCase):
         self.assertIsNotNone(instance)
 
     def test_create_categorical_event_description(self):
-        event_description_factory = EventDescriptionFactory()
+        event_description = CategoricalEventDescriptionFactory()
+        event_description.delete()
         categorical_event_description_json = {
-            'title': ' '.join(event_description_factory.title),
-            'description': ' '.join(event_description_factory.description),
-            'resolution_date': event_description_factory.resolution_date.isoformat(),
-            'outcomes': ['A', 'B', 'C']
+            'title': event_description.title,
+            'description': event_description.description,
+            'resolution_date': event_description.resolution_date.isoformat(),
+            'outcomes': event_description.outcomes
         }
         ipfs_hash = self.ipfs.post(categorical_event_description_json)
         serializer = IPFSEventDescriptionDeserializer(data={'ipfs_hash': ipfs_hash})
@@ -545,13 +555,14 @@ class TestSerializers(TestCase):
         self.assertIsNotNone(serializer.save())
 
     def test_create_scalar_event_description(self):
-        event_description_factory = EventDescriptionFactory()
+        event_description = ScalarEventDescriptionFactory()
+        event_description.delete()
         scalar_event_description_json = {
-            'title': ' '.join(event_description_factory.title),
-            'description': ' '.join(event_description_factory.description),
-            'resolution_date': event_description_factory.resolution_date.isoformat(),
-            'unit': 'X',
-            'decimals': '4',
+            'title': event_description.title,
+            'description': event_description.description,
+            'resolution_date': event_description.resolution_date.isoformat(),
+            'unit': event_description.unit,
+            'decimals': event_description.decimals,
         }
         ipfs_hash = self.ipfs.post(scalar_event_description_json)
         serializer = IPFSEventDescriptionDeserializer(data={'ipfs_hash': ipfs_hash})
@@ -560,16 +571,14 @@ class TestSerializers(TestCase):
 
     def test_create_centralized_oracle_instance(self):
         oracle = CentralizedOracleFactory()
+        oracle.delete()
         # oracle.event_description
         event_description_json = {
             'title': oracle.event_description.title,
             'description': oracle.event_description.description,
             'resolutionDate': oracle.event_description.resolution_date.isoformat(),
-            'outcomes': ['Yes', 'No']
+            'outcomes': oracle.event_description.outcomes
         }
-
-        # save event_description to IPFS
-        ipfs_hash = self.ipfs.post(event_description_json)
 
         block = {
             'number': oracle.creation_block,
@@ -577,19 +586,19 @@ class TestSerializers(TestCase):
         }
 
         oracle_event = {
-            'address': oracle.factory[0:-7] + 'GIACOMO',
+            'address': oracle.factory,
             'params': [
                 {
                     'name': 'creator',
-                    'value': oracle.address
+                    'value': oracle.creator
                 },
                 {
                     'name': 'centralizedOracle',
-                    'value': oracle.address[1:-8] + 'INSTANCE',
+                    'value': oracle.address,
                 },
                 {
                     'name': 'ipfsHash',
-                    'value': ipfs_hash
+                    'value': oracle.event_description.ipfs_hash
                 }
             ]
         }
@@ -600,82 +609,25 @@ class TestSerializers(TestCase):
         self.assertIsNotNone(instance)
 
     def test_create_outcome_token_instance(self):
-        outcome_token_factory = OutcomeTokenFactory()
-        oracle_factory = OracleFactory()
-        event_factory = EventFactory()
-        event = None
+        outcome_token = OutcomeTokenFactory()
+        event = ScalarEventFactory()
 
-        block = {
-            'number': oracle_factory.creation_block,
-            'timestamp': mktime(oracle_factory.creation_date_time.timetuple())
-        }
-
-        scalar_event = {
-            'address': oracle_factory.factory[1:-12] + 'TESTINSTANCE',
+        outcome_token_event = {
+            'address': event.address,
             'params': [
-                {
-                    'name': 'creator',
-                    'value': oracle_factory.creator
-                },
-                {
-                    'name': 'collateralToken',
-                    'value': event_factory.collateral_token
-                },
-                {
-                    'name': 'oracle',
-                    'value': oracle_factory.address
-                },
-                {
-                    'name': 'outcomeCount',
-                    'value': 1
-                },
-                {
-                    'name': 'upperBound',
-                    'value': 1
-                },
-                {
-                    'name': 'lowerBound',
-                    'value': 0
-                },
-                {
-                    'name': 'scalarEvent',
-                    'value': event_factory.address[1:-12] + 'TESTINSTANCE'
-                }
-            ]
-        }
-
-        s = ScalarEventSerializer(data=scalar_event, block=block)
-        s.is_valid()
-        event = s.save()
-
-        block = {
-            'number': oracle_factory.creation_block,
-            'timestamp': mktime(oracle_factory.creation_date_time.timetuple())
-        }
-
-        oracle_event = {
-            'address': oracle_factory.factory[0:-7] + 'GIACOMO',
-            'params': [
-                {
-                    'name': 'creator',
-                    'value': event.creator
-                },
-                {
-                    'name': 'address',
-                    'value': event.address
-                },
                 {
                     'name': 'outcomeToken',
-                    'value': oracle_factory.address[1:-8] + 'INSTANCE',
+                    'value': outcome_token.address,
                 },
                 {
                     'name': 'index',
-                    'value': outcome_token_factory.index
+                    'value': outcome_token.index
                 }
             ]
         }
+        outcome_token.delete()
 
-        s = OutcomeTokenInstanceSerializer(data=oracle_event)
+        s = OutcomeTokenInstanceSerializer(data=outcome_token_event)
         self.assertTrue(s.is_valid(), s.errors)
         instance = s.save()
         self.assertIsNotNone(instance)

@@ -97,8 +97,8 @@ class EventDescriptionFactory(factory_boy.DjangoModelFactory):
     class Meta:
         model = models.EventDescription
 
-    title = factory_boy.Sequence(lambda _: ''.join(faker.words(5)))
-    description = factory_boy.Sequence(lambda _: faker.words(5))
+    title = factory_boy.Sequence(lambda _: ' '.join(faker.words(5)))
+    description = factory_boy.Sequence(lambda _: ' '.join(faker.words(5)))
     resolution_date = FuzzyDateTime(datetime.now(pytz.utc))
     ipfs_hash = factory_boy.Sequence(lambda n: '{:046d}'.format(n))
 
@@ -107,14 +107,14 @@ class CategoricalEventDescriptionFactory(EventDescriptionFactory):
     class Meta:
         model = models.CategoricalEventDescription
 
-    outcomes = [factory_boy.Sequence(lambda _: faker.words(2)), factory_boy.Sequence(lambda _: faker.words(2))]
+    outcomes = factory_boy.LazyAttribute(lambda _: [' '.join(faker.words(2)), ' '.join(faker.words(2))])
 
 
 class ScalarEventDescriptionFactory(EventDescriptionFactory):
     class Meta:
         model = models.ScalarEventDescription
 
-    unit = factory_boy.Sequence(lambda _: faker.words(1))
+    unit = factory_boy.Sequence(lambda _: ' '.join(faker.words(1)))
     decimals = factory_boy.Sequence(lambda n: n)
 
 
