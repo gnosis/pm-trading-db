@@ -409,9 +409,6 @@ class ScalarEventDescriptionSerializer(serializers.ModelSerializer):
         model = models.ScalarEventDescription
         exclude = ('id',)
 
-    def rollback(self, validated_data):
-        pass
-
 
 class CategoricalEventDescriptionSerializer(serializers.ModelSerializer):
     """
@@ -420,9 +417,6 @@ class CategoricalEventDescriptionSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.CategoricalEventDescription
         exclude = ('id',)
-
-    def rollback(self, validated_data):
-        pass
 
 
 class IPFSEventDescriptionDeserializer(serializers.ModelSerializer):
@@ -476,9 +470,6 @@ class IPFSEventDescriptionDeserializer(serializers.ModelSerializer):
         result = instance.save()
         return result
 
-    def rollback(self, validated_data):
-        pass
-
 
 # ========================================================
 #             Contract Instance serializers
@@ -497,7 +488,7 @@ class OutcomeTokenInstanceSerializer(ContractNotTimestampted, serializers.ModelS
     index = serializers.IntegerField(min_value=0)
 
     def rollback(self):
-        pass
+        self.instance.delete()
 
 
 class OutcomeTokenIssuanceSerializer(ContractNotTimestampted, serializers.ModelSerializer):
@@ -518,27 +509,38 @@ class OutcomeTokenIssuanceSerializer(ContractNotTimestampted, serializers.ModelS
         outcome_token = None
         outcome_token_balance = None
         try:
-            outcome_token_balance = models.OutcomeTokenBalance.objects.get(owner=validated_data['owner'],
-                                                                           outcome_token__address=validated_data['outcome_token'])
-            outcome_token_balance.balance += validated_data['amount']
-            outcome_token_balance.outcome_token.total_supply += validated_data['amount']
+            outcome_token_balance = models.OutcomeTokenBalance.objects.get(owner=validated_data.get('owner'),
+                                                                           outcome_token__address=validated_data.get('outcome_token'))
+            outcome_token_balance.balance += validated_data.get('amount')
+            outcome_token_balance.outcome_token.total_supply += validated_data.get('amount')
             outcome_token_balance.outcome_token.save()
             outcome_token_balance.save()
             return outcome_token_balance.outcome_token
         except models.OutcomeTokenBalance.DoesNotExist:
-            outcome_token = models.OutcomeToken.objects.get(address=validated_data['outcome_token'])
-            outcome_token.total_supply += validated_data['amount']
+            outcome_token = models.OutcomeToken.objects.get(address=validated_data.get('outcome_token'))
+            outcome_token.total_supply += validated_data.get('amount')
             outcome_token.save()
 
             outcome_token_balance = models.OutcomeTokenBalance()
-            outcome_token_balance.balance = validated_data['amount']
-            outcome_token_balance.owner = validated_data['owner']
+            outcome_token_balance.balance = validated_data.get('amount')
+            outcome_token_balance.owner = validated_data.get('owner')
             outcome_token_balance.outcome_token = outcome_token
             outcome_token_balance.save()
             return outcome_token
 
     def rollback(self):
-        pass
+        try:
+            outcome_token_balance = models.OutcomeTokenBalance.objects.get(
+                owner=self.validated_data.get('owner'),
+                outcome_token__address=self.validated_data.get('outcome_token')
+            )
+            outcome_token_balance.balance -= self.validated_data.get('amount')
+            outcome_token_balance.save()
+            self.instance.total_supply -= self.validated_data.get('amount')
+            self.instance.save()
+        except models.OutcomeTokenBalance.DoesNotExist:
+            self.instance.total_supply -= self.validated_data.get('amount')
+            self.instance.save()
 
 
 class OutcomeTokenRevocationSerializer(ContractNotTimestampted, serializers.ModelSerializer):
@@ -576,7 +578,14 @@ class OutcomeTokenRevocationSerializer(ContractNotTimestampted, serializers.Mode
         return outcome_token_balance.outcome_token
 
     def rollback(self):
-        pass
+        outcome_token_balance = models.OutcomeTokenBalance.objects.get(
+            owner=self.validated_data.get('owner'),
+            outcome_token__address=self.validated_data.get('outcome_token')
+        )
+        outcome_token_balance.balance += self.validated_data.get('amount')
+        outcome_token_balance.save()
+        self.instance.total_supply += self.validated_data.get('amount')
+        self.instance.save()
 
 
 class OutcomeAssignmentEventSerializer(ContractNotTimestampted, serializers.ModelSerializer):
@@ -603,7 +612,9 @@ class OutcomeAssignmentEventSerializer(ContractNotTimestampted, serializers.Mode
             raise serializers.ValidationError('Event {} does not exist'.format(validated_data.get('address')))
 
     def rollback(self):
-        pass
+        self.instance.is_winning_outcome_set = False
+        self.instance.outcome = None
+        self.instance.save()
 
 
 class OutcomeTokenTransferSerializer(ContractNotTimestampted, serializers.ModelSerializer):
@@ -625,26 +636,47 @@ class OutcomeTokenTransferSerializer(ContractNotTimestampted, serializers.ModelS
 
     def create(self, validated_data):
         # Substract balance from Outcome Token Balance
-        from_balance = models.OutcomeTokenBalance.objects.get(owner=validated_data['from_address'],
-                                                              outcome_token__address=validated_data['outcome_token'])
-        from_balance.balance -= validated_data['value']
+        from_balance = models.OutcomeTokenBalance.objects.get(owner=validated_data.get('from_address'),
+                                                              outcome_token__address=validated_data.get('outcome_token'))
+        from_balance.balance -= validated_data.get('value')
         from_balance.save()
 
         # Add balance to receiver
         to_balance = None
         try:
-            to_balance = models.OutcomeTokenBalance.objects.get(owner=validated_data['to'],
-                                                                outcome_token__address=validated_data['outcome_token'])
+            to_balance = models.OutcomeTokenBalance.objects.get(owner=validated_data.get('to'),
+                                                                outcome_token__address=validated_data.get('outcome_token'))
         except models.OutcomeTokenBalance.DoesNotExist:
-            to_balance = models.OutcomeTokenBalance.objects.create(owner=validated_data['to'],
+            to_balance = models.OutcomeTokenBalance.objects.create(owner=validated_data.get('to'),
                                                                    outcome_token=from_balance.outcome_token)
-        to_balance.balance += validated_data['value']
+        to_balance.balance += validated_data.get('value')
         to_balance.save()
 
         return to_balance
 
     def rollback(self):
-        pass
+        # got OutcomeTokenBalance by using 'From' property
+        self.instance.balance += self.validated_data.get('value')
+        self.instance.save()
+
+        # Add balance to receiver
+        to_balance = None
+        try:
+            to_balance = models.OutcomeTokenBalance.objects.get(
+                owner=self.validated_data.get('to'),
+                outcome_token__address=self.validated_data.get('outcome_token')
+            )
+        except models.OutcomeTokenBalance.DoesNotExist:
+            to_balance = models.OutcomeTokenBalance.objects.create(
+                owner=self.validated_data.get('to'),
+                outcome_token=self.from_balance.outcome_token
+            )
+
+        if to_balance.balance - self.validated_data.get('value') == 0:
+            to_balance.delete()
+        else:
+            to_balance.balance -= self.validated_data.get('value')
+            to_balance.save()
 
 
 class WinningsRedemptionSerializer(ContractNotTimestampted, serializers.ModelSerializer):
@@ -671,7 +703,8 @@ class WinningsRedemptionSerializer(ContractNotTimestampted, serializers.ModelSer
             raise serializers.ValidationError('Event {} does not exist'.format(validated_data.get('address')))
 
     def rollback(self):
-        pass
+        self.instance -= self.validated_data.get('winnings')
+        self.instance.save()
 
 
 class CentralizedOracleInstanceSerializer(CentralizedOracleSerializer):

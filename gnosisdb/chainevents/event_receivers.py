@@ -105,6 +105,7 @@ class MarketFactoryReceiver(SerializerEventReceiver):
         }
         primary_key_name = 'market'
 
+
 ###########################
 # Instance Event Receivers
 ###########################
@@ -130,6 +131,7 @@ class BaseInstanceEventReceiver(SerializerEventReceiver):
                     filter_dict[pk_model] = filter(lambda x: x.get('name') == pk_event, decoded_event.get('params'))[0].get('value')
                 else:
                     filter_dict[pk_model] = decoded_event.get(pk_event)
+
         instance = serializer_class.Meta.model.objects.get(
             **filter_dict
         )
@@ -140,7 +142,8 @@ class BaseInstanceEventReceiver(SerializerEventReceiver):
             logger.info('Event Receiver {} reverted: {}'.format(self.__class__.__name__, dumps(decoded_event)))
         else:
             logger.warning(
-                'INVALID Data for Event Receiver {} rollback: {}'.format(self.__class__.__name__, dumps(decoded_event)))
+                'INVALID Data for Event Receiver {} rollback: {}'.format(self.__class__.__name__, dumps(decoded_event))
+            )
             logger.warning(serializer.errors)
 
 
@@ -218,25 +221,32 @@ class UltimateOracleInstanceReceiver(AbstractEventReceiver):
         pass
 
 
-class EventInstanceReceiver(SerializerEventReceiver):
+class EventInstanceReceiver(BaseInstanceEventReceiver):
     class Meta:
         events = {
             'OutcomeTokenCreation': OutcomeTokenInstanceSerializer,
             'OutcomeAssignment': OutcomeAssignmentEventSerializer,
             'WinningsRedemption': WinningsRedemptionSerializer
         }
+        primary_key_name = {
+            'OutcomeTokenCreation': 'address',
+            'OutcomeAssignment': 'address',
+            'WinningsRedemption': 'address'
+        }
 
-    def rollback(self, decoded_event, block_info):
-        pass
 
-
-class OutcomeTokenInstanceReceiver(SerializerEventReceiver):
+class OutcomeTokenInstanceReceiver(BaseInstanceEventReceiver):
     class Meta:
         events = {
             'Issuance': OutcomeTokenIssuanceSerializer,  # sum to totalSupply, update data
             'Revocation': OutcomeTokenRevocationSerializer,  # subtract from total Supply, update data,
             'Transfer': OutcomeTokenTransferSerializer # moves balance between owners
         }
-
-    def rollback(self, decoded_event, block_info):
-        pass
+        primary_key_name = {
+            'Issuance': 'address',
+            'Revocation': 'address',
+            'Transfer': {
+                'owner': 'from',
+                'outcome_token': 'address'
+            }
+        }

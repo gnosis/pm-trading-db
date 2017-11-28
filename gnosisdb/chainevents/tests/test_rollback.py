@@ -9,8 +9,8 @@ from chainevents.event_receivers import (
 )
 
 from relationaldb.models import (
-    CentralizedOracle, UltimateOracle, ScalarEvent, CategoricalEvent, Market, OutcomeToken,
-    Event, OutcomeVoteBalance, BuyOrder, SellOrder
+    CentralizedOracle, ScalarEvent, CategoricalEvent, Market, OutcomeToken,
+    OutcomeTokenBalance, BuyOrder, SellOrder
 )
 
 from relationaldb.tests.factories import (
@@ -431,3 +431,55 @@ class TestRollabck(TestCase):
         MarketInstanceReceiver().rollback(market_withdraw_event, block)
         market_with_rollback = Market.objects.get(address=market_factory.address)
         self.assertEquals(market_with_rollback.withdrawn_fees, market_factory.withdrawn_fees)
+
+    def test_outcome_token_transfer_rollback(self):
+        outcome_token_factory = OutcomeTokenFactory()
+        owner_one = outcome_token_factory.address[0:-5] + 'other'
+        owner_two = outcome_token_factory.address[0:-2] + 'to'
+        block = {
+            'number': 1,
+            'timestamp': self.to_timestamp(datetime.now())
+        }
+        issuance_event = {
+            'name': 'Issuance',
+            'address': outcome_token_factory.address,
+            'params': [
+                {
+                    'name': 'owner',
+                    'value': owner_one
+                },
+                {
+                    'name': 'amount',
+                    'value': 1000
+                }
+            ]
+        }
+        transfer_event = {
+            'name': 'Transfer',
+            'address': outcome_token_factory.address,
+            'params': [
+                {
+                    'name': 'from',
+                    'value': owner_one
+                },
+                {
+                    'name': 'to',
+                    'value': owner_two
+                },
+                {
+                    'name': 'value',
+                    'value': 10
+                }
+            ]
+        }
+
+        OutcomeTokenInstanceReceiver().save(issuance_event)
+        # do revocation
+        OutcomeTokenInstanceReceiver().save(transfer_event)
+        outcome_token_balance_before_rollback = OutcomeTokenBalance.objects.get(owner=owner_two)
+        self.assertEquals(outcome_token_balance_before_rollback.balance, 10)
+
+        # Rollback
+        OutcomeTokenInstanceReceiver().rollback(transfer_event, block)
+        with self.assertRaises(OutcomeTokenBalance.DoesNotExist):
+            OutcomeTokenBalance.objects.get(owner=owner_two)
