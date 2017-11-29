@@ -70,8 +70,18 @@ class TestEventReceiver(TestCase):
         }
         oracle.delete()
         CentralizedOracleFactoryReceiver().save(oracle_event, block)
-        created_oracle = CentralizedOracle.objects.get(address=oracle_address)
-        self.assertIsNotNone(created_oracle.pk)
+        saved_oracle1 = CentralizedOracle.objects.get(address=oracle_address)
+        self.assertIsNotNone(saved_oracle1.pk)
+
+        # Cannot save twice
+        oracle2 = CentralizedOracleFactory()
+        oracle_event.get('params')[0].update({'value': oracle2.creator})
+        oracle_event.get('params')[2].update({'value': oracle2.event_description.ipfs_hash})
+        instance = CentralizedOracleFactoryReceiver().save(oracle_event, block)
+        self.assertIsNone(instance)
+        saved_oracle2 = CentralizedOracle.objects.get(address=oracle_address)
+        self.assertEqual(saved_oracle1.event_description.ipfs_hash, saved_oracle2.event_description.ipfs_hash)
+        self.assertEqual(saved_oracle1.creator, saved_oracle2.creator)
 
     # TODO remove
     def test_ultimate_oracle_receiver(self):

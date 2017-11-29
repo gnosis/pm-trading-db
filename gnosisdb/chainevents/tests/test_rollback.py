@@ -78,6 +78,9 @@ class TestRollabck(TestCase):
         with self.assertRaises(CentralizedOracle.DoesNotExist):
             CentralizedOracle.objects.get(address=oracle_address)
 
+        # Rollback over nonexistent centralized oracle should fail
+        self.assertRaises(Exception, CentralizedOracleFactoryReceiver().rollback, oracle_event, block)
+
     def test_oracle_owner_replacement_rollback(self):
         # Create the oracle
         oracle = CentralizedOracleFactory()
@@ -186,6 +189,9 @@ class TestRollabck(TestCase):
         with self.assertRaises(ScalarEvent.DoesNotExist):
             ScalarEvent.objects.get(address=event_address)
 
+        # Rollback over an nonexistent event should fail
+        self.assertRaises(Exception, EventFactoryReceiver().rollback, scalar_event, block)
+
     def test_categorical_event_factory_rollback(self):
         event = CategoricalEventFactory()
         oracle = OracleFactory()
@@ -229,6 +235,9 @@ class TestRollabck(TestCase):
         EventFactoryReceiver().rollback(categorical_event, block)
         with self.assertRaises(CategoricalEvent.DoesNotExist):
             CategoricalEvent.objects.get(address=event_address)
+
+        # Rollback over an nonexistent event shoul fail
+        self.assertRaises(Exception, EventFactoryReceiver().rollback, categorical_event, block)
 
     def test_market_factory_rollback(self):
         oracle = CentralizedOracleFactory()
