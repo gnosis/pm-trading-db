@@ -474,7 +474,6 @@ class TestRollabck(TestCase):
         }
 
         OutcomeTokenInstanceReceiver().save(issuance_event)
-        # do revocation
         OutcomeTokenInstanceReceiver().save(transfer_event)
         outcome_token_balance_before_rollback = OutcomeTokenBalance.objects.get(owner=owner_two)
         self.assertEquals(outcome_token_balance_before_rollback.balance, 10)
@@ -483,3 +482,13 @@ class TestRollabck(TestCase):
         OutcomeTokenInstanceReceiver().rollback(transfer_event, block)
         with self.assertRaises(OutcomeTokenBalance.DoesNotExist):
             OutcomeTokenBalance.objects.get(owner=owner_two)
+
+        # Test with funds on owner2
+        OutcomeTokenInstanceReceiver().save(issuance_event)
+        isuance_event_owner_two = issuance_event.copy()
+        isuance_event_owner_two.get('params')[0]['value'] = owner_two
+        OutcomeTokenInstanceReceiver().save(isuance_event_owner_two)
+        OutcomeTokenInstanceReceiver().save(transfer_event)
+        OutcomeTokenInstanceReceiver().rollback(transfer_event, block)
+        owner_two_token_balance = OutcomeTokenBalance.objects.get(owner=owner_two)
+        self.assertEquals(owner_two_token_balance.balance, 1000)
