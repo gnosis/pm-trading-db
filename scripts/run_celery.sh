@@ -8,9 +8,9 @@ case "$database_status" in
 esac
 
 
-if [ -f "$HOME/var/run/celery/celerybeat.pid" ]; then
+if [ -f "$HOME/celerybeat.pid" ]; then
     echo "==> Removing celerybeat.pid..."
-	rm "$HOME/var/run/celery/celerybeat.pid"
+	rm "$HOME/celerybeat.pid"
 	echo "==> celerybeat.pid removed"
 fi
 
