@@ -3,8 +3,8 @@ from __future__ import unicode_literals
 from django.test import TestCase
 from django.conf import settings
 from chainevents.event_receivers import (
-    CentralizedOracleFactoryReceiver, UltimateOracleFactoryReceiver, EventFactoryReceiver, MarketFactoryReceiver,
-    CentralizedOracleInstanceReceiver, EventInstanceReceiver, UltimateOracleInstanceReceiver, OutcomeTokenInstanceReceiver,
+    CentralizedOracleFactoryReceiver, EventFactoryReceiver, MarketFactoryReceiver,
+    CentralizedOracleInstanceReceiver, EventInstanceReceiver, OutcomeTokenInstanceReceiver,
     MarketInstanceReceiver
 )
 

@@ -1,11 +1,10 @@
 from unittest import TestCase
 from relationaldb.tests.factories import (
-    CentralizedOracleFactory, UltimateOracleFactory, EventFactory, MarketFactory, OutcomeTokenFactory,
-    OutcomeTokenBalanceFactory, ScalarEventDescriptionFactory, CategoricalEventFactory, ScalarEventFactory,
-    CategoricalEventDescriptionFactory
+    CentralizedOracleFactory, EventFactory, MarketFactory, OutcomeTokenFactory, OutcomeTokenBalanceFactory,
+    ScalarEventDescriptionFactory, CategoricalEventFactory, ScalarEventFactory, CategoricalEventDescriptionFactory
 )
 from relationaldb.serializers import (
-    OutcomeTokenIssuanceSerializer, ScalarEventSerializer, UltimateOracleSerializer, OutcomeTokenRevocationSerializer,
+    OutcomeTokenIssuanceSerializer, ScalarEventSerializer, OutcomeTokenRevocationSerializer,
     CategoricalEventSerializer, MarketSerializer, IPFSEventDescriptionDeserializer, CentralizedOracleSerializer,
     CentralizedOracleInstanceSerializer, OutcomeTokenInstanceSerializer, OutcomeTokenTransferSerializer
 )
@@ -224,162 +223,6 @@ class TestSerializers(TestCase):
         self.assertTrue(s2.is_valid(), s.errors)
         instance = s2.save()
         self.assertIsNotNone(instance)
-
-    # TODO remove
-    def test_deserialize_ultimate_oracle(self):
-        forwarded_oracle = CentralizedOracleFactory()
-        ultimate_oracle = UltimateOracleFactory()
-
-        block = {
-            'number': ultimate_oracle.creation_block,
-            'timestamp': mktime(ultimate_oracle.creation_date_time.timetuple())
-        }
-
-        oracle_event = {
-            'address': ultimate_oracle.factory[0:-7] + 'GIACOMO',
-            'params': [
-                {
-                    'name': 'creator',
-                    'value': ultimate_oracle.creator
-                },
-                {
-                    'name': 'ultimateOracle',
-                    'value': ultimate_oracle.address
-                },
-                {
-                    'name': 'oracle',
-                    'value': forwarded_oracle.address
-                },
-                {
-                    'name': 'collateralToken',
-                    'value': ultimate_oracle.collateral_token
-                },
-                {
-                    'name': 'spreadMultiplier',
-                    'value': ultimate_oracle.spread_multiplier
-                },
-                {
-                    'name': 'challengePeriod',
-                    'value': ultimate_oracle.challenge_period
-                },
-                {
-                    'name': 'challengeAmount',
-                    'value': ultimate_oracle.challenge_amount
-                },
-                {
-                    'name': 'frontRunnerPeriod',
-                    'value': ultimate_oracle.front_runner_period
-                }
-            ]
-        }
-
-        s = UltimateOracleSerializer(data=oracle_event, block=block)
-        self.assertTrue(s.is_valid(), s.errors)
-
-    # TODO remove
-    def test_create_ultimate_oracle(self):
-        forwarded_oracle = CentralizedOracleFactory()
-        ultimate_oracle = UltimateOracleFactory()
-
-        block = {
-            'number': ultimate_oracle.creation_block,
-            'timestamp': mktime(ultimate_oracle.creation_date_time.timetuple())
-        }
-
-        oracle_event = {
-            'address': ultimate_oracle.factory[0:7] + 'another',
-            'params': [
-                {
-                    'name': 'creator',
-                    'value': ultimate_oracle.creator
-                },
-                {
-                    'name': 'ultimateOracle',
-                    'value': ultimate_oracle.address[0:7] + 'another',
-                },
-                {
-                    'name': 'oracle',
-                    'value': forwarded_oracle.address
-                },
-                {
-                    'name': 'collateralToken',
-                    'value': ultimate_oracle.collateral_token
-                },
-                {
-                    'name': 'spreadMultiplier',
-                    'value': ultimate_oracle.spread_multiplier
-                },
-                {
-                    'name': 'challengePeriod',
-                    'value': ultimate_oracle.challenge_period
-                },
-                {
-                    'name': 'challengeAmount',
-                    'value': ultimate_oracle.challenge_amount
-                },
-                {
-                    'name': 'frontRunnerPeriod',
-                    'value': ultimate_oracle.front_runner_period
-                }
-            ]
-        }
-
-        s = UltimateOracleSerializer(data=oracle_event, block=block)
-        self.assertTrue(s.is_valid(), s.errors)
-        instance = s.save()
-        self.assertIsNotNone(instance)
-        self.assertIsNotNone(instance.pk)
-
-    # TODO remove
-    def test_create_ultimate_oracle_no_forwarded(self):
-        forwarded_oracle = CentralizedOracleFactory()
-        ultimate_oracle = UltimateOracleFactory()
-
-        block = {
-            'number': ultimate_oracle.creation_block,
-            'timestamp': mktime(ultimate_oracle.creation_date_time.timetuple())
-        }
-
-        oracle_event = {
-            'address': ultimate_oracle.factory[0:-8] + 'another',
-            'params': [
-                {
-                    'name': 'creator',
-                    'value': ultimate_oracle.creator
-                },
-                {
-                    'name': 'ultimateOracle',
-                    'value': ultimate_oracle.address[0:-8] + 'another',
-                },
-                {
-                    'name': 'oracle',
-                    'value': ultimate_oracle.forwarded_oracle.address[0:-5] + 'wrong'
-                },
-                {
-                    'name': 'collateralToken',
-                    'value': ultimate_oracle.collateral_token
-                },
-                {
-                    'name': 'spreadMultiplier',
-                    'value': ultimate_oracle.spread_multiplier
-                },
-                {
-                    'name': 'challengePeriod',
-                    'value': ultimate_oracle.challenge_period
-                },
-                {
-                    'name': 'challengeAmount',
-                    'value': ultimate_oracle.challenge_amount
-                },
-                {
-                    'name': 'frontRunnerPeriod',
-                    'value': ultimate_oracle.front_runner_period
-                }
-            ]
-        }
-
-        s = UltimateOracleSerializer(data=oracle_event, block=block)
-        self.assertFalse(s.is_valid())
 
     def test_create_scalar_event(self):
         event = ScalarEventFactory()

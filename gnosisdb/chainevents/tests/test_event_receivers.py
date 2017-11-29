@@ -3,20 +3,19 @@ from __future__ import unicode_literals
 from django.test import TestCase
 from django.conf import settings
 from chainevents.event_receivers import (
-    CentralizedOracleFactoryReceiver, UltimateOracleFactoryReceiver, EventFactoryReceiver, MarketFactoryReceiver,
-    CentralizedOracleInstanceReceiver, EventInstanceReceiver, UltimateOracleInstanceReceiver, OutcomeTokenInstanceReceiver,
+    CentralizedOracleFactoryReceiver, EventFactoryReceiver, MarketFactoryReceiver,
+    CentralizedOracleInstanceReceiver, EventInstanceReceiver, OutcomeTokenInstanceReceiver,
     MarketInstanceReceiver
 )
 
 from relationaldb.models import (
-    CentralizedOracle, UltimateOracle, ScalarEvent, CategoricalEvent, Market, OutcomeToken,
-    Event, OutcomeVoteBalance, BuyOrder, SellOrder, OutcomeTokenBalance
+    CentralizedOracle, ScalarEvent, CategoricalEvent, Market, OutcomeToken,
+    Event, BuyOrder, SellOrder, OutcomeTokenBalance
 )
 
 from relationaldb.tests.factories import (
-    UltimateOracleFactory, CentralizedOracleFactory, ScalarEventFactory,
-    OracleFactory, EventFactory, MarketFactory, OutcomeTokenFactory,
-    OutcomeVoteBalanceFactory, CategoricalEventFactory
+    CentralizedOracleFactory, ScalarEventFactory, OracleFactory,
+    MarketFactory, OutcomeTokenFactory, CategoricalEventFactory
 )
 from datetime import datetime
 from time import mktime
@@ -71,60 +70,6 @@ class TestEventReceiver(TestCase):
         oracle.delete()
         CentralizedOracleFactoryReceiver().save(oracle_event, block)
         created_oracle = CentralizedOracle.objects.get(address=oracle_address)
-        self.assertIsNotNone(created_oracle.pk)
-
-    # TODO remove
-    def test_ultimate_oracle_receiver(self):
-        forwarded_oracle = CentralizedOracleFactory()
-        ultimate_oracle = UltimateOracleFactory()
-
-        block = {
-            'number': ultimate_oracle.creation_block,
-            'timestamp': mktime(ultimate_oracle.creation_date_time.timetuple())
-        }
-
-        oracle_address = ultimate_oracle.address[0:7] + 'another'
-
-        oracle_event = {
-            'address': ultimate_oracle.factory[0:7] + 'another',
-            'params': [
-                {
-                    'name': 'creator',
-                    'value': ultimate_oracle.creator
-                },
-                {
-                    'name': 'ultimateOracle',
-                    'value': oracle_address,
-                },
-                {
-                    'name': 'oracle',
-                    'value': forwarded_oracle.address
-                },
-                {
-                    'name': 'collateralToken',
-                    'value': ultimate_oracle.collateral_token
-                },
-                {
-                    'name': 'spreadMultiplier',
-                    'value': ultimate_oracle.spread_multiplier
-                },
-                {
-                    'name': 'challengePeriod',
-                    'value': ultimate_oracle.challenge_period
-                },
-                {
-                    'name': 'challengeAmount',
-                    'value': ultimate_oracle.challenge_amount
-                },
-                {
-                    'name': 'frontRunnerPeriod',
-                    'value': ultimate_oracle.front_runner_period
-                }
-            ]
-        }
-
-        UltimateOracleFactoryReceiver().save(oracle_event, block)
-        created_oracle = UltimateOracle.objects.get(address=oracle_address)
         self.assertIsNotNone(created_oracle.pk)
 
     def test_scalar_event_receiver(self):
@@ -478,97 +423,6 @@ class TestEventReceiver(TestCase):
         saved_oracle = CentralizedOracle.objects.get(address=oracle.address)
         self.assertTrue(saved_oracle.is_outcome_set)
         self.assertEqual(saved_oracle.outcome, 1)
-
-    # TODO remove
-    def test_ultimate_oracle_instance_outcome_assignment_receiver(self):
-        oracle_factory = UltimateOracleFactory()
-        assignment_event = {
-            'name': 'ForwardedOracleOutcomeAssignment',
-            'address': oracle_factory.address,
-            'params': [{
-                'name': 'outcome',
-                'value': 1,
-            }]
-        }
-
-        UltimateOracleInstanceReceiver().save(assignment_event)
-        ultimate_oracle = UltimateOracle.objects.get(address=oracle_factory.address)
-        self.assertTrue(ultimate_oracle.is_outcome_set)
-        self.assertEqual(ultimate_oracle.forwarded_outcome, 1)
-
-    # TODO remove
-    def test_ultimate_oracle_instance_outcome_challenge_receiver(self):
-        oracle = UltimateOracleFactory()
-        assignment_event = {
-            'name': 'OutcomeChallenge',
-            'address': oracle.address,
-            'params': [
-                {
-                    'name': 'sender',
-                    'value': oracle.creator
-                },
-                {
-                    'name': 'outcome',
-                    'value': 1
-                }
-            ]
-        }
-
-        UltimateOracleInstanceReceiver().save(assignment_event)
-        ultimate_oracle = UltimateOracle.objects.get(address=oracle.address)
-        self.assertEqual(ultimate_oracle.total_amount, oracle.challenge_amount)
-        self.assertEqual(ultimate_oracle.front_runner, 1)
-
-    # TODO remove
-    def test_ultimate_oracle_instance_outcome_vote_receiver(self):
-        balance_factory = OutcomeVoteBalanceFactory()
-        assignment_event = {
-            'name': 'OutcomeVote',
-            'address': balance_factory.ultimate_oracle.address,
-            'params': [
-                {
-                    'name': 'outcome',
-                    'value': balance_factory.ultimate_oracle.front_runner+1,
-                },
-                {
-                    'name': 'amount',
-                    'value': 1,
-                },
-                {
-                    'name': 'sender',
-                    'value': balance_factory.address,
-                },
-            ]
-        }
-
-        UltimateOracleInstanceReceiver().save(assignment_event)
-        ultimate_oracle = UltimateOracle.objects.get(address=balance_factory.ultimate_oracle.address)
-        outcome_vote_balance = OutcomeVoteBalance.objects.get(address= balance_factory.address)
-        self.assertEquals(ultimate_oracle.total_amount, balance_factory.ultimate_oracle.total_amount+1)
-        self.assertEquals(ultimate_oracle.front_runner, balance_factory.ultimate_oracle.front_runner+1)
-        self.assertEquals(outcome_vote_balance.balance, 1)
-
-    # TODO remove
-    def test_ultimate_oracle_instance_withdrawal_receiver(self):
-        balance_factory = OutcomeVoteBalanceFactory()
-        assignment_event = {
-            'name': 'Withdrawal',
-            'address': balance_factory.ultimate_oracle.address,
-            'params': [
-                {
-                    'name': 'amount',
-                    'value': 1,
-                },
-                {
-                    'name': 'sender',
-                    'value': balance_factory.address,
-                },
-            ]
-        }
-
-        UltimateOracleInstanceReceiver().save(assignment_event)
-        outcome_vote_balance = OutcomeVoteBalance.objects.get(address= balance_factory.address)
-        self.assertEquals(outcome_vote_balance.balance, balance_factory.balance-1)
 
     def test_market_funding_receiver(self):
         market = MarketFactory()

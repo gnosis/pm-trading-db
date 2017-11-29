@@ -2,7 +2,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import serializers
 from relationaldb.models import (
     ScalarEventDescription, CategoricalEventDescription, OutcomeTokenBalance, OutcomeToken,
-    CentralizedOracle, UltimateOracle, Market, Order, ScalarEvent, CategoricalEvent, BuyOrder
+    CentralizedOracle, Market, Order, ScalarEvent, CategoricalEvent, BuyOrder
 )
 from gnosisdb.utils import remove_null_values, add_0x_prefix, get_order_type, get_order_cost, get_order_profit
 from django.db.models import Sum
@@ -49,21 +49,9 @@ class EventDescriptionSerializer(serializers.BaseSerializer):
 class OracleSerializer(serializers.Serializer):
 
     def to_representation(self, instance):
-        result = None
-        try:
-            centralized_oracle = CentralizedOracle.objects.get(address=instance.address)
-            result = CentralizedOracleSerializer(centralized_oracle).to_representation(centralized_oracle)
-            return remove_null_values(result)
-        except CentralizedOracle.DoesNotExist:
-            pass
-
-        try:
-            ultimate_oracle = UltimateOracle.objects.get(address=instance.address)
-            result = UltimateOracleSerializer(ultimate_oracle).to_representation(ultimate_oracle)
-            return remove_null_values(result)
-        except UltimateOracle.DoesNotExist:
-            response = super(OracleSerializer, self).to_representation(instance)
-            return remove_null_values(response)
+        centralized_oracle = CentralizedOracle.objects.get(address=instance.address)
+        response = CentralizedOracleSerializer(centralized_oracle).to_representation(centralized_oracle)
+        return remove_null_values(response)
 
 
 class CentralizedOracleSerializer(serializers.ModelSerializer):
@@ -92,42 +80,6 @@ class CentralizedOracleSerializer(serializers.ModelSerializer):
 
     def get_type(self, obj):
         return 'CENTRALIZED'
-
-
-class UltimateOracleSerializer(serializers.ModelSerializer):
-    contract = ContractSerializer(source='*', many=False, read_only=True)
-    is_outcome_set = serializers.BooleanField()
-    outcome = serializers.IntegerField()
-    forwarded_oracle = OracleSerializer(many=False, read_only=True)
-    collateral_token = serializers.CharField()
-    spread_multiplier = serializers.IntegerField()
-    challenge_period = serializers.IntegerField()
-    challenge_amount = serializers.IntegerField()
-    front_runner_period = serializers.IntegerField()
-    forwarded_outcome = serializers.IntegerField()
-    outcome_set_at_timestamp = serializers.IntegerField()
-    front_runner = serializers.IntegerField()
-    front_runner_set_at_timestamp = serializers.IntegerField()
-    total_amount = serializers.IntegerField()
-    type = serializers.SerializerMethodField()
-
-    class Meta:
-        model = UltimateOracle
-        fields = ('contract', 'is_outcome_set', 'outcome', 'collateral_token', 'spread_multiplier', 'challenge_period',
-                  'challenge_amount', 'front_runner_period', 'forwarded_outcome', 'outcome_set_at_timestamp',
-                  'front_runner', 'front_runner_set_at_timestamp', 'total_amount', 'forwarded_oracle', 'type',)
-
-    def to_representation(self, instance):
-        # Prepend 0x prefix to collateral_token
-        instance.owner = add_0x_prefix(instance.collateral_token)
-        response = super(UltimateOracleSerializer, self).to_representation(instance)
-        return remove_null_values(response)
-
-    def get_collateral_token(self, obj):
-        return add_0x_prefix(obj)
-
-    def get_type(self, obj):
-        return 'ULTIMATE'
 
 
 class CategoricalEventSerializer(serializers.ModelSerializer):
