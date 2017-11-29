@@ -4,10 +4,10 @@ from django.core.urlresolvers import reverse
 from rest_framework.test import APITestCase
 from rest_framework import status
 from relationaldb.tests.factories import (
-    CentralizedOracleFactory, UltimateOracleFactory, BuyOrderFactory,
-    MarketFactory, CategoricalEventFactory, OutcomeTokenFactory, OutcomeTokenBalanceFactory
+    CentralizedOracleFactory, BuyOrderFactory, MarketFactory,
+    CategoricalEventFactory, OutcomeTokenFactory, OutcomeTokenBalanceFactory
 )
-from relationaldb.models import CentralizedOracle, UltimateOracle, Market, ShortSellOrder, BuyOrder
+from relationaldb.models import CentralizedOracle, Market, ShortSellOrder
 from datetime import datetime, timedelta
 from gnosisdb.utils import add_0x_prefix
 import json
@@ -39,40 +39,13 @@ class TestViews(APITestCase):
         self.assertEquals(centralized_empty_search_response.status_code, status.HTTP_200_OK)
         self.assertEquals(json.loads(centralized_empty_search_response.content).get('contract').get('creator'), add_0x_prefix(centralized_oracles[0].address))
 
-    def test_ultimate_oracle(self):
-        # test empty ultimate-oracles response
-        empty_ultimate_response = self.client.get(reverse('api:ultimate-oracles'), content_type='application/json')
-        self.assertEquals(len(json.loads(empty_ultimate_response.content).get('results')), 0)
-
-        # create ultimate oracles
-        ultimate_oracles = [UltimateOracleFactory() for x in range(0, 10)]
-        ultimate_oraclesdb = UltimateOracle.objects.all()
-        self.assertEquals(len(ultimate_oracles), ultimate_oraclesdb.count())
-
-        ultimate_response_data = self.client.get(reverse('api:ultimate-oracles'), content_type='application/json')
-        self.assertEquals(ultimate_response_data.status_code, status.HTTP_200_OK)
-        self.assertEquals(len(json.loads(ultimate_response_data.content).get('results')), len(ultimate_oracles))
-
-        ultimate_search_response = self.client.get(reverse('api:ultimate-oracles-by-address', kwargs={'oracle_address': ultimate_oracles[0].address}), content_type='application/json')
-        self.assertEquals(ultimate_search_response.status_code, status.HTTP_200_OK)
-        self.assertEquals(json.loads(ultimate_search_response.content).get('contract').get('creator'), add_0x_prefix(ultimate_oracles[0].creator))
-        # test empty response
-        ultimate_empty_search_response = self.client.get(reverse('api:ultimate-oracles-by-address', kwargs={'oracle_address': "abcdef0"}), content_type='application/json')
-        self.assertEquals(ultimate_empty_search_response.status_code, status.HTTP_404_NOT_FOUND)
-
-        ultimate_search_response = self.client.get(reverse('api:ultimate-oracles-by-address', kwargs={'oracle_address': ultimate_oracles[0].address}), content_type='application/json')
-        self.assertEquals(ultimate_search_response.status_code, status.HTTP_200_OK)
-        self.assertEquals(json.loads(ultimate_search_response.content).get('contract').get('address'), add_0x_prefix(ultimate_oracles[0].address))
-
     def test_events(self):
         # test empty events response
         empty_events_response = self.client.get(reverse('api:events'), content_type='application/json')
         self.assertEquals(len(json.loads(empty_events_response.content).get('results')), 0)
 
-        # outcomes creation
-        # outcomes = (OutcomeTokenFactory(), OutcomeTokenFactory(), OutcomeTokenFactory())
-        # event creation
-        event = CategoricalEventFactory()
+        oracle = CentralizedOracleFactory()
+        event = CategoricalEventFactory(oracle=oracle)
         # self.assertEquals(event.outcome_tokens.count(), len(outcomes))
         events_response = self.client.get(reverse('api:events'), content_type='application/json')
         self.assertEquals(len(json.loads(events_response.content).get('results')), 1)
@@ -147,7 +120,8 @@ class TestViews(APITestCase):
         self.assertEqual(json.loads(market_response_data2.content)['results'][0]['tradingVolume'], "12")
 
     def test_market_marginal_prices(self):
-        categorical_event = CategoricalEventFactory()
+        oracle = CentralizedOracleFactory()
+        categorical_event = CategoricalEventFactory(oracle=oracle)
         outcome_token = OutcomeTokenFactory(event=categorical_event)
         market = MarketFactory(event=categorical_event)
         sender_address = '{:040d}'.format(100)

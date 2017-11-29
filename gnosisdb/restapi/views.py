@@ -4,14 +4,14 @@ from rest_framework import generics
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from relationaldb.models import (
-    UltimateOracle, CentralizedOracle, Event, Market, Order, OutcomeTokenBalance
+    CentralizedOracle, Event, Market, Order, OutcomeTokenBalance
 )
 from .serializers import (
-    UltimateOracleSerializer, CentralizedOracleSerializer, EventSerializer, MarketSerializer,
+    CentralizedOracleSerializer, EventSerializer, MarketSerializer,
     MarketTradesSerializer, OutcomeTokenBalanceSerializer, MarketParticipantTradesSerializer
 )
 from .filters import (
-    CentralizedOracleFilter, UltimateOracleFilter, EventFilter, MarketFilter, DefaultPagination,
+    CentralizedOracleFilter, EventFilter, MarketFilter, DefaultPagination,
     MarketTradesFilter
 )
 
@@ -29,21 +29,6 @@ class CentralizedOracleFetchView(generics.RetrieveAPIView):
 
     def get_object(self):
         return get_object_or_404(CentralizedOracle, address=self.kwargs['oracle_address'])
-
-
-class UltimateOracleListView(generics.ListAPIView):
-    queryset = UltimateOracle.objects.all()
-    serializer_class = UltimateOracleSerializer
-    filter_class = UltimateOracleFilter
-    pagination_class = DefaultPagination
-
-
-class UltimateOracleFetchView(generics.RetrieveAPIView):
-    queryset = UltimateOracle.objects.all()
-    serializer_class = UltimateOracleSerializer
-
-    def get_object(self):
-        return get_object_or_404(UltimateOracle, address=self.kwargs['oracle_address'])
 
 
 class EventListView(generics.ListAPIView):

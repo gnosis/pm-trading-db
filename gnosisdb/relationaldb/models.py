@@ -110,28 +110,8 @@ class CategoricalEventDescription(EventDescription):
 class CentralizedOracle(Oracle):
     """Centralized oracle model"""
     owner = models.CharField(max_length=40, db_index=True) # owner can be updated
+    old_owner = models.CharField(max_length=40, default=None, null=True) # useful for rollback
     event_description = models.ForeignKey(EventDescription, unique=False, null=True)
-
-
-class UltimateOracle(Oracle):
-    forwarded_oracle = models.ForeignKey(Oracle, related_name='ultimate_oracle_forwarded_oracle', null=True)
-    collateral_token = models.CharField(max_length=40, db_index=True)
-    spread_multiplier = models.PositiveIntegerField()
-    challenge_period = models.DecimalField(max_digits=80, decimal_places=0)
-    challenge_amount = models.DecimalField(max_digits=80, decimal_places=0)
-    front_runner_period = models.DecimalField(max_digits=80, decimal_places=0)
-    forwarded_outcome = models.DecimalField(max_digits=80, decimal_places=0, null=True)
-    outcome_set_at_timestamp = models.DecimalField(max_digits=80, decimal_places=0, null=True)
-    front_runner = models.DecimalField(max_digits=80, decimal_places=0, null=True)
-    front_runner_set_at_timestamp = models.DecimalField(max_digits=80, decimal_places=0, null=True)
-    total_amount = models.DecimalField(max_digits=80, decimal_places=0, null=True)
-
-
-class OutcomeVoteBalance(models.Model):
-
-    ultimate_oracle = models.ForeignKey(UltimateOracle, related_name='outcome_vote_balance_ultimate_oracle')
-    address = models.CharField(max_length=40, db_index=True)  # sender
-    balance = models.DecimalField(max_digits=80, decimal_places=0)
 
 
 # Market
