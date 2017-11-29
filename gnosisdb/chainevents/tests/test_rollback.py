@@ -15,7 +15,7 @@ from relationaldb.models import (
 
 from relationaldb.tests.factories import (
     CentralizedOracleFactory, OracleFactory, EventFactory, MarketFactory,
-    OutcomeTokenFactory, CategoricalEventFactory
+    OutcomeTokenFactory, CategoricalEventFactory, ScalarEventFactory
 )
 from datetime import datetime
 from time import mktime
@@ -31,36 +31,36 @@ class TestRollabck(TestCase):
         return mktime(datetime_instance.timetuple())
 
     def test_centralized_oracle_factory_rollback(self):
-        oracle_one = CentralizedOracleFactory()
+        oracle = CentralizedOracleFactory()
 
         # saving event_description to IPFS
         event_description_json = {
-            'title':'Test title',
-            'description': 'test long description',
-            'resolutionDate': datetime.now().isoformat(),
-            'outcomes': ['YES', 'NO']
+            'title': oracle.event_description.title,
+            'description': oracle.event_description.description,
+            'resolutionDate': oracle.event_description.resolution_date.isoformat(),
+            'outcomes': oracle.event_description.outcomes
         }
 
         ipfs_hash = self.ipfs_api.post(event_description_json)
 
         block = {
-            'number': oracle_one.creation_block,
-            'timestamp': self.to_timestamp(oracle_one.creation_date_time)
+            'number': oracle.creation_block,
+            'timestamp': self.to_timestamp(oracle.creation_date_time)
         }
 
-        oracle_one_address = oracle_one.address[1:-7] + 'GIACOMO'
+        oracle_address = oracle.address
 
-        oracle_one_event = {
+        oracle_event = {
             'name': 'CentralizedOracleCreation',
-            'address': oracle_one.factory[1:-7] + 'GIACOMO',
+            'address': oracle.factory,
             'params': [
                 {
                     'name': 'creator',
-                    'value': oracle_one.creator
+                    'value': oracle.creator
                 },
                 {
                     'name': 'centralizedOracle',
-                    'value': oracle_one_address,
+                    'value': oracle_address,
                 },
                 {
                     'name': 'ipfsHash',
@@ -68,26 +68,31 @@ class TestRollabck(TestCase):
                 }
             ]
         }
+        oracle.delete()
 
-        CentralizedOracleFactoryReceiver().save(oracle_one_event, block)
-        created_oracle = CentralizedOracle.objects.get(address=oracle_one_address)
+        CentralizedOracleFactoryReceiver().save(oracle_event, block)
+        created_oracle = CentralizedOracle.objects.get(address=oracle_address)
         self.assertIsNotNone(created_oracle.pk)
         # Rollback
-        CentralizedOracleFactoryReceiver().rollback(oracle_one_event, block)
+        CentralizedOracleFactoryReceiver().rollback(oracle_event, block)
         with self.assertRaises(CentralizedOracle.DoesNotExist):
-            CentralizedOracle.objects.get(address=oracle_one_address)
+            CentralizedOracle.objects.get(address=oracle_address)
+
+        # Rollback over nonexistent centralized oracle should fail
+        self.assertRaises(Exception, CentralizedOracleFactoryReceiver().rollback, oracle_event, block)
 
     def test_oracle_owner_replacement_rollback(self):
         # Create the oracle
-        oracle_factory = CentralizedOracleFactory()
-        new_owner_address = oracle_factory.address[0:-8] + 'GIACOMO2'
+        oracle = CentralizedOracleFactory()
+        oracle2 = CentralizedOracleFactory()
+        new_owner_address = oracle2.creator
         block = {
             'number': 1,
             'timestamp': self.to_timestamp(datetime.now())
         }
         change_owner_event = {
             'name': 'OwnerReplacement',
-            'address': oracle_factory.address,
+            'address': oracle.address,
             'params': [
                 {
                     'name': 'newOwner',
@@ -96,14 +101,14 @@ class TestRollabck(TestCase):
             ]
         }
 
-        centralized_oracle_without_owner_replacement = CentralizedOracle.objects.get(address=oracle_factory.address)
+        centralized_oracle_without_owner_replacement = CentralizedOracle.objects.get(address=oracle.address)
         # Change owner
         CentralizedOracleInstanceReceiver().save(change_owner_event)
-        centralized_oracle_with_owner_replacement = CentralizedOracle.objects.get(address=oracle_factory.address)
+        centralized_oracle_with_owner_replacement = CentralizedOracle.objects.get(address=oracle.address)
         self.assertEquals(centralized_oracle_with_owner_replacement.owner, new_owner_address)
         # Rollback
         CentralizedOracleInstanceReceiver().rollback(change_owner_event, block)
-        centralized_oracle_with_owner_rollback = CentralizedOracle.objects.get(address=oracle_factory.address)
+        centralized_oracle_with_owner_rollback = CentralizedOracle.objects.get(address=oracle.address)
         self.assertEquals(centralized_oracle_with_owner_rollback.owner, centralized_oracle_without_owner_replacement.owner)
 
     def test_oracle_outcome_assignment_rollback(self):
@@ -133,21 +138,21 @@ class TestRollabck(TestCase):
 
     def test_scalar_event_factory_rollback(self):
         oracle = OracleFactory()
-        event = EventFactory()
-        event_address = event.address[0:33] + 'GIACOMO'
+        event = ScalarEventFactory()
+        event_address = event.address
 
         block = {
-            'number': oracle.creation_block,
-            'timestamp': self.to_timestamp(oracle.creation_date_time)
+            'number': event.creation_block,
+            'timestamp': self.to_timestamp(event.creation_date_time)
         }
 
         scalar_event = {
-            'address': oracle.factory[0:33] + 'GIACOMO',
+            'address': event.factory,
             'name': 'ScalarEventCreation',
             'params': [
                 {
                     'name': 'creator',
-                    'value': oracle.creator
+                    'value': event.creator
                 },
                 {
                     'name': 'collateralToken',
@@ -159,15 +164,15 @@ class TestRollabck(TestCase):
                 },
                 {
                     'name': 'outcomeCount',
-                    'value': 1
+                    'value': 2
                 },
                 {
                     'name': 'upperBound',
-                    'value': 1
+                    'value': event.upper_bound
                 },
                 {
                     'name': 'lowerBound',
-                    'value': 0
+                    'value': event.lower_bound
                 },
                 {
                     'name': 'scalarEvent',
@@ -175,6 +180,7 @@ class TestRollabck(TestCase):
                 }
             ]
         }
+        event.delete()
 
         EventFactoryReceiver().save(scalar_event, block)
         event = ScalarEvent.objects.get(address=event_address)
@@ -183,23 +189,26 @@ class TestRollabck(TestCase):
         with self.assertRaises(ScalarEvent.DoesNotExist):
             ScalarEvent.objects.get(address=event_address)
 
+        # Rollback over an nonexistent event should fail
+        self.assertRaises(Exception, EventFactoryReceiver().rollback, scalar_event, block)
+
     def test_categorical_event_factory_rollback(self):
-        event = EventFactory()
+        event = CategoricalEventFactory()
         oracle = OracleFactory()
-        event_address = event.address[0:33] + 'GIACOMO'
+        event_address = event.address
 
         block = {
-            'number': oracle.creation_block,
-            'timestamp': self.to_timestamp(oracle.creation_date_time)
+            'number': event.creation_block,
+            'timestamp': self.to_timestamp(event.creation_date_time)
         }
 
         categorical_event = {
-            'address': oracle.factory[0:33] + 'GIACOMO',
+            'address': event.factory,
             'name': 'CategoricalEventCreation',
             'params': [
                 {
                     'name': 'creator',
-                    'value': oracle.creator
+                    'value': event.creator
                 },
                 {
                     'name': 'collateralToken',
@@ -211,7 +220,7 @@ class TestRollabck(TestCase):
                 },
                 {
                     'name': 'outcomeCount',
-                    'value': 1
+                    'value': 2
                 },
                 {
                     'name': 'categoricalEvent',
@@ -227,27 +236,30 @@ class TestRollabck(TestCase):
         with self.assertRaises(CategoricalEvent.DoesNotExist):
             CategoricalEvent.objects.get(address=event_address)
 
+        # Rollback over an nonexistent event shoul fail
+        self.assertRaises(Exception, EventFactoryReceiver().rollback, categorical_event, block)
+
     def test_market_factory_rollback(self):
-        oracle_factory = CentralizedOracleFactory()
-        event_factory = CategoricalEventFactory(oracle=oracle_factory)
-        market_factory = MarketFactory()
+        oracle = CentralizedOracleFactory()
+        event = CategoricalEventFactory(oracle=oracle)
+        market = MarketFactory()
 
         block = {
-            'number': oracle_factory.creation_block,
-            'timestamp': self.to_timestamp(oracle_factory.creation_date_time)
+            'number': oracle.creation_block,
+            'timestamp': self.to_timestamp(oracle.creation_date_time)
         }
 
         market_creation_event = {
             'name': 'StandardMarketCreation',
-            'address': oracle_factory.factory[1:-7] + 'GIACOMO',
+            'address': market.factory,
             'params': [
                 {
                     'name': 'creator',
-                    'value': oracle_factory.creator
+                    'value': market.creator
                 },
                 {
                     'name': 'centralizedOracle',
-                    'value': oracle_factory.address[1:-7] + 'GIACOMO',
+                    'value': oracle.address,
                 },
                 {
                     'name': 'marketMaker',
@@ -255,26 +267,27 @@ class TestRollabck(TestCase):
                 },
                 {
                     'name': 'fee',
-                    'value': market_factory.fee
+                    'value': market.fee
                 },
                 {
                     'name': 'eventContract',
-                    'value': event_factory.address
+                    'value': event.address
                 },
                 {
                     'name': 'market',
-                    'value': market_factory.address[0:7] + 'another'
+                    'value': market.address
                 }
             ]
         }
+        market.delete()
 
         MarketFactoryReceiver().save(market_creation_event, block)
-        market_without_rollback = Market.objects.get(event=event_factory.address)
+        market_without_rollback = Market.objects.get(event=event.address)
         self.assertIsNotNone(market_without_rollback.pk)
         # Rollback
         MarketFactoryReceiver().rollback(market_creation_event, block)
         with self.assertRaises(Market.DoesNotExist):
-            Market.objects.get(event=event_factory.address)
+            Market.objects.get(event=event.address)
 
     def test_market_outcome_token_purchase_rollback(self):
         oracle_factory = CentralizedOracleFactory()

@@ -25,14 +25,20 @@ class SerializerEventReceiver(AbstractEventReceiver):
         primary_key_name = 'address'
 
     def save(self, decoded_event, block_info=None):
+        # Get serializer based on Event Name and saved serializers in Meta.events dictionary
         if self.Meta.events.get(decoded_event.get('name')):
+            # Block info is optional, only models that inherit from ContractCreatedByFactory need it
             if block_info:
                 serializer = self.Meta.events.get(decoded_event.get('name'))(data=decoded_event, block=block_info)
             else:
                 serializer = self.Meta.events.get(decoded_event.get('name'))(data=decoded_event)
+
+            # Only valid data goes forward, non valid data is logged
             if serializer.is_valid():
-                serializer.save()
+                instance = serializer.save()
                 logger.info('Event Receiver {} added: {}'.format(self.__class__.__name__, dumps(decoded_event)))
+                # serializer model instance is returned in order to django-eth-events know it was a valid event
+                return instance
             else:
                 logger.warning('INVALID Data for Event Receiver {} save: {}'.format(self.__class__.__name__,
                                                                                         dumps(decoded_event)))
@@ -40,11 +46,15 @@ class SerializerEventReceiver(AbstractEventReceiver):
 
     def rollback(self, decoded_event, block_info):
         serializer_class = self.Meta.events.get(decoded_event.get('name'))
+        # Get primary key name from Meta.primary_key_name, it can be the same for all Events (string) or different for
+        # each one (dictionary)
         if type(self.Meta.primary_key_name) is str:
             primary_key_name = self.Meta.primary_key_name
         else:
             primary_key_name = self.Meta.primary_key_name.get(decoded_event.get('name'))
         primary_key = filter(lambda x: x.get('name') == primary_key_name, decoded_event.get('params'))[0].get('value')
+
+        # Find instance to update/delete
         instance = serializer_class.Meta.model.objects.get(
             address=primary_key
         )
@@ -95,6 +105,10 @@ class MarketFactoryReceiver(SerializerEventReceiver):
 
 
 class BaseInstanceEventReceiver(SerializerEventReceiver):
+    """
+    Instance Event receivers get the model instance in a different way, info is in the root object sometimes and others
+    In the parameters, we overwrite this function
+    """
     class Meta:
         events = {}
         primary_key_name = {}
