@@ -1,7 +1,7 @@
+anyjson==0.3.3
 bitcoin==1.1.42
 djangorestframework==3.6.3
 Django==1.11
-django-celery==3.2.1
 django-authtools==1.5.0
 django-model-utils==2.6.1
 django-filter==1.0.4
@@ -11,7 +11,7 @@ ethereum-abi-utils==0.4.0
 ethereum-utils==0.2.0
 factory-boy==2.5.2
 psycopg2==2.7.1
-celery==3.1.25
+celery==4.1.0
 faker==0.7.15
 requests[security]==2.17.3
 web3[tester]==3.7.1
@@ -27,4 +27,7 @@ django-eth-events==1.0.4
 django_google_authenticator==0.1
 django-environ==0.4.3
 django-cors-headers==2.1.0
+django-celery-beat==1.1.0
 mpmath==0.19
+boto3==1.4.7
+kombu==4.1.0
