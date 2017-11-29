@@ -18,7 +18,8 @@ class TestSerializers(APITestCase):
         self.assertEquals(json.loads(events_response.content).get('results')[0]['type'], 'SCALAR')
 
     def test_categorical_event_serializer(self):
-        event = CategoricalEventFactory()
+        oracle = CentralizedOracleFactory()
+        event = CategoricalEventFactory(oracle=oracle)
         events_response = self.client.get(reverse('api:events'), content_type='application/json')
         self.assertEquals(json.loads(events_response.content).get('results')[0]['type'], 'CATEGORICAL')
 

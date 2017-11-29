@@ -44,10 +44,8 @@ class TestViews(APITestCase):
         empty_events_response = self.client.get(reverse('api:events'), content_type='application/json')
         self.assertEquals(len(json.loads(empty_events_response.content).get('results')), 0)
 
-        # outcomes creation
-        # outcomes = (OutcomeTokenFactory(), OutcomeTokenFactory(), OutcomeTokenFactory())
-        # event creation
-        event = CategoricalEventFactory()
+        oracle = CentralizedOracleFactory()
+        event = CategoricalEventFactory(oracle=oracle)
         # self.assertEquals(event.outcome_tokens.count(), len(outcomes))
         events_response = self.client.get(reverse('api:events'), content_type='application/json')
         self.assertEquals(len(json.loads(events_response.content).get('results')), 1)
@@ -122,7 +120,8 @@ class TestViews(APITestCase):
         self.assertEqual(json.loads(market_response_data2.content)['results'][0]['tradingVolume'], "12")
 
     def test_market_marginal_prices(self):
-        categorical_event = CategoricalEventFactory()
+        oracle = CentralizedOracleFactory()
+        categorical_event = CategoricalEventFactory(oracle=oracle)
         outcome_token = OutcomeTokenFactory(event=categorical_event)
         market = MarketFactory(event=categorical_event)
         sender_address = '{:040d}'.format(100)
