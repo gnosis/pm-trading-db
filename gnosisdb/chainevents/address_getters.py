@@ -1,4 +1,4 @@
-from relationaldb.models import Contract, Market, Event, OutcomeToken, CentralizedOracle, UltimateOracle
+from relationaldb.models import Contract, Market, Event, OutcomeToken, CentralizedOracle
 from django.core.exceptions import ObjectDoesNotExist
 from django_eth_events.chainevents import AbstractAddressesGetter
 
@@ -48,8 +48,3 @@ class OutcomeTokenGetter(ContractAddressGetter):
 class CentralizedOracleGetter(ContractAddressGetter):
     class Meta:
         model = CentralizedOracle
-
-
-class UltimateOracleGetter(ContractAddressGetter):
-    class Meta:
-        model = UltimateOracle

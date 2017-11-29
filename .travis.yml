@@ -1,0 +1,17 @@
+language: python
+dist: trusty
+addons:
+  ssh_known_hosts:
+  - gnosisdb-kovan.gnosis.pm
+services:
+- postgresql
+before_script:
+- psql -c 'create database travisci;' -U postgres
+before_install:
+- openssl aes-256-cbc -d -S $salt -iv $iv -K $key
+   -in .travis/deploy_key.enc -out .travis/deploy_key
+- export DJANGO_SETTINGS_MODULE="settings.test"
+- export PYTHONPATH="$HOME/build/gnosis/gnosisdb"
+- export PIP_USE_MIRRORS=true
+script:
+- python gnosisdb/manage.py test
