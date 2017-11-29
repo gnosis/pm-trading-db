@@ -87,7 +87,7 @@ class ContractCreatedByFactorySerializer(BlockTimestampedSerializer, ContractSer
         data = kwargs.pop('data')
         # Event params moved to root object
         new_data = {
-            'address': data[u'address'], # TODO comment this with Denis
+            'address': data[u'address'],
             'factory': data[u'address'],
             'creation_date_time': datetime.fromtimestamp(self.block.get('timestamp')),
             'creation_block': self.block.get('number')
@@ -234,6 +234,9 @@ class OracleSerializer(ContractCreatedByFactorySerializer):
     is_outcome_set = serializers.BooleanField(default=False)
     outcome = serializers.IntegerField(default=0)
 
+    def rollback(self):
+        pass
+
 
 class CentralizedOracleSerializer(OracleSerializer, serializers.ModelSerializer):
     """
@@ -248,25 +251,11 @@ class CentralizedOracleSerializer(OracleSerializer, serializers.ModelSerializer)
 
     def create(self, validated_data):
         validated_data['owner'] = validated_data['creator']
+        validated_data['old_owner'] = validated_data['owner']
         return models.CentralizedOracle.objects.create(**validated_data)
 
-
-class UltimateOracleSerializer(OracleSerializer, serializers.ModelSerializer):
-    """
-    Serializes an Ultimate Oracle
-    """
-    class Meta:
-        model = models.UltimateOracle
-        fields = OracleSerializer.Meta.fields + ('ultimateOracle', 'oracle', 'collateralToken',
-                                                 'spreadMultiplier', 'challengePeriod', 'challengeAmount',
-                                                 'frontRunnerPeriod')
-    ultimateOracle = serializers.CharField(max_length=40, source='address')
-    oracle = OracleField(source='forwarded_oracle')
-    collateralToken = serializers.CharField(max_length=40, source='collateral_token')
-    spreadMultiplier = serializers.IntegerField(source='spread_multiplier')
-    challengePeriod = serializers.IntegerField(source='challenge_period')
-    challengeAmount = serializers.IntegerField(source='challenge_amount')
-    frontRunnerPeriod = serializers.IntegerField(source='front_runner_period')
+    def rollback(self):
+        self.instance.delete()
 
 
 class EventSerializer(ContractCreatedByFactorySerializer, serializers.ModelSerializer):
@@ -309,6 +298,9 @@ class ScalarEventSerializer(EventSerializer, serializers.ModelSerializer):
 
         return attrs
 
+    def rollback(self):
+        self.instance.delete()
+
 
 class CategoricalEventSerializer(EventSerializer, serializers.ModelSerializer):
     """
@@ -342,6 +334,9 @@ class CategoricalEventSerializer(EventSerializer, serializers.ModelSerializer):
     def create(self, validated_data):
         del validated_data['outcomeCount']
         return super(CategoricalEventSerializer, self).create(validated_data)
+
+    def rollback(self):
+        self.instance.delete()
 
 
 class MarketSerializer(ContractCreatedByFactorySerializer, serializers.ModelSerializer):
@@ -380,6 +375,9 @@ class MarketSerializer(ContractCreatedByFactorySerializer, serializers.ModelSeri
         validated_data.update({'net_outcome_tokens_sold': net_outcome_tokens_sold})
         market = models.Market.objects.create(**validated_data)
         return market
+
+    def rollback(self):
+        self.instance.delete()
 
 
 class ScalarEventDescriptionSerializer(serializers.ModelSerializer):
@@ -468,6 +466,9 @@ class OutcomeTokenInstanceSerializer(ContractNotTimestampted, serializers.ModelS
     outcomeToken = CharField(max_length=40, source='address')
     index = serializers.IntegerField(min_value=0)
 
+    def rollback(self):
+        self.instance.delete()
+
 
 class OutcomeTokenIssuanceSerializer(ContractNotTimestampted, serializers.ModelSerializer):
     """
@@ -487,24 +488,38 @@ class OutcomeTokenIssuanceSerializer(ContractNotTimestampted, serializers.ModelS
         outcome_token = None
         outcome_token_balance = None
         try:
-            outcome_token_balance = models.OutcomeTokenBalance.objects.get(owner=validated_data['owner'],
-                                                                           outcome_token__address=validated_data['outcome_token'])
-            outcome_token_balance.balance += validated_data['amount']
-            outcome_token_balance.outcome_token.total_supply += validated_data['amount']
+            outcome_token_balance = models.OutcomeTokenBalance.objects.get(owner=validated_data.get('owner'),
+                                                                           outcome_token__address=validated_data.get('outcome_token'))
+            outcome_token_balance.balance += validated_data.get('amount')
+            outcome_token_balance.outcome_token.total_supply += validated_data.get('amount')
             outcome_token_balance.outcome_token.save()
             outcome_token_balance.save()
             return outcome_token_balance.outcome_token
         except models.OutcomeTokenBalance.DoesNotExist:
-            outcome_token = models.OutcomeToken.objects.get(address=validated_data['outcome_token'])
-            outcome_token.total_supply += validated_data['amount']
+            outcome_token = models.OutcomeToken.objects.get(address=validated_data.get('outcome_token'))
+            outcome_token.total_supply += validated_data.get('amount')
             outcome_token.save()
 
             outcome_token_balance = models.OutcomeTokenBalance()
-            outcome_token_balance.balance = validated_data['amount']
-            outcome_token_balance.owner = validated_data['owner']
+            outcome_token_balance.balance = validated_data.get('amount')
+            outcome_token_balance.owner = validated_data.get('owner')
             outcome_token_balance.outcome_token = outcome_token
             outcome_token_balance.save()
             return outcome_token
+
+    def rollback(self):
+        try:
+            outcome_token_balance = models.OutcomeTokenBalance.objects.get(
+                owner=self.validated_data.get('owner'),
+                outcome_token__address=self.validated_data.get('outcome_token')
+            )
+            outcome_token_balance.balance -= self.validated_data.get('amount')
+            outcome_token_balance.save()
+            self.instance.total_supply -= self.validated_data.get('amount')
+            self.instance.save()
+        except models.OutcomeTokenBalance.DoesNotExist:
+            self.instance.total_supply -= self.validated_data.get('amount')
+            self.instance.save()
 
 
 class OutcomeTokenRevocationSerializer(ContractNotTimestampted, serializers.ModelSerializer):
@@ -541,6 +556,16 @@ class OutcomeTokenRevocationSerializer(ContractNotTimestampted, serializers.Mode
         outcome_token_balance.save()
         return outcome_token_balance.outcome_token
 
+    def rollback(self):
+        outcome_token_balance = models.OutcomeTokenBalance.objects.get(
+            owner=self.validated_data.get('owner'),
+            outcome_token__address=self.validated_data.get('outcome_token')
+        )
+        outcome_token_balance.balance += self.validated_data.get('amount')
+        outcome_token_balance.save()
+        self.instance.total_supply += self.validated_data.get('amount')
+        self.instance.save()
+
 
 class OutcomeAssignmentEventSerializer(ContractNotTimestampted, serializers.ModelSerializer):
     """
@@ -565,6 +590,11 @@ class OutcomeAssignmentEventSerializer(ContractNotTimestampted, serializers.Mode
         except event.DoesNotExist:
             raise serializers.ValidationError('Event {} does not exist'.format(validated_data.get('address')))
 
+    def rollback(self):
+        self.instance.is_winning_outcome_set = False
+        self.instance.outcome = None
+        self.instance.save()
+
 
 class OutcomeTokenTransferSerializer(ContractNotTimestampted, serializers.ModelSerializer):
     """
@@ -585,23 +615,47 @@ class OutcomeTokenTransferSerializer(ContractNotTimestampted, serializers.ModelS
 
     def create(self, validated_data):
         # Substract balance from Outcome Token Balance
-        from_balance = models.OutcomeTokenBalance.objects.get(owner=validated_data['from_address'],
-                                                              outcome_token__address=validated_data['outcome_token'])
-        from_balance.balance -= validated_data['value']
+        from_balance = models.OutcomeTokenBalance.objects.get(owner=validated_data.get('from_address'),
+                                                              outcome_token__address=validated_data.get('outcome_token'))
+        from_balance.balance -= validated_data.get('value')
         from_balance.save()
 
         # Add balance to receiver
         to_balance = None
         try:
-            to_balance = models.OutcomeTokenBalance.objects.get(owner=validated_data['to'],
-                                                                outcome_token__address=validated_data['outcome_token'])
+            to_balance = models.OutcomeTokenBalance.objects.get(owner=validated_data.get('to'),
+                                                                outcome_token__address=validated_data.get('outcome_token'))
         except models.OutcomeTokenBalance.DoesNotExist:
-            to_balance = models.OutcomeTokenBalance.objects.create(owner=validated_data['to'],
+            to_balance = models.OutcomeTokenBalance.objects.create(owner=validated_data.get('to'),
                                                                    outcome_token=from_balance.outcome_token)
-        to_balance.balance += validated_data['value']
+        to_balance.balance += validated_data.get('value')
         to_balance.save()
 
         return to_balance
+
+    def rollback(self):
+        # got OutcomeTokenBalance by using 'From' property
+        self.instance.balance += self.validated_data.get('value')
+        self.instance.save()
+
+        # Add balance to receiver
+        to_balance = None
+        try:
+            to_balance = models.OutcomeTokenBalance.objects.get(
+                owner=self.validated_data.get('to'),
+                outcome_token__address=self.validated_data.get('outcome_token')
+            )
+        except models.OutcomeTokenBalance.DoesNotExist:
+            to_balance = models.OutcomeTokenBalance.objects.create(
+                owner=self.validated_data.get('to'),
+                outcome_token=self.from_balance.outcome_token
+            )
+
+        if to_balance.balance - self.validated_data.get('value') == 0:
+            to_balance.delete()
+        else:
+            to_balance.balance -= self.validated_data.get('value')
+            to_balance.save()
 
 
 class WinningsRedemptionSerializer(ContractNotTimestampted, serializers.ModelSerializer):
@@ -627,6 +681,10 @@ class WinningsRedemptionSerializer(ContractNotTimestampted, serializers.ModelSer
         except event.DoesNotExist:
             raise serializers.ValidationError('Event {} does not exist'.format(validated_data.get('address')))
 
+    def rollback(self):
+        self.instance -= self.validated_data.get('winnings')
+        self.instance.save()
+
 
 class CentralizedOracleInstanceSerializer(CentralizedOracleSerializer):
     pass
@@ -648,11 +706,17 @@ class OwnerReplacementSerializer(ContractNotTimestampted, serializers.ModelSeria
         centralized_oracle = None
         try:
             centralized_oracle = models.CentralizedOracle.objects.get(address=validated_data.get('address'))
+            centralized_oracle.old_owner = centralized_oracle.owner
             centralized_oracle.owner = validated_data.get('newOwner')
             centralized_oracle.save()
             return centralized_oracle
         except models.CentralizedOracle.DoesNotExist:
             raise serializers.ValidationError('CentralizedOracle {} does not exist'.format(validated_data.get('address')))
+
+    def rollback(self):
+        self.instance.owner = self.instance.old_owner
+        self.instance.save()
+        return self.instance
 
 
 class OutcomeAssignmentOracleSerializer(ContractNotTimestampted, serializers.ModelSerializer):
@@ -678,127 +742,11 @@ class OutcomeAssignmentOracleSerializer(ContractNotTimestampted, serializers.Mod
         except centralized_oracle.DoesNotExist:
             raise serializers.ValidationError('CentralizedOracle {} does not exist'.format(validated_data.get('address')))
 
-
-class ForwardedOracleOutcomeAssignmentSerializer(ContractNotTimestampted, serializers.ModelSerializer):
-    """
-    Serializes the UltimateOracle ForwardedOracleOutcomeAssignment event
-    """
-    class Meta:
-        model = models.UltimateOracle
-        fields = ('address', 'outcome',)
-
-    address = serializers.CharField(max_length=40)
-    outcome = serializers.IntegerField()
-
-    def create(self, validated_data):
-        ultimate_oracle = None
-        try:
-            ultimate_oracle = models.UltimateOracle.objects.get(address=validated_data.get('address'))
-            ultimate_oracle.outcome_set_at_timestamp = mktime(datetime.now().timetuple())
-            ultimate_oracle.forwarded_outcome = validated_data.get('outcome')
-            ultimate_oracle.is_outcome_set = True
-            ultimate_oracle.save()
-            return ultimate_oracle
-        except models.UltimateOracle.DoesNotExist:
-            raise serializers.ValidationError('UltimateOracle {} does not exist'.format(validated_data.get('address')))
-
-
-class OutcomeChallengeSerializer(ContractNotTimestampted, serializers.ModelSerializer):
-    """
-    Serializes the UltimateOracle OutcomeChallenge event
-    """
-    class Meta:
-        model = models.UltimateOracle
-        fields = ('address', 'sender', 'outcome',)
-
-    address = serializers.CharField(max_length=40)
-    sender = serializers.CharField(max_length=40)
-    outcome = serializers.IntegerField()
-
-    def create(self, validated_data):
-        ultimate_oracle = None
-        try:
-            ultimate_oracle = models.UltimateOracle.objects.get(address=validated_data.get('address'))
-            ultimate_oracle.total_amount = ultimate_oracle.challenge_amount
-            ultimate_oracle.front_runner = validated_data.get('outcome')
-            ultimate_oracle.front_runner_set_at_timestamp = mktime(datetime.now().timetuple())
-            ultimate_oracle.save()
-
-            outcome_vote_balance = models.OutcomeVoteBalance()
-            outcome_vote_balance.address = validated_data.get('sender')
-            outcome_vote_balance.balance = ultimate_oracle.challenge_amount
-            outcome_vote_balance.ultimate_oracle = ultimate_oracle
-            outcome_vote_balance.save()
-
-            return ultimate_oracle
-        except models.UltimateOracle.DoesNotExist:
-            raise serializers.ValidationError('UltimateOracle {} does not exist'.format(validated_data.get('address')))
-
-
-class OutcomeVoteSerializer(ContractNotTimestampted, serializers.ModelSerializer):
-    """
-    Serializes the UltimateOracle OutcomeVote event
-    """
-    class Meta:
-        model = models.UltimateOracle
-        fields = ('address', 'sender', 'outcome', 'amount',)
-
-    address = serializers.CharField(max_length=40)
-    sender = serializers.CharField(max_length=40)
-    outcome = serializers.IntegerField()
-    amount = serializers.IntegerField()
-
-    def create(self, validated_data):
-        ultimate_oracle = None
-        try:
-            ultimate_oracle = models.UltimateOracle.objects.get(address=validated_data.get('address'))
-
-            outcome_vote_balance = models.OutcomeVoteBalance.objects.get(address=validated_data.get('sender'),
-                                                                         ultimate_oracle__address=validated_data.get('address'))
-            outcome_vote_balance.balance += validated_data.get('amount')
-            outcome_vote_balance.save()
-        except models.OutcomeVoteBalance.DoesNotExist:
-            outcome_vote_balance = models.OutcomeVoteBalance()
-            outcome_vote_balance.balance = validated_data.get('amount')
-            outcome_vote_balance.address = validated_data.get('sender')
-            outcome_vote_balance.ultimate_oracle = ultimate_oracle
-            outcome_vote_balance.save()
-        except models.UltimateOracle.DoesNotExist:
-            raise serializers.ValidationError('UltimateOracle {} does not exist'.format(validated_data.get('address')))
-
-        ultimate_oracle.total_amount += validated_data.get('amount')
-        if validated_data.get('outcome') != ultimate_oracle.front_runner and \
-                        ultimate_oracle.total_amount > ultimate_oracle.front_runner:
-            ultimate_oracle.front_runner = validated_data.get('outcome')
-            ultimate_oracle.front_runner_set_at_timestamp = mktime(datetime.now().timetuple())
-
-        ultimate_oracle.save()
-        return ultimate_oracle
-
-
-class WithdrawalSerializer(ContractNotTimestampted, serializers.ModelSerializer):
-    """
-    Serializes the UltimateOracle Withdrawal event
-    """
-    class Meta:
-        model = models.OutcomeVoteBalance
-        fields = ('address', 'sender', 'amount',)
-
-    address = serializers.CharField(max_length=40)
-    sender = serializers.CharField(max_length=40)
-    amount = serializers.IntegerField()
-
-    def create(self, validated_data):
-        try:
-            outcome_vote_balance = models.OutcomeVoteBalance.objects.get(address=validated_data.get('sender'),
-                                                                         ultimate_oracle__address=validated_data.get('address'))
-            outcome_vote_balance.balance = 0
-            outcome_vote_balance.save()
-            return outcome_vote_balance
-        except models.OutcomeVoteBalance.DoesNotExist:
-            raise serializers.ValidationError('OutcomeVoteBalance of UltimateOracle {} does not exist for '
-                                              'sender address {}'
-                                              .format(validated_data.get('address'), validated_data.get('sender')))
+    def rollback(self):
+        self.instance.is_outcome_set = False
+        self.instance.outcome = None
+        self.instance.save()
+        return self.instance
 
 
 class OutcomeTokenPurchaseSerializer(ContractEventTimestamped, serializers.ModelSerializer):
@@ -829,8 +777,8 @@ class OutcomeTokenPurchaseSerializer(ContractEventTimestamped, serializers.Model
 
             # Create Order
             order = models.BuyOrder()
-            order.creation_date_time = validated_data['creation_date_time']
-            order.creation_block = validated_data['creation_block']
+            order.creation_date_time = validated_data.get('creation_date_time')
+            order.creation_block = validated_data.get('creation_block')
             order.market = market
             order.sender = validated_data.get('buyer')
             order.outcome_token = outcome_token
@@ -851,6 +799,17 @@ class OutcomeTokenPurchaseSerializer(ContractEventTimestamped, serializers.Model
             return order
         except models.Market.DoesNotExist:
             raise serializers.ValidationError('Market with address {} does not exist.' % validated_data.get('address'))
+
+    def rollback(self):
+        token_index = self.validated_data.get('outcomeTokenIndex')
+        token_count = self.validated_data.get('outcomeTokenCount')
+        market = models.Market.objects.get(address=self.validated_data.get('address'))
+        market.net_outcome_tokens_sold[token_index] -= token_count
+        market.collected_fees -= self.validated_data.get('marketFees')
+
+        # Remove order
+        self.instance.delete()
+        market.save()
 
 
 class OutcomeTokenSaleSerializer(ContractEventTimestamped, serializers.ModelSerializer):
@@ -881,8 +840,8 @@ class OutcomeTokenSaleSerializer(ContractEventTimestamped, serializers.ModelSeri
 
             # Create Order
             order = models.SellOrder()
-            order.creation_date_time = validated_data['creation_date_time']
-            order.creation_block = validated_data['creation_block']
+            order.creation_date_time = validated_data.get('creation_date_time')
+            order.creation_block = validated_data.get('creation_block')
             order.market = market
             order.sender = validated_data.get('seller')
             order.outcome_token = outcome_token
@@ -902,6 +861,18 @@ class OutcomeTokenSaleSerializer(ContractEventTimestamped, serializers.ModelSeri
             return order
         except models.Market.DoesNotExist:
             raise serializers.ValidationError('Market with address {} does not exist.' % validated_data.get('address'))
+
+    def rollback(self):
+
+        token_index = self.validated_data.get('outcomeTokenIndex')
+        token_count = self.validated_data.get('outcomeTokenCount')
+        market = models.Market.objects.get(address=self.validated_data.get('address'))
+        market.net_outcome_tokens_sold[token_index] += token_count
+        market.collected_fees -= self.validated_data.get('marketFees')
+
+        # Remove order
+        self.instance.delete()
+        market.save()
 
 
 class OutcomeTokenShortSaleOrderSerializer(ContractEventTimestamped, serializers.ModelSerializer):
@@ -926,8 +897,8 @@ class OutcomeTokenShortSaleOrderSerializer(ContractEventTimestamped, serializers
                 outcome_token = models.OutcomeToken.objects.get(index=validated_data.get('outcomeTokenIndex'))
                 # Create Order
                 order = models.ShortSellOrder()
-                order.creation_date_time = validated_data['creation_date_time']
-                order.creation_block = validated_data['creation_block']
+                order.creation_date_time = validated_data.get('creation_date_time')
+                order.creation_block = validated_data.get('creation_block')
                 order.market = market
                 order.sender = validated_data.get('buyer')
                 # order.outcome_token_index = validated_data.get('outcomeTokenIndex')
@@ -942,6 +913,10 @@ class OutcomeTokenShortSaleOrderSerializer(ContractEventTimestamped, serializers
                 raise serializers.ValidationError('OutcomeToken with index {} does not exist.' % validated_data.get('outcomeTokenIndex'))
         except models.Market.DoesNotExist:
             raise serializers.ValidationError('Market with address {} does not exist.' % validated_data.get('address'))
+
+    def rollback(self):
+        # Remove order
+        self.instance.delete()
 
 
 class MarketFundingSerializer(ContractNotTimestampted, serializers.ModelSerializer):
@@ -965,6 +940,12 @@ class MarketFundingSerializer(ContractNotTimestampted, serializers.ModelSerializ
         except models.Market.DoesNotExist:
             raise serializers.ValidationError('Market with address {} does not exist.' % validated_data.get('address'))
 
+    def rollback(self):
+        self.instance.funding = None
+        self.instance.stage = self.instance.stages[0][0]  # Market created
+        self.instance.save()
+        return self.instance
+
 
 class MarketClosingSerializer(ContractNotTimestampted, serializers.ModelSerializer):
     """
@@ -984,6 +965,11 @@ class MarketClosingSerializer(ContractNotTimestampted, serializers.ModelSerializ
             return market
         except models.Market.DoesNotExist:
             raise serializers.ValidationError('Market with address {} does not exist.' % validated_data.get('address'))
+
+    def rollback(self):
+        self.instance.stage = self.instance.stages[1][0] # Market funded
+        self.instance.save()
+        return self.instance
 
 
 class FeeWithdrawalSerializer(ContractNotTimestampted, serializers.ModelSerializer):
@@ -1005,3 +991,8 @@ class FeeWithdrawalSerializer(ContractNotTimestampted, serializers.ModelSerializ
             return market
         except models.Market.DoesNotExist:
             raise serializers.ValidationError('Market with address {} does not exist.' % validated_data.get('address'))
+
+    def rollback(self):
+        self.instance.withdrawn_fees -= self.validated_data.get('fees')
+        self.instance.save()
+        return self.instance

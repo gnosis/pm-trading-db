@@ -15,9 +15,3 @@ before_install:
 - export PIP_USE_MIRRORS=true
 script:
 - python gnosisdb/manage.py test
-after_success:
-- eval "$(ssh-agent -s)"
-- chmod 600 .travis/deploy_key
-- ssh-add .travis/deploy_key
-- git remote add deploy dokku@gnosisdb-kovan.gnosis.pm:gnosisdb-kovan.gnosis.pm
-- git push deploy master -f

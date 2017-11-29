@@ -3,20 +3,19 @@ from __future__ import unicode_literals
 from django.test import TestCase
 from django.conf import settings
 from chainevents.event_receivers import (
-    CentralizedOracleFactoryReceiver, UltimateOracleFactoryReceiver, EventFactoryReceiver, MarketFactoryReceiver,
-    CentralizedOracleInstanceReceiver, EventInstanceReceiver, UltimateOracleInstanceReceiver, OutcomeTokenInstanceReceiver,
+    CentralizedOracleFactoryReceiver, EventFactoryReceiver, MarketFactoryReceiver,
+    CentralizedOracleInstanceReceiver, EventInstanceReceiver, OutcomeTokenInstanceReceiver,
     MarketInstanceReceiver
 )
 
 from relationaldb.models import (
-    CentralizedOracle, UltimateOracle, ScalarEvent, CategoricalEvent, Market, OutcomeToken,
-    Event, OutcomeVoteBalance, BuyOrder, SellOrder
+    CentralizedOracle, ScalarEvent, CategoricalEvent, Market, OutcomeToken,
+    Event, BuyOrder, SellOrder, OutcomeTokenBalance
 )
 
 from relationaldb.tests.factories import (
-    UltimateOracleFactory, CentralizedOracleFactory,
-    OracleFactory, EventFactory, MarketFactory, OutcomeTokenFactory,
-    OutcomeVoteBalanceFactory, CategoricalEventFactory
+    CentralizedOracleFactory, ScalarEventFactory, OracleFactory,
+    MarketFactory, OutcomeTokenFactory, CategoricalEventFactory
 )
 from datetime import datetime
 from time import mktime
@@ -36,10 +35,10 @@ class TestEventReceiver(TestCase):
         oracle = CentralizedOracleFactory()
         # saving event_description to IPFS
         event_description_json = {
-            'title':'Test title',
-            'description': 'test long description',
-            'resolutionDate': datetime.now().isoformat(),
-            'outcomes': ['YES', 'NO']
+            'title': oracle.event_description.title,
+            'description': oracle.event_description.description,
+            'resolutionDate': oracle.event_description.resolution_date.isoformat(),
+            'outcomes': oracle.event_description.outcomes
         }
 
         ipfs_hash = self.ipfs_api.post(event_description_json)
@@ -49,10 +48,10 @@ class TestEventReceiver(TestCase):
             'timestamp': self.to_timestamp(oracle.creation_date_time)
         }
 
-        oracle_address = oracle.address[1:-7] + 'GIACOMO'
-
+        oracle_address = oracle.address
         oracle_event = {
-            'address': oracle.factory[1:-7] + 'GIACOMO',
+            'name': 'CentralizedOracleCreation',
+            'address': oracle.factory,
             'params': [
                 {
                     'name': 'creator',
@@ -68,68 +67,25 @@ class TestEventReceiver(TestCase):
                 }
             ]
         }
-
+        oracle.delete()
         CentralizedOracleFactoryReceiver().save(oracle_event, block)
-        created_oracle = CentralizedOracle.objects.get(address=oracle_address)
-        self.assertIsNotNone(created_oracle.pk)
+        saved_oracle1 = CentralizedOracle.objects.get(address=oracle_address)
+        self.assertIsNotNone(saved_oracle1.pk)
 
-    def test_ultimate_oracle_receiver(self):
-        forwarded_oracle = CentralizedOracleFactory()
-        ultimate_oracle = UltimateOracleFactory()
-
-        block = {
-            'number': ultimate_oracle.creation_block,
-            'timestamp': mktime(ultimate_oracle.creation_date_time.timetuple())
-        }
-
-        oracle_address = ultimate_oracle.address[0:7] + 'another'
-
-        oracle_event = {
-            'address': ultimate_oracle.factory[0:7] + 'another',
-            'params': [
-                {
-                    'name': 'creator',
-                    'value': ultimate_oracle.creator
-                },
-                {
-                    'name': 'ultimateOracle',
-                    'value': oracle_address,
-                },
-                {
-                    'name': 'oracle',
-                    'value': forwarded_oracle.address
-                },
-                {
-                    'name': 'collateralToken',
-                    'value': ultimate_oracle.collateral_token
-                },
-                {
-                    'name': 'spreadMultiplier',
-                    'value': ultimate_oracle.spread_multiplier
-                },
-                {
-                    'name': 'challengePeriod',
-                    'value': ultimate_oracle.challenge_period
-                },
-                {
-                    'name': 'challengeAmount',
-                    'value': ultimate_oracle.challenge_amount
-                },
-                {
-                    'name': 'frontRunnerPeriod',
-                    'value': ultimate_oracle.front_runner_period
-                }
-            ]
-        }
-
-        UltimateOracleFactoryReceiver().save(oracle_event, block)
-        created_oracle = UltimateOracle.objects.get(address=oracle_address)
-        self.assertIsNotNone(created_oracle.pk)
+        # Cannot save twice
+        oracle2 = CentralizedOracleFactory()
+        oracle_event.get('params')[0].update({'value': oracle2.creator})
+        oracle_event.get('params')[2].update({'value': oracle2.event_description.ipfs_hash})
+        instance = CentralizedOracleFactoryReceiver().save(oracle_event, block)
+        self.assertIsNone(instance)
+        saved_oracle2 = CentralizedOracle.objects.get(address=oracle_address)
+        self.assertEqual(saved_oracle1.event_description.ipfs_hash, saved_oracle2.event_description.ipfs_hash)
+        self.assertEqual(saved_oracle1.creator, saved_oracle2.creator)
 
     def test_scalar_event_receiver(self):
         oracle = OracleFactory()
-        event = EventFactory()
-        event_address = event.address[0:33] + 'GIACOMO'
+        event = ScalarEventFactory()
+        event_address = event.address
 
         block = {
             'number': oracle.creation_block,
@@ -137,12 +93,12 @@ class TestEventReceiver(TestCase):
         }
 
         scalar_event = {
-            'address': oracle.factory[0:33] + 'GIACOMO',
+            'address': event.factory,
             'name': 'ScalarEventCreation',
             'params': [
                 {
                     'name': 'creator',
-                    'value': oracle.creator
+                    'value': event.creator
                 },
                 {
                     'name': 'collateralToken',
@@ -154,15 +110,15 @@ class TestEventReceiver(TestCase):
                 },
                 {
                     'name': 'outcomeCount',
-                    'value': 1
+                    'value': 2
                 },
                 {
                     'name': 'upperBound',
-                    'value': 1
+                    'value': event.upper_bound
                 },
                 {
                     'name': 'lowerBound',
-                    'value': 0
+                    'value': event.lower_bound
                 },
                 {
                     'name': 'scalarEvent',
@@ -170,28 +126,28 @@ class TestEventReceiver(TestCase):
                 }
             ]
         }
-
+        event.delete()
         EventFactoryReceiver().save(scalar_event, block)
         event = ScalarEvent.objects.get(address=event_address)
         self.assertIsNotNone(event.pk)
 
     def test_categorical_event_receiver(self):
-        event = EventFactory()
+        event = CategoricalEventFactory()
         oracle = OracleFactory()
-        event_address = event.address[0:33] + 'GIACOMO'
+        event_address = event.address
 
         block = {
-            'number': oracle.creation_block,
-            'timestamp': self.to_timestamp(oracle.creation_date_time)
+            'number': event.creation_block,
+            'timestamp': self.to_timestamp(event.creation_date_time)
         }
 
         categorical_event = {
-            'address': oracle.factory[0:33] + 'GIACOMO',
+            'address': event.factory,
             'name': 'CategoricalEventCreation',
             'params': [
                 {
                     'name': 'creator',
-                    'value': oracle.creator
+                    'value': event.creator
                 },
                 {
                     'name': 'collateralToken',
@@ -203,7 +159,7 @@ class TestEventReceiver(TestCase):
                 },
                 {
                     'name': 'outcomeCount',
-                    'value': 1
+                    'value': 2
                 },
                 {
                     'name': 'categoricalEvent',
@@ -211,6 +167,7 @@ class TestEventReceiver(TestCase):
                 }
             ]
         }
+        event.delete()
 
         EventFactoryReceiver().save(categorical_event, block)
         event = CategoricalEvent.objects.get(address=event_address)
@@ -225,20 +182,21 @@ class TestEventReceiver(TestCase):
         event_address = event.address
 
         block = {
-            'number': oracle.creation_block,
-            'timestamp': self.to_timestamp(oracle.creation_date_time)
+            'number': market.creation_block,
+            'timestamp': self.to_timestamp(market.creation_date_time)
         }
 
         market_dict = {
-            'address': oracle.factory[1:-7] + 'GIACOMO',
+            'name': 'StandardMarketCreation',
+            'address': market.factory,
             'params': [
                 {
                     'name': 'creator',
-                    'value': oracle.creator
+                    'value': market.creator
                 },
                 {
                     'name': 'centralizedOracle',
-                    'value': oracle.address[1:-7] + 'GIACOMO',
+                    'value': oracle.address,
                 },
                 {
                     'name': 'marketMaker',
@@ -258,63 +216,65 @@ class TestEventReceiver(TestCase):
                 },
                 {
                     'name': 'market',
-                    'value': market.address[0:7] + 'another'
+                    'value': market.address
                 }
             ]
         }
+
+        market.delete()
 
         MarketFactoryReceiver().save(market_dict, block)
         with self.assertRaises(Market.DoesNotExist):
             Market.objects.get(event=event_address)
 
-
         market_dict.get('params')[2].update({'value': settings.LMSR_MARKET_MAKER})
         MarketFactoryReceiver().save(market_dict, block)
-        market = Market.objects.get(event=event_address)
-        self.assertIsNotNone(market.pk)
-        self.assertEquals(len(market.net_outcome_tokens_sold), 3)
+        saved_market = Market.objects.get(event=event_address)
+        self.assertIsNotNone(saved_market.pk)
+        self.assertEquals(len(market.net_outcome_tokens_sold), 2)
+        self.assertEquals(len(saved_market.net_outcome_tokens_sold), 3)
 
     #
     # contract instances
     #
     def test_event_instance_receiver(self):
-        outcome_token_factory = OutcomeTokenFactory()
-        oracle_factory = OracleFactory()
-        event_factory = EventFactory()
-        event_address = event_factory.address[0:-7] + 'GIACOMO'
+        outcome_token = OutcomeTokenFactory()
+        oracle = OracleFactory()
+        event = ScalarEventFactory()
+        event_address = event.address
 
         block = {
-            'number': oracle_factory.creation_block,
-            'timestamp': mktime(oracle_factory.creation_date_time.timetuple())
+            'number': event.creation_block,
+            'timestamp': mktime(event.creation_date_time.timetuple())
         }
 
         scalar_event = {
             'name': 'ScalarEventCreation',
-            'address': oracle_factory.factory[1:-12] + 'TESTINSTANCE',
+            'address': event.factory,
             'params': [
                 {
                     'name': 'creator',
-                    'value': oracle_factory.creator
+                    'value': event.creator
                 },
                 {
                     'name': 'collateralToken',
-                    'value': event_factory.collateral_token
+                    'value': event.collateral_token
                 },
                 {
                     'name': 'oracle',
-                    'value': oracle_factory.address
+                    'value': oracle.address
                 },
                 {
                     'name': 'outcomeCount',
-                    'value': 1
+                    'value': 2
                 },
                 {
                     'name': 'upperBound',
-                    'value': 1
+                    'value': event.upper_bound
                 },
                 {
                     'name': 'lowerBound',
-                    'value': 0
+                    'value': event.lower_bound
                 },
                 {
                     'name': 'scalarEvent',
@@ -322,49 +282,43 @@ class TestEventReceiver(TestCase):
                 }
             ]
         }
+        event.delete()
 
         EventFactoryReceiver().save(scalar_event, block)
         event = ScalarEvent.objects.get(address=event_address)
 
         block = {
-            'number': oracle_factory.creation_block,
-            'timestamp': mktime(oracle_factory.creation_date_time.timetuple())
+            'number': event.creation_block,
+            'timestamp': mktime(event.creation_date_time.timetuple())
         }
-        outcome_token_address = oracle_factory.address[1:-8] + 'INSTANCE'
+        outcome_token_address = outcome_token.address
         outcome_event = {
             'name': 'OutcomeTokenCreation',
-            'address': oracle_factory.factory[0:-7] + 'GIACOMO',
+            'address': event_address,
             'params': [
-                {
-                    'name': 'creator',
-                    'value': event.creator
-                },
-                {
-                    'name': 'address',
-                    'value': event.address
-                },
                 {
                     'name': 'outcomeToken',
                     'value': outcome_token_address,
                 },
                 {
                     'name': 'index',
-                    'value': outcome_token_factory.index
+                    'value': outcome_token.index
                 }
             ]
         }
+        outcome_token.delete()
         EventInstanceReceiver().save(outcome_event, block)
         self.assertIsNotNone(OutcomeToken.objects.get(address=outcome_token_address))
 
     def test_event_instance_issuance_receiver(self):
-        outcome_token_factory = OutcomeTokenFactory()
+        outcome_token = OutcomeTokenFactory()
         event = {
             'name': 'Issuance',
-            'address': outcome_token_factory.address,
+            'address': outcome_token.address,
             'params': [
                 {
                     'name': 'owner',
-                    'value': outcome_token_factory.address[0:-7] + 'GIACOMO'
+                    'value': outcome_token.event.creator
                 },
                 {
                     'name': 'amount',
@@ -374,19 +328,22 @@ class TestEventReceiver(TestCase):
         }
 
         OutcomeTokenInstanceReceiver().save(event)
-        outcome_token = OutcomeToken.objects.get(address= outcome_token_factory.address)
-        self.assertIsNotNone(outcome_token.pk)
-        self.assertEquals(outcome_token_factory.total_supply + 1000, outcome_token.total_supply)
+        outcome_token_saved = OutcomeToken.objects.get(address=outcome_token.address)
+        self.assertIsNotNone(outcome_token_saved.pk)
+        self.assertEquals(outcome_token.total_supply + 1000, outcome_token_saved.total_supply)
+        outcome_token_balance = OutcomeTokenBalance.objects.get(owner=outcome_token.event.creator)
+        self.assertIsNotNone(outcome_token_balance.pk)
+        self.assertEqual(outcome_token_balance.balance, 1000)
 
     def test_event_instance_revocation_receiver(self):
-        outcome_token_factory = OutcomeTokenFactory()
+        outcome_token = OutcomeTokenFactory()
         revocation_event = {
             'name': 'Revocation',
-            'address': outcome_token_factory.address,
+            'address': outcome_token.address,
             'params': [
                 {
                     'name': 'owner',
-                    'value': outcome_token_factory.address[0:-7] + 'GIACOMO'
+                    'value': outcome_token.event.creator
                 },
                 {
                     'name': 'amount',
@@ -402,15 +359,15 @@ class TestEventReceiver(TestCase):
         OutcomeTokenInstanceReceiver().save(issuance_event)
         # do revocation
         OutcomeTokenInstanceReceiver().save(revocation_event)
-        outcome_token = OutcomeToken.objects.get(address= outcome_token_factory.address)
-        self.assertIsNotNone(outcome_token.pk)
-        self.assertEquals(outcome_token_factory.total_supply, outcome_token.total_supply)
+        outcome_token_saved = OutcomeToken.objects.get(address= outcome_token.address)
+        self.assertIsNotNone(outcome_token_saved.pk)
+        self.assertEquals(outcome_token.total_supply, outcome_token_saved.total_supply)
 
     def test_event_instance_outcome_assignment_receiver(self):
-        event_factory = EventFactory()
+        event = CategoricalEventFactory()
         assignment_event = {
             'name': 'OutcomeAssignment',
-            'address': event_factory.address,
+            'address': event.address,
             'params': [{
                 'name': 'outcome',
                 'value': 1,
@@ -418,18 +375,18 @@ class TestEventReceiver(TestCase):
         }
 
         EventInstanceReceiver().save(assignment_event)
-        event = Event.objects.get(address=event_factory.address)
-        self.assertTrue(event.is_winning_outcome_set)
+        saved_event = Event.objects.get(address=event.address)
+        self.assertTrue(saved_event.is_winning_outcome_set)
 
     def test_event_instance_winnings_redemption_receiver(self):
-        event_factory = EventFactory()
+        event = CategoricalEventFactory()
         redemption_event = {
             'name': 'WinningsRedemption',
-            'address': event_factory.address,
+            'address': event.address,
             'params': [
                 {
                     'name': 'receiver',
-                    'value': event_factory.creator[0:-7] + 'GIACOMO',
+                    'value': event.creator,
                 },
                 {
                     'name': 'winnings',
@@ -439,15 +396,16 @@ class TestEventReceiver(TestCase):
         }
 
         EventInstanceReceiver().save(redemption_event)
-        event = Event.objects.get(address=event_factory.address)
-        self.assertEquals(event.redeemed_winnings, event_factory.redeemed_winnings+1)
+        saved_event = Event.objects.get(address=event.address)
+        self.assertEquals(saved_event.redeemed_winnings, event.redeemed_winnings + 1)
 
     def test_centralized_oracle_instance_owner_replacement_receiver(self):
-        oracle_factory = CentralizedOracleFactory()
-        new_owner = oracle_factory.address[0:-7] + 'GIACOMO'
+        oracle0 = CentralizedOracleFactory()
+        oracle1 = CentralizedOracleFactory()
+        new_owner = oracle1.address
         change_owner_event = {
             'name': 'OwnerReplacement',
-            'address': oracle_factory.address,
+            'address': oracle0.address,
             'params': [
                 {
                     'name': 'newOwner',
@@ -457,14 +415,14 @@ class TestEventReceiver(TestCase):
         }
 
         CentralizedOracleInstanceReceiver().save(change_owner_event)
-        centralized_oracle = CentralizedOracle.objects.get(address=oracle_factory.address)
-        self.assertEquals(centralized_oracle.owner, new_owner)
+        saved_oracle = CentralizedOracle.objects.get(address=oracle0.address)
+        self.assertEquals(saved_oracle.owner, new_owner)
 
     def test_centralized_oracle_instance_outcome_assignment_receiver(self):
-        oracle_factory = CentralizedOracleFactory()
+        oracle = CentralizedOracleFactory()
         assignment_event = {
             'name': 'OutcomeAssignment',
-            'address': oracle_factory.address,
+            'address': oracle.address,
             'params': [{
                 'name': 'outcome',
                 'value': 1,
@@ -472,102 +430,15 @@ class TestEventReceiver(TestCase):
         }
 
         CentralizedOracleInstanceReceiver().save(assignment_event)
-        centralized_oracle = CentralizedOracle.objects.get(address=oracle_factory.address)
-        self.assertTrue(centralized_oracle.is_outcome_set)
-        self.assertEqual(centralized_oracle.outcome, 1)
-
-    def test_ultimate_oracle_instance_outcome_assignment_receiver(self):
-        oracle_factory = UltimateOracleFactory()
-        assignment_event = {
-            'name': 'ForwardedOracleOutcomeAssignment',
-            'address': oracle_factory.address,
-            'params': [{
-                'name': 'outcome',
-                'value': 1,
-            }]
-        }
-
-        UltimateOracleInstanceReceiver().save(assignment_event)
-        ultimate_oracle = UltimateOracle.objects.get(address=oracle_factory.address)
-        self.assertTrue(ultimate_oracle.is_outcome_set)
-        self.assertEqual(ultimate_oracle.forwarded_outcome, 1)
-
-    def test_ultimate_oracle_instance_outcome_challenge_receiver(self):
-        oracle = UltimateOracleFactory()
-        assignment_event = {
-            'name': 'OutcomeChallenge',
-            'address': oracle.address,
-            'params': [
-                {
-                    'name': 'sender',
-                    'value': oracle.creator
-                },
-                {
-                    'name': 'outcome',
-                    'value': 1
-                }
-            ]
-        }
-
-        UltimateOracleInstanceReceiver().save(assignment_event)
-        ultimate_oracle = UltimateOracle.objects.get(address=oracle.address)
-        self.assertEqual(ultimate_oracle.total_amount, oracle.challenge_amount)
-        self.assertEqual(ultimate_oracle.front_runner, 1)
-
-    def test_ultimate_oracle_instance_outcome_vote_receiver(self):
-        balance_factory = OutcomeVoteBalanceFactory()
-        assignment_event = {
-            'name': 'OutcomeVote',
-            'address': balance_factory.ultimate_oracle.address,
-            'params': [
-                {
-                    'name': 'outcome',
-                    'value': balance_factory.ultimate_oracle.front_runner+1,
-                },
-                {
-                    'name': 'amount',
-                    'value': 1,
-                },
-                {
-                    'name': 'sender',
-                    'value': balance_factory.address,
-                },
-            ]
-        }
-
-        UltimateOracleInstanceReceiver().save(assignment_event)
-        ultimate_oracle = UltimateOracle.objects.get(address=balance_factory.ultimate_oracle.address)
-        outcome_vote_balance = OutcomeVoteBalance.objects.get(address= balance_factory.address)
-        self.assertEquals(ultimate_oracle.total_amount, balance_factory.ultimate_oracle.total_amount+1)
-        self.assertEquals(ultimate_oracle.front_runner, balance_factory.ultimate_oracle.front_runner+1)
-        self.assertEquals(outcome_vote_balance.balance, 1)
-
-    def test_ultimate_oracle_instance_withdrawal_receiver(self):
-        balance_factory = OutcomeVoteBalanceFactory()
-        assignment_event = {
-            'name': 'Withdrawal',
-            'address': balance_factory.ultimate_oracle.address,
-            'params': [
-                {
-                    'name': 'amount',
-                    'value': 1,
-                },
-                {
-                    'name': 'sender',
-                    'value': balance_factory.address,
-                },
-            ]
-        }
-
-        UltimateOracleInstanceReceiver().save(assignment_event)
-        outcome_vote_balance = OutcomeVoteBalance.objects.get(address= balance_factory.address)
-        self.assertEquals(outcome_vote_balance.balance, balance_factory.balance-1)
+        saved_oracle = CentralizedOracle.objects.get(address=oracle.address)
+        self.assertTrue(saved_oracle.is_outcome_set)
+        self.assertEqual(saved_oracle.outcome, 1)
 
     def test_market_funding_receiver(self):
-        market_factory = MarketFactory()
+        market = MarketFactory()
         funding_event = {
             'name': 'MarketFunding',
-            'address': market_factory.address,
+            'address': market.address,
             'params': [
                 {
                     'name': 'funding',
@@ -577,27 +448,27 @@ class TestEventReceiver(TestCase):
         }
 
         MarketInstanceReceiver().save(funding_event)
-        market = Market.objects.get(address=market_factory.address)
-        self.assertEquals(market.stage, 1)
-        self.assertEquals(market.funding, 100)
+        saved_market = Market.objects.get(address=market.address)
+        self.assertEquals(saved_market.stage, 1)
+        self.assertEquals(saved_market.funding, 100)
 
     def test_market_closing_receiver(self):
-        market_factory = MarketFactory()
+        market = MarketFactory()
         closing_event = {
             'name': 'MarketClosing',
-            'address': market_factory.address,
+            'address': market.address,
             'params': []
         }
 
         MarketInstanceReceiver().save(closing_event)
-        market = Market.objects.get(address=market_factory.address)
-        self.assertEquals(market.stage, 2)
+        saved_market = Market.objects.get(address=market.address)
+        self.assertEquals(saved_market.stage, 2)
 
     def test_market_fee_withdrawal_receiver(self):
-        market_factory = MarketFactory()
+        market = MarketFactory()
         withdraw_event = {
             'name': 'FeeWithdrawal',
-            'address': market_factory.address,
+            'address': market.address,
             'params': [
                 {
                     'name': 'fees',
@@ -607,9 +478,9 @@ class TestEventReceiver(TestCase):
         }
 
         MarketInstanceReceiver().save(withdraw_event)
-        market = Market.objects.get(address=market_factory.address)
+        saved_market = Market.objects.get(address=market.address)
         # self.assertEquals(market.stage, 3)
-        self.assertEquals(market.withdrawn_fees, market_factory.withdrawn_fees+10)
+        self.assertEquals(saved_market.withdrawn_fees, market.withdrawn_fees+10)
 
     def test_outcome_token_purchase(self):
         categorical_event = CategoricalEventFactory()

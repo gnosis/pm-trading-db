@@ -97,8 +97,8 @@ class EventDescriptionFactory(factory_boy.DjangoModelFactory):
     class Meta:
         model = models.EventDescription
 
-    title = factory_boy.Sequence(lambda _: ''.join(faker.words(5)))
-    description = factory_boy.Sequence(lambda _: faker.words(5))
+    title = factory_boy.Sequence(lambda _: ' '.join(faker.words(5)))
+    description = factory_boy.Sequence(lambda _: ' '.join(faker.words(5)))
     resolution_date = FuzzyDateTime(datetime.now(pytz.utc))
     ipfs_hash = factory_boy.Sequence(lambda n: '{:046d}'.format(n))
 
@@ -107,14 +107,14 @@ class CategoricalEventDescriptionFactory(EventDescriptionFactory):
     class Meta:
         model = models.CategoricalEventDescription
 
-    outcomes = [factory_boy.Sequence(lambda _: faker.words(2)), factory_boy.Sequence(lambda _: faker.words(2))]
+    outcomes = factory_boy.LazyAttribute(lambda _: [' '.join(faker.words(2)), ' '.join(faker.words(2))])
 
 
 class ScalarEventDescriptionFactory(EventDescriptionFactory):
     class Meta:
         model = models.ScalarEventDescription
 
-    unit = factory_boy.Sequence(lambda _: faker.words(1))
+    unit = factory_boy.Sequence(lambda _: ' '.join(faker.words(1)))
     decimals = factory_boy.Sequence(lambda n: n)
 
 
@@ -124,35 +124,8 @@ class CentralizedOracleFactory(OracleFactory):
         model = models.CentralizedOracle
 
     owner = factory_boy.Sequence(lambda n: '{:040d}'.format(n))
+    old_owner = None
     event_description = factory_boy.SubFactory(CategoricalEventDescriptionFactory)
-
-
-class UltimateOracleFactory(OracleFactory):
-
-    class Meta:
-        model = models.UltimateOracle
-
-    forwarded_oracle = factory_boy.SubFactory(OracleFactory)
-    collateral_token = factory_boy.Sequence(lambda n: '{:040d}'.format(n))
-    spread_multiplier = factory_boy.Sequence(lambda n: n)
-    challenge_period = factory_boy.Sequence(lambda n: n)
-    challenge_amount = factory_boy.Sequence(lambda n: n)
-    front_runner_period = factory_boy.Sequence(lambda n: n)
-    forwarded_outcome = factory_boy.Sequence(lambda n: n)
-    outcome_set_at_timestamp = factory_boy.Sequence(lambda n: n)
-    front_runner = factory_boy.Sequence(lambda n: n)
-    front_runner_set_at_timestamp = factory_boy.Sequence(lambda n: n)
-    total_amount = factory_boy.Sequence(lambda n: n)
-
-
-class OutcomeVoteBalanceFactory(factory_boy.DjangoModelFactory):
-
-    class Meta:
-        model = models.OutcomeVoteBalance
-
-    ultimate_oracle = factory_boy.SubFactory(UltimateOracleFactory)
-    address = factory_boy.Sequence(lambda n: '{:040d}'.format(n))
-    balance = factory_boy.Sequence(lambda n: n)
 
 
 class MarketFactory(ContractCreatedByFactory):

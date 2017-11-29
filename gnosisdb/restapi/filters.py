@@ -1,6 +1,6 @@
 from django_filters import rest_framework as filters
 from rest_framework.pagination import LimitOffsetPagination
-from relationaldb.models import CentralizedOracle, UltimateOracle, Event, Market, Order
+from relationaldb.models import CentralizedOracle, Event, Market, Order
 from datetime import datetime, timedelta
 
 
@@ -28,29 +28,6 @@ class CentralizedOracleFilter(filters.FilterSet):
     class Meta:
         model = CentralizedOracle
         fields = ('creator', 'creation_date_time', 'is_outcome_set', 'owner', 'title', 'description', 'ordering')
-
-
-class UltimateOracleFilter(filters.FilterSet):
-    creator = filters.AllValuesMultipleFilter()
-    creation_date_time = filters.DateTimeFromToRangeFilter()
-    is_outcome_set = filters.BooleanFilter()
-    forwarded_oracle_creator = filters.AllValuesMultipleFilter(name='forwarded_oracle__creator')
-    forwarded_oracle_creation_date_time = filters.DateTimeFromToRangeFilter(name='forwarded_oracle__creation_date_time')
-    forwarded_oracle_is_outcome_set = filters.BooleanFilter(name='forwarded_oracle__is_outcome_set')
-    forwarded_oracle_factory = filters.AllValuesMultipleFilter(name='forwarded_oracle__factory')
-
-    ordering = filters.OrderingFilter(
-        fields=(
-            ('creation_date_time', 'creation_date_order'),
-            ('forwarded_oracle__creation_date_time', 'forwarded_oracle_creation_date_order')
-        )
-    )
-
-    class Meta:
-        model = UltimateOracle
-        fields = ('creator', 'creation_date_time', 'is_outcome_set', 'forwarded_oracle_creator',
-                  'forwarded_oracle_creation_date_time', 'forwarded_oracle_is_outcome_set', 'forwarded_oracle_factory',
-                  'ordering')
 
 
 class EventFilter(filters.FilterSet):
