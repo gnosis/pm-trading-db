@@ -128,34 +128,6 @@ class CentralizedOracleFactory(OracleFactory):
     event_description = factory_boy.SubFactory(CategoricalEventDescriptionFactory)
 
 
-class UltimateOracleFactory(OracleFactory):
-
-    class Meta:
-        model = models.UltimateOracle
-
-    forwarded_oracle = factory_boy.SubFactory(OracleFactory)
-    collateral_token = factory_boy.Sequence(lambda n: '{:040d}'.format(n))
-    spread_multiplier = factory_boy.Sequence(lambda n: n)
-    challenge_period = factory_boy.Sequence(lambda n: n)
-    challenge_amount = factory_boy.Sequence(lambda n: n)
-    front_runner_period = factory_boy.Sequence(lambda n: n)
-    forwarded_outcome = factory_boy.Sequence(lambda n: n)
-    outcome_set_at_timestamp = factory_boy.Sequence(lambda n: n)
-    front_runner = factory_boy.Sequence(lambda n: n)
-    front_runner_set_at_timestamp = factory_boy.Sequence(lambda n: n)
-    total_amount = factory_boy.Sequence(lambda n: n)
-
-
-class OutcomeVoteBalanceFactory(factory_boy.DjangoModelFactory):
-
-    class Meta:
-        model = models.OutcomeVoteBalance
-
-    ultimate_oracle = factory_boy.SubFactory(UltimateOracleFactory)
-    address = factory_boy.Sequence(lambda n: '{:040d}'.format(n))
-    balance = factory_boy.Sequence(lambda n: n)
-
-
 class MarketFactory(ContractCreatedByFactory):
 
     class Meta:

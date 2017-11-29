@@ -1,11 +1,10 @@
 from django_eth_events.chainevents import AbstractEventReceiver
 from relationaldb.serializers import (
     CentralizedOracleSerializer, ScalarEventSerializer, CategoricalEventSerializer,
-    UltimateOracleSerializer, MarketSerializer, OutcomeTokenInstanceSerializer,
+    MarketSerializer, OutcomeTokenInstanceSerializer,
     OutcomeTokenRevocationSerializer, OutcomeAssignmentEventSerializer,
     WinningsRedemptionSerializer, OwnerReplacementSerializer, OutcomeTokenIssuanceSerializer,
-    OutcomeAssignmentOracleSerializer, ForwardedOracleOutcomeAssignmentSerializer,
-    OutcomeChallengeSerializer, OutcomeVoteSerializer, WithdrawalSerializer, OutcomeTokenTransferSerializer,
+    OutcomeAssignmentOracleSerializer, OutcomeTokenTransferSerializer,
     OutcomeTokenPurchaseSerializer, OutcomeTokenSaleSerializer, OutcomeTokenShortSaleOrderSerializer,
     MarketFundingSerializer, MarketClosingSerializer, FeeWithdrawalSerializer
 )
@@ -89,22 +88,6 @@ class EventFactoryReceiver(SerializerEventReceiver):
             'ScalarEventCreation': 'scalarEvent',
             'CategoricalEventCreation': 'categoricalEvent'
         }
-
-
-class UltimateOracleFactoryReceiver(AbstractEventReceiver):
-    # TODO deprecated class, REMOVE
-
-    def save(self, decoded_event, block_info):
-        serializer = UltimateOracleSerializer(data=decoded_event, block=block_info)
-        if serializer.is_valid():
-            serializer.save()
-            logger.info('Ultimate Oracle Factory Result Added: {}'.format(dumps(decoded_event)))
-        else:
-            logger.warning('INVALID Ultimate Oracle Factory Result: {}'.format(dumps(decoded_event)))
-            logger.warning(serializer.errors)
-
-    def rollback(self, decoded_event, block_info):
-        pass
 
 
 class MarketFactoryReceiver(SerializerEventReceiver):
@@ -206,33 +189,6 @@ class CentralizedOracleInstanceReceiver(BaseInstanceEventReceiver):
             'OwnerReplacement': 'address',
             'OutcomeAssignment': 'address'
         }
-
-
-class UltimateOracleInstanceReceiver(AbstractEventReceiver):
-    # TODO deprectated class, remove
-    events = {
-        'ForwardedOracleOutcomeAssignment': ForwardedOracleOutcomeAssignmentSerializer,
-        'OutcomeChallenge': OutcomeChallengeSerializer,
-        'OutcomeVote': OutcomeVoteSerializer,
-        'Withdrawal': WithdrawalSerializer
-    }
-
-    def save(self, decoded_event, block_info=None):
-        if self.events.get(decoded_event.get('name')):
-            if block_info:
-                serializer = self.events.get(decoded_event.get('name'))(data=decoded_event, block=block_info)
-            else:
-                serializer = self.events.get(decoded_event.get('name'))(data=decoded_event)
-
-            if serializer.is_valid():
-                serializer.save()
-                logger.info('Ultimate Oracle Factory Result Added: {}'.format(dumps(decoded_event)))
-            else:
-                logger.warning('INVALID Ultimate Oracle Factory Result: {}'.format(dumps(decoded_event)))
-                logger.warning(serializer.errors)
-
-    def rollback(self, decoded_event, block_info):
-        pass
 
 
 class EventInstanceReceiver(BaseInstanceEventReceiver):
