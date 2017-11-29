@@ -3,7 +3,7 @@ from celery import Celery
 from celery.schedules import crontab
 from relationaldb.models import EventDescription
 from django_eth_events.models import Daemon
-from djcelery.models import PeriodicTask, IntervalSchedule
+from django_celery_beat.models  import PeriodicTask, IntervalSchedule
 
 
 class Command(BaseCommand):
@@ -15,14 +15,14 @@ class Command(BaseCommand):
         daemon.block_number = 0
         daemon.last_error_block_number = 0
         daemon.save()
-        self.stdout.write(self.style.SUCCESS('DB Successfully cleaned.'))        
+        self.stdout.write(self.style.SUCCESS('DB Successfully cleaned.'))
 
         # auto-create celery task
         interval=IntervalSchedule(every=5, period='seconds')
         interval.save()
         if not PeriodicTask.objects.filter(task='django_eth_events.tasks.event_listener').count():
             PeriodicTask.objects.create(
-                name='Event Listener', 
+                name='Event Listener',
                 task='django_eth_events.tasks.event_listener',
                 interval=interval
             )

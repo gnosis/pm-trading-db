@@ -1,5 +1,5 @@
 echo "==> Migrating Django <=="
-cd $PWD/gnosisdb
+# cd $PWD/gnosisdb
 python manage.py migrate
 python manage.py createcachetable
 echo "==> Starting Django Server <=="
