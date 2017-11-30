@@ -232,51 +232,28 @@ class OutcomeTokenInstanceReceiver(BaseInstanceEventReceiver):
 # ============================== #
 
 
-class UportIdentityManagerReceiver(BaseInstanceEventReceiver):
-    events = {
-        'IdentityCreated': TournamentParticipantSerializer,
-    }
-    primary_key_name = {
-        'IdentityCreated': 'address'
-    }
-
-    """
-    def save(self, decoded_event, block_info):
-        if self.events.get(decoded_event.get('name')):
-            serializer = self.events.get(decoded_event.get('name'))(data=decoded_event, block=block_info)
-            if serializer.is_valid():
-                serializer.save()
-                logger.info('Tournament Participant added: {}'.format(dumps(decoded_event)))
-            else:
-                logger.warning(serializer.errors)
-    """
+class UportIdentityManagerReceiver(SerializerEventReceiver):
+    class Meta:
+        events = {
+            'IdentityCreated': TournamentParticipantSerializer,
+        }
+        primary_key_name = {
+            'IdentityCreated': 'identity'
+        }
 
 
 class TournamentTokenReceiver(BaseInstanceEventReceiver):
-    events = {
-        'Issuance': TournamentTokenIssuanceSerializer,  # sum to participant balance
-        'Transfer': TournamentTokenTransferSerializer
-    }
-    primary_key_name = {
-        'Issuance': {
-            'owner': 'address'
-        },
-        'Transfer': {
-            'from_participant': 'owner',
-            'to_participant': 'to'
+    class Meta:
+        events = {
+            'Issuance': TournamentTokenIssuanceSerializer,  # sum to participant balance
+            'Transfer': TournamentTokenTransferSerializer
         }
-    }
-    """
-    def save(self, decoded_event, block_info=None):
-        if self.events.get(decoded_event.get('name')):
-            serializer = self.events.get(decoded_event.get('name'))(data=decoded_event)
-            if serializer.is_valid():
-                try:
-                    serializer.save()
-                except TournamentParticipant.DoesNotExist:
-                    logger.info('Issuance to Participant with address that does not exist.')
-
-                logger.info('Tournament token event triggered: {}'.format(dumps(decoded_event)))
-            else:
-                logger.warning(serializer.errors)
-    """
+        primary_key_name = {
+            'Issuance': {
+                'owner': 'address'
+            },
+            'Transfer': {
+                'from_participant': 'owner',
+                'to_participant': 'to'
+            }
+        }
