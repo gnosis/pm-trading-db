@@ -237,7 +237,9 @@ class EventInstanceReceiver(BaseInstanceEventReceiver):
             'WinningsRedemption': WinningsRedemptionSerializer
         }
         primary_key_name = {
-            'OutcomeTokenCreation': 'address',
+            'OutcomeTokenCreation': {
+                'address': 'outcomeToken'
+            },
             'OutcomeAssignment': 'address',
             'WinningsRedemption': 'address'
         }

@@ -207,13 +207,6 @@ ETH_EVENTS = [
         'PUBLISH': True,
     },
     {
-        'ADDRESSES': ['d833215cbcc3f914bd1c9ece3ee7bf8b14f841bb'],
-        'EVENT_ABI': load_json_file(abi_file_path('UltimateOracleFactory.json')),
-        'EVENT_DATA_RECEIVER': 'chainevents.event_receivers.UltimateOracleFactoryReceiver',
-        'NAME': 'ultimateOracleFactory',
-        'PUBLISH': True,
-    },
-    {
         'ADDRESSES': ['67b5656d60a809915323bf2c40a8bef15a152e3e'],
         'EVENT_ABI': load_json_file(abi_file_path('EventFactory.json')),
         'EVENT_DATA_RECEIVER': 'chainevents.event_receivers.EventFactoryReceiver',
@@ -251,11 +244,5 @@ ETH_EVENTS = [
         'EVENT_ABI': load_json_file(abi_file_path('CentralizedOracle.json')),
         'EVENT_DATA_RECEIVER': 'chainevents.event_receivers.CentralizedOracleInstanceReceiver',
         'NAME': 'Centralized Oracle Instances'
-    },
-    {
-        'ADDRESSES_GETTER': 'chainevents.address_getters.UltimateOracleGetter',
-        'EVENT_ABI': load_json_file(abi_file_path('UltimateOracle.json')),
-        'EVENT_DATA_RECEIVER': 'chainevents.event_receivers.UltimateOracleInstanceReceiver',
-        'NAME': 'Ultimate Oracle Instances'
-    },
+    }
 ]
