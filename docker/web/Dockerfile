@@ -14,4 +14,4 @@ RUN mkdir -p /root/var/run/celery
 
 COPY . /gnosisdb/
 WORKDIR /gnosisdb
-ENTRYPOINT ["/bin/sh"]
+ENTRYPOINT ["/bin/bash", "/gnosisdb/scripts/entrypoint.sh"]

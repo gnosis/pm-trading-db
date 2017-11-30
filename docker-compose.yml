@@ -35,8 +35,7 @@ services:
       - ipfs
       - db
     working_dir: /gnosisdb
-    entrypoint: /bin/bash
-    command: scripts/run_web.sh
+    command: sh scripts/run_web.sh
     ports:
       - "8000:8000"
       - "27017"
@@ -45,8 +44,7 @@ services:
     build:
       context: .
       dockerfile: docker/web/Dockerfile
-    entrypoint: /bin/bash
-    command: scripts/run_celery.sh
+    command: sh scripts/run_celery.sh
     env_file:
       - .env
     volumes:
