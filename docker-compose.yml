@@ -44,7 +44,7 @@ services:
   worker:
     build:
       context: .
-      dockerfile: docker/celery/Dockerfile
+      dockerfile: docker/web/Dockerfile
     entrypoint: /bin/bash
     command: scripts/run_celery.sh
     env_file:
