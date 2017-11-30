@@ -574,3 +574,64 @@ class TestRollabck(TestCase):
         TournamentTokenReceiver().rollback(participant_event)
         self.assertEqual(TournamentParticipant.objects.get(address=participant.address).balance, 0)
 
+    def test_transfer_tournament_tokens_rollback(self):
+        participant1 = TournamentParticipantFactory()
+        participant2 = TournamentParticipantFactory()
+        participant1_issuance_event = {
+            'name': 'Issuance',
+            'address': 'not needed',
+            'params': [
+                {
+                    'name': 'owner',
+                    'value': participant1.address
+                },
+                {
+                    'name': 'amount',
+                    'value': 150
+                }
+            ]
+        }
+
+        transfer_event = {
+            'name': 'Transfer',
+            'address': 'not needed',
+            'params': [
+                {
+                    'name': 'from',
+                    'value': participant1.address
+                },
+                {
+                    'name': 'to',
+                    'value': participant2.address
+                },
+                {
+                    'name': 'value',
+                    'value': 15
+                }
+            ]
+        }
+
+        # Save event
+        TournamentTokenReceiver().save(participant1_issuance_event)
+        TournamentTokenReceiver().save(transfer_event)
+        self.assertEqual(TournamentParticipant.objects.get(address=participant1.address).balance.__float__(), float(participant1.balance+150-15))
+        self.assertEqual(TournamentParticipant.objects.get(address=participant2.address).balance.__float__(), float(participant2.balance+15))
+
+        TournamentTokenReceiver().rollback(transfer_event)
+        self.assertEqual(TournamentParticipant.objects.get(address=participant1.address).balance.__float__(),
+                         float(participant1.balance + 150))
+        self.assertEqual(TournamentParticipant.objects.get(address=participant2.address).balance.__float__(),
+                         float(participant2.balance))
+
+        # Transfer with only one
+        participant2.delete()
+        TournamentTokenReceiver().save(transfer_event)
+        self.assertEqual(TournamentParticipant.objects.get(address=participant1.address).balance.__float__(),
+                         float(participant1.balance + 150 - 15))
+
+        TournamentTokenReceiver().rollback(transfer_event)
+        self.assertEqual(TournamentParticipant.objects.get(address=participant1.address).balance.__float__(),
+                         float(participant1.balance + 150))
+
+        participant1.delete()
+        self.assertRaises(Exception, TournamentTokenReceiver().rollback, transfer_event)

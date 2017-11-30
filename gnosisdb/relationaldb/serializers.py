@@ -1086,7 +1086,6 @@ class TournamentTokenTransferSerializer(ContractNotTimestampted, serializers.Mod
         :raise ValidationError
         """
         super(TournamentTokenTransferSerializer, self).validate(attrs)
-        is_valid = True
         error_message = ''
         try:
             models.TournamentParticipant.objects.get(address=attrs.get('from_participant'))
@@ -1095,7 +1094,6 @@ class TournamentTokenTransferSerializer(ContractNotTimestampted, serializers.Mod
                 attrs.get('from_participant')
             )
             attrs.pop('from_participant')
-            is_valid = False
 
         try:
             models.TournamentParticipant.objects.get(address=attrs.get('to_participant'))
@@ -1104,11 +1102,11 @@ class TournamentTokenTransferSerializer(ContractNotTimestampted, serializers.Mod
                 attrs.get('from_participant')
             )
             attrs.pop('to_participant')
-            is_valid = False
 
-        if is_valid:
+        if attrs.get('to_participant') is None and attrs.get('from_participant') is None:
+            raise serializers.ValidationError(error_message)
+        else:
             return attrs
-        raise serializers.ValidationError(error_message)
 
     def create(self, validated_data):
         """
