@@ -1027,6 +1027,9 @@ class TournamentParticipantSerializer(ContractCreatedByFactorySerializer, serial
         })
         return models.TournamentParticipant.objects.create(**validated_data)
 
+    def rollback(self):
+        self.instance.delete()
+
 
 class TournamentTokenIssuanceSerializer(ContractNotTimestampted, serializers.ModelSerializer):
     """
@@ -1046,6 +1049,10 @@ class TournamentTokenIssuanceSerializer(ContractNotTimestampted, serializers.Mod
         participant.balance += validated_data.get('amount')
         participant.save()
         return participant
+
+    def rollback(self):
+        self.instance.balance -= self.validated_data.get('amount')
+        return self.instance.save()
 
 
 class TournamentTokenTransferSerializer(ContractNotTimestampted, serializers.ModelSerializer):
@@ -1091,3 +1098,11 @@ class TournamentTokenTransferSerializer(ContractNotTimestampted, serializers.Mod
             to_user.balance += validated_data.get('value')
             to_user.save()
             return to_user
+
+    def rollback(self):
+        self.instance.balance += self.validated_data.get('value')
+        to_user = models.TournamentParticipant.objects.get(address=self.validated_data.get('to_participant'))
+        to_user.balance -= self.validated_data.get('value')
+        to_user.save()
+        return self.instance.save()
+
