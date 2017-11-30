@@ -36,7 +36,7 @@ services:
       - db
     working_dir: /gnosisdb
     entrypoint: /bin/bash
-    command: scripts/run_dokku_web.sh
+    command: scripts/run_web.sh
     ports:
       - "8000:8000"
       - "27017"
