@@ -47,7 +47,7 @@ class SerializerEventReceiver(AbstractEventReceiver):
                                                                                         dumps(decoded_event)))
                 logger.warning(serializer.errors)
 
-    def rollback(self, decoded_event, block_info):
+    def rollback(self, decoded_event, block_info=None):
         serializer_class = self.Meta.events.get(decoded_event.get('name'))
         # Get primary key name from Meta.primary_key_name, it can be the same for all Events (string) or different for
         # each one (dictionary)
@@ -116,7 +116,7 @@ class BaseInstanceEventReceiver(SerializerEventReceiver):
         events = {}
         primary_key_name = {}
 
-    def rollback(self, decoded_event, block_info):
+    def rollback(self, decoded_event, block_info=None):
         serializer_class = self.Meta.events.get(decoded_event.get('name'))
 
         primary_key_name = self.Meta.primary_key_name.get(decoded_event.get('name'))
@@ -136,7 +136,11 @@ class BaseInstanceEventReceiver(SerializerEventReceiver):
             **filter_dict
         )
 
-        serializer = serializer_class(instance, data=decoded_event, block=block_info)
+        if block_info:
+            serializer = serializer_class(instance, data=decoded_event, block=block_info)
+        else:
+            serializer = serializer_class(instance, data=decoded_event)
+
         if serializer.is_valid():
             serializer.rollback()
             logger.info('Event Receiver {} reverted: {}'.format(self.__class__.__name__, dumps(decoded_event)))
@@ -250,10 +254,29 @@ class TournamentTokenReceiver(BaseInstanceEventReceiver):
         }
         primary_key_name = {
             'Issuance': {
-                'owner': 'address'
-            },
-            'Transfer': {
-                'from_participant': 'owner',
-                'to_participant': 'to'
+                'address': 'owner'
             }
         }
+
+    def rollback(self, decoded_event, block_info=None):
+        if decoded_event.get('name') == 'Issuance':
+            super(TournamentTokenReceiver, self).rollback(decoded_event, block_info)
+        else:
+            serializer_class = self.Meta.events.get(decoded_event.get('name'))
+            serializer_model = serializer_class.Meta.model
+            participants = serializer_model.objects.filter(address=decoded_event.get('from')) | \
+                           serializer_model.objects.filter(address=decoded_event.get('to'))
+            if len(participants):
+                instance = participants[0]
+                serializer = serializer_class(instance, data=decoded_event)
+
+                if serializer.is_valid():
+                    serializer.rollback()
+                    logger.info('Event Receiver {} reverted: {}'.format(self.__class__.__name__, dumps(decoded_event)))
+                else:
+                    logger.warning(
+                        'INVALID Data for Event Receiver {} rollback: {}'.format(
+                            self.__class__.__name__, dumps(decoded_event)
+                        )
+                    )
+                    logger.warning(serializer.errors)

@@ -1010,7 +1010,11 @@ class TournamentParticipantSerializer(ContractCreatedByFactorySerializer, serial
     address = serializers.CharField(max_length=40, source='factory')
 
     def validate_identity(self, identity_address):
-        # Whitelisted users have not to be saved
+        """
+        Only not whitelisted users can be saved
+        :param identity_address: a user participant address
+        :return: validated identity address
+        """
         whitelisted_users = models.TournamentWhitelistedCreator.objects.all().values_list('address', flat=True)
         if identity_address in whitelisted_users:
             raise serializers.ValidationError('Tournament participant {} is admin, wont be saved'.format(identity_address))
@@ -1073,26 +1077,55 @@ class TournamentTokenTransferSerializer(ContractNotTimestampted, serializers.Mod
         super(TournamentTokenTransferSerializer, self).__init__(*args, **kwargs)
         self.initial_data['from_participant'] = self.initial_data.pop('from')
         self.initial_data['to_participant'] = self.initial_data.pop('to')
-
-    def validate_from_participant(self, from_participant):
-        # from_participant could not be a Tournament participant, we need to check it
-        # and remote it from validated_data in case it is not a participant
+        
+    def validate(self, attrs):
+        """
+        One of the two participants could not be a Tournament participant, we need to check them
+        and remove in case they're not a participant
+        :return validated attrs
+        :raise ValidationError
+        """
+        super(TournamentTokenTransferSerializer, self).validate(attrs)
+        is_valid = True
+        error_message = ''
         try:
-            from_user = models.TournamentParticipant.objects.get(address=from_participant)
-            return from_participant
+            models.TournamentParticipant.objects.get(address=attrs.get('from_participant'))
         except:
-            return None
+            error_message += 'Invalid from_participant: user with address {} does not exist. \n'.format(
+                attrs.get('from_participant')
+            )
+            attrs.pop('from_participant')
+            is_valid = False
+
+        try:
+            models.TournamentParticipant.objects.get(address=attrs.get('to_participant'))
+        except:
+            error_message += 'Invalid to_participant: user with address {} does not exist. \n'.format(
+                attrs.get('from_participant')
+            )
+            attrs.pop('to_participant')
+            is_valid = False
+
+        if is_valid:
+            return attrs
+        raise serializers.ValidationError(error_message)
 
     def create(self, validated_data):
+        """
+        :param validated_data:
+        :return: TournamentParticipant istance
+        """
         if validated_data.get('from_participant'):
             from_user = models.TournamentParticipant.objects.get(address=validated_data.get('from_participant'))
             from_user.balance -= validated_data.get('value')
             from_user.save()
-
-            to_user = models.TournamentParticipant.objects.get(address=validated_data.get('to_participant'))
-            to_user.balance += validated_data.get('value')
-            to_user.save()
-            return to_user
+            if validated_data.get('to_participant'):
+                to_user = models.TournamentParticipant.objects.get(address=validated_data.get('to_participant'))
+                to_user.balance += validated_data.get('value')
+                to_user.save()
+                return to_user
+            else:
+                return from_user
         else:
             to_user = models.TournamentParticipant.objects.get(address=validated_data.get('to_participant'))
             to_user.balance += validated_data.get('value')
@@ -1100,9 +1133,27 @@ class TournamentTokenTransferSerializer(ContractNotTimestampted, serializers.Mod
             return to_user
 
     def rollback(self):
-        self.instance.balance += self.validated_data.get('value')
-        to_user = models.TournamentParticipant.objects.get(address=self.validated_data.get('to_participant'))
-        to_user.balance -= self.validated_data.get('value')
-        to_user.save()
-        return self.instance.save()
+        """
+        In order to reach the rollback method, one of the two participants must exist.
+        See validate(attrs)
+        :return: TournamentParticipant instance
+        """
+        if self.validated_data.get('from_participant'):
+            from_user = models.TournamentParticipant.objects.get(address=self.validated_data.get('from_participant'))
+            from_user.balance += self.validated_data.get('value')
+            from_user.save()
+
+            if self.validated_data.get('to_participant'):
+                to_user = models.TournamentParticipant.objects.get(address=self.validated_data.get('to_participant'))
+                to_user.balance -= self.validated_data.get('value')
+                to_user.save()
+                return to_user
+            else:
+                return from_user
+
+        else:
+            to_user = models.TournamentParticipant.objects.get(address=self.validated_data.get('to_participant'))
+            to_user.balance -= self.validated_data.get('value')
+            to_user.save()
+            return to_user
 
