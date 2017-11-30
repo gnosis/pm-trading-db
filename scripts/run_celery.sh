@@ -1,5 +1,8 @@
 #!/bin/sh
 
+addgroup celery
+useradd -ms /bin/bash celery -g celery
+
 database_status="$(pg_isready -h $DATABASE_HOST -U $DATABASE_USER -d $DATABASE_NAME)"
 
 case "$database_status" in
