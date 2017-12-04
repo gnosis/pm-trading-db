@@ -2,7 +2,7 @@ from django.core.management.base import BaseCommand
 from celery import Celery
 from celery.schedules import crontab
 from relationaldb.models import EventDescription
-from django_eth_events.models import Daemon
+from django_eth_events.models import Daemon, Block
 from django_celery_beat.models  import PeriodicTask, IntervalSchedule
 
 
@@ -11,6 +11,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         EventDescription.objects.all().delete()
+        Block.objects.all().delete()
         daemon = Daemon.get_solo()
         daemon.block_number = 0
         daemon.last_error_block_number = 0
