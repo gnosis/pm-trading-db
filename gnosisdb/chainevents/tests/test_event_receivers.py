@@ -640,7 +640,7 @@ class TestEventReceiver(TestCase):
         self.assertEqual(TournamentParticipant.objects.all().count(), 1)
 
     def test_issue_tournament_tokens(self):
-        participant = TournamentParticipantFactory()
+        participant = TournamentParticipantFactory(balance=0)
         participant_event = {
             'name': 'Issuance',
             'address': 'not needed',
@@ -660,6 +660,30 @@ class TestEventReceiver(TestCase):
         # Save event
         TournamentTokenReceiver().save(participant_event)
         self.assertEqual(TournamentParticipant.objects.get(address=participant.address).balance, 123)
+
+    def test_issue_non_participant(self):
+        # should not break, just don't save anything
+        participant = TournamentParticipantFactory()
+        participant_event = {
+            'name': 'Issuance',
+            'address': 'not needed',
+            'params': [
+                {
+                    'name': 'owner',
+                    'value': participant.address
+                },
+                {
+                    'name': 'amount',
+                    'value': 123
+                }
+            ]
+        }
+
+        participant.delete()
+        # Save event
+        TournamentTokenReceiver().save(participant_event)
+        self.assertEqual(TournamentParticipant.objects.all().count(), 0)
+        self.assertIsNone(participant.pk)
 
     def test_transfer_tournament_tokens(self):
         participant1 = TournamentParticipantFactory()

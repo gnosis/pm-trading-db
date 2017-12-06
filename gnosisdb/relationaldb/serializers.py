@@ -1047,6 +1047,14 @@ class TournamentTokenIssuanceSerializer(ContractNotTimestampted, serializers.Mod
     owner = serializers.CharField(max_length=40)
     amount = serializers.IntegerField()
 
+    def validate_owner(self, owner):
+        try:
+            models.TournamentParticipant.objects.get(address=owner)
+        except models.TournamentParticipant.DoesNotExist:
+            raise serializers.ValidationError('Tournament Participant with address {} does not exist'.format(owner))
+
+        return owner
+
     def create(self, validated_data):
         logger.info("issuance serializer")
         participant = models.TournamentParticipant.objects.get(address=validated_data.get('owner'))
