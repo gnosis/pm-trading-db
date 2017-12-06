@@ -70,7 +70,7 @@ class CategoricalEvent(Event):
 class OutcomeToken(Contract):
     """Representation of the ERC20 token related with its respective outcome in the event.
     This token is created by the Event smart contract letting the event to control supply."""
-    event = models.ForeignKey(Event) # The outcome token related event
+    event = models.ForeignKey(Event, related_name='outcome_tokens') # The outcome token related event
     # index:
     # outcome position in the event's outcomes array (Categorical Event)
     # 0 for short and 1 for long position(Scalar Event)
@@ -132,11 +132,13 @@ class Market(ContractCreatedByFactory):
     stage = models.PositiveIntegerField(choices=stages, default=0)
     revenue = models.DecimalField(max_digits=80, decimal_places=0)
     collected_fees = models.DecimalField(max_digits=80, decimal_places=0)
+    marginal_prices = ArrayField(models.DecimalField(max_digits=5, decimal_places=4))
+    trading_volume = models.DecimalField(max_digits=80, decimal_places=0)
 
 
 class Order(BlockTimeStamped):
     """Parent class defining a market related order"""
-    market = models.ForeignKey(Market)
+    market = models.ForeignKey(Market, related_name='orders')
     sender = models.CharField(max_length=40, db_index=True)
     outcome_token = models.ForeignKey(OutcomeToken, to_field='address', null=True)
     outcome_token_count = models.DecimalField(max_digits=80, decimal_places=0) # the amount of outcome tokens bought or sold

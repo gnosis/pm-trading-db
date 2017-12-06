@@ -367,12 +367,20 @@ class MarketSerializer(ContractCreatedByFactorySerializer, serializers.ModelSeri
             event = validated_data.get('event')
             n_outcome_tokens = len(categorical_event.oracle.centralizedoracle.event_description.categoricaleventdescription.outcomes)
             net_outcome_tokens_sold = [0] * n_outcome_tokens
+            marginal_prices = [str(1.0 / n_outcome_tokens) for x in range(0, n_outcome_tokens)]
         except models.CategoricalEvent.DoesNotExist:
             scalar_event = models.ScalarEvent.objects.get(address=validated_data.get('event').address)
             # scalar, creating an array of size 2
             net_outcome_tokens_sold = [0, 0]
+            marginal_prices = ['0.5', '0.5']
 
-        validated_data.update({'net_outcome_tokens_sold': net_outcome_tokens_sold})
+        validated_data.update(
+            {
+                'net_outcome_tokens_sold': net_outcome_tokens_sold,
+                'marginal_prices': marginal_prices,
+                'trading_volume': 0
+            }
+        )
         market = models.Market.objects.create(**validated_data)
         return market
 
@@ -773,7 +781,7 @@ class OutcomeTokenPurchaseSerializer(ContractEventTimestamped, serializers.Model
             market.net_outcome_tokens_sold[token_index] += token_count
             market.collected_fees += validated_data.get('marketFees')
 
-            outcome_token = market.event.outcometoken_set.get(index=token_index)
+            outcome_token = market.event.outcome_tokens.get(index=token_index)
 
             # Create Order
             order = models.BuyOrder()
@@ -795,10 +803,12 @@ class OutcomeTokenPurchaseSerializer(ContractEventTimestamped, serializers.Model
             )
             # Save order successfully, save market changes, then save the share entry
             order.save()
+            market.trading_volume += order.cost
+            market.marginal_prices = order.marginal_prices
             market.save()
             return order
         except models.Market.DoesNotExist:
-            raise serializers.ValidationError('Market with address {} does not exist.' % validated_data.get('address'))
+            raise serializers.ValidationError('Market with address {} does not exist.'.format(validated_data.get('address')))
 
     def rollback(self):
         token_index = self.validated_data.get('outcomeTokenIndex')
@@ -806,6 +816,12 @@ class OutcomeTokenPurchaseSerializer(ContractEventTimestamped, serializers.Model
         market = models.Market.objects.get(address=self.validated_data.get('address'))
         market.net_outcome_tokens_sold[token_index] -= token_count
         market.collected_fees -= self.validated_data.get('marketFees')
+        market.trading_volume -= self.instance.cost
+        market.marginal_prices = map(
+            lambda (index, _): Decimal(calc_lmsr_marginal_price(int(index), [int(x) for x in market.net_outcome_tokens_sold],
+                                                        int(market.funding))),
+            enumerate(market.net_outcome_tokens_sold)
+        )
 
         # Remove order
         self.instance.delete()
@@ -836,7 +852,7 @@ class OutcomeTokenSaleSerializer(ContractEventTimestamped, serializers.ModelSeri
             market.net_outcome_tokens_sold[token_index] -= token_count
             market.collected_fees += validated_data.get('marketFees')
             # get outcome token
-            outcome_token = market.event.outcometoken_set.get(index=token_index)
+            outcome_token = market.event.outcome_tokens.get(index=token_index)
 
             # Create Order
             order = models.SellOrder()
@@ -857,6 +873,7 @@ class OutcomeTokenSaleSerializer(ContractEventTimestamped, serializers.ModelSeri
             )
             # Save order successfully, save market changes, then save the share entry
             order.save()
+            market.marginal_prices = order.marginal_prices
             market.save()
             return order
         except models.Market.DoesNotExist:
@@ -869,6 +886,13 @@ class OutcomeTokenSaleSerializer(ContractEventTimestamped, serializers.ModelSeri
         market = models.Market.objects.get(address=self.validated_data.get('address'))
         market.net_outcome_tokens_sold[token_index] += token_count
         market.collected_fees -= self.validated_data.get('marketFees')
+
+        market.marginal_prices = map(
+            lambda (index, _): Decimal(
+                calc_lmsr_marginal_price(int(index), [int(x) for x in market.net_outcome_tokens_sold],
+                                         int(market.funding))),
+            enumerate(market.net_outcome_tokens_sold)
+        )
 
         # Remove order
         self.instance.delete()

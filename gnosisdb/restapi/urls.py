@@ -1,4 +1,5 @@
-from django.conf.urls import url
+from django.conf.urls import url, include
+from django.conf import settings
 
 from . import views
 
@@ -19,3 +20,9 @@ urlpatterns = [
     url(r'^account/(0x)?(?P<account_address>[a-fA-F0-9]+)/shares/$', views.AccountSharesView.as_view(), name='shares-by-account'),
     url(r'^factories/$', views.factories_view, name='factories'),
 ]
+
+if settings.DEBUG:
+    import debug_toolbar
+    urlpatterns = [
+        url(r'^__debug__/', include(debug_toolbar.urls)),
+    ] + urlpatterns
