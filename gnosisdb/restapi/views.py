@@ -169,7 +169,15 @@ class AllMarketSharesView(generics.ListAPIView):
                     address=self.kwargs['market_address']
                 ).event.outcome_tokens.values_list('address', flat=True)
             )
-        )
+        ).select_related(
+            'outcome_token',
+            'outcome_token__event',
+            'outcome_token__event__oracle',
+            'outcome_token__event__oracle__centralizedoracle',
+            'outcome_token__event__oracle__centralizedoracle__event_description',
+            'outcome_token__event__oracle__centralizedoracle__event_description__categoricaleventdescription',
+            'outcome_token__event__oracle__centralizedoracle__event_description__scalareventdescription',
+        ).prefetch_related('outcome_token__event__markets')
 
 
 class MarketParticipantTradesView(generics.ListAPIView):
@@ -181,7 +189,7 @@ class MarketParticipantTradesView(generics.ListAPIView):
         return Order.objects.filter(
             market=self.kwargs['market_address'],
             sender=self.kwargs['owner_address']
-        ).order_by('creation_date_time')
+        )
 
 
 class MarketTradesView(generics.ListAPIView):
@@ -195,7 +203,15 @@ class MarketTradesView(generics.ListAPIView):
         # return trades
         return Order.objects.filter(
             market=self.kwargs['market_address'],
-        )
+        ).select_related(
+            'outcome_token',
+            'outcome_token__event',
+            'outcome_token__event__oracle',
+            'outcome_token__event__oracle__centralizedoracle',
+            'outcome_token__event__oracle__centralizedoracle__event_description',
+            'outcome_token__event__oracle__centralizedoracle__event_description__categoricaleventdescription',
+            'outcome_token__event__oracle__centralizedoracle__event_description__scalareventdescription',
+        ).prefetch_related('outcome_token__event__markets')
 
 
 class AccountTradesView(generics.ListAPIView):
@@ -209,7 +225,15 @@ class AccountTradesView(generics.ListAPIView):
     def get_queryset(self):
         return Order.objects.filter(
             sender=self.kwargs['account_address']
-        )
+        ).select_related(
+            'outcome_token',
+            'outcome_token__event',
+            'outcome_token__event__oracle',
+            'outcome_token__event__oracle__centralizedoracle',
+            'outcome_token__event__oracle__centralizedoracle__event_description',
+            'outcome_token__event__oracle__centralizedoracle__event_description__categoricaleventdescription',
+            'outcome_token__event__oracle__centralizedoracle__event_description__scalareventdescription',
+        ).prefetch_related('outcome_token__event__markets')
 
 
 class AccountSharesView(generics.ListAPIView):
@@ -222,4 +246,12 @@ class AccountSharesView(generics.ListAPIView):
     def get_queryset(self):
         return OutcomeTokenBalance.objects.filter(
             owner=self.kwargs['account_address'],
-        )
+        ).select_related(
+            'outcome_token',
+            'outcome_token__event',
+            'outcome_token__event__oracle',
+            'outcome_token__event__oracle__centralizedoracle',
+            'outcome_token__event__oracle__centralizedoracle__event_description',
+            'outcome_token__event__oracle__centralizedoracle__event_description__categoricaleventdescription',
+            'outcome_token__event__oracle__centralizedoracle__event_description__scalareventdescription',
+        ).prefetch_related('outcome_token__event__markets')

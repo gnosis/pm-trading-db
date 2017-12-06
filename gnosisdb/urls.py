@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 from django.conf.urls import url, include
+from django.conf import settings
 from django.contrib import admin
 from rest_framework_swagger.views import get_swagger_view
 
@@ -13,5 +14,11 @@ urlpatterns = [
     url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
     url(r'^api/', include('gnosisdb.restapi.urls', namespace='api'))
 ]
+
+if settings.DEBUG:
+    import debug_toolbar
+    urlpatterns = [
+        url(r'^__debug__/', include(debug_toolbar.urls)),
+    ] + urlpatterns
 
 admin.autodiscover()
