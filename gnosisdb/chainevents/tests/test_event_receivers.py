@@ -727,3 +727,78 @@ class TestEventReceiver(TestCase):
         TournamentTokenReceiver().save(transfer_event)
         self.assertEqual(TournamentParticipant.objects.get(address=participant1.address).balance.__float__(), float(participant1.balance+150-15))
         self.assertEqual(TournamentParticipant.objects.get(address=participant2.address).balance.__float__(), float(participant2.balance+15))
+
+    def test_transfer_tournament_tokens_non_to_participants(self):
+        participant1 = TournamentParticipantFactory()
+        participant2 = TournamentParticipantFactory()
+        participant1_issuance_event = {
+            'name': 'Issuance',
+            'address': 'not needed',
+            'params': [
+                {
+                    'name': 'owner',
+                    'value': participant1.address
+                },
+                {
+                    'name': 'amount',
+                    'value': 150
+                }
+            ]
+        }
+
+        transfer_event = {
+            'name': 'Transfer',
+            'address': 'not needed',
+            'params': [
+                {
+                    'name': 'from',
+                    'value': participant1.address
+                },
+                {
+                    'name': 'to',
+                    'value': participant2.address
+                },
+                {
+                    'name': 'value',
+                    'value': 15
+                }
+            ]
+        }
+
+        participant2.delete()
+
+        # Save event
+        TournamentTokenReceiver().save(participant1_issuance_event)
+        TournamentTokenReceiver().save(transfer_event)
+        self.assertEqual(TournamentParticipant.objects.get(address=participant1.address).balance.__float__(), float(participant1.balance+150-15))
+        self.assertEqual(TournamentParticipant.objects.filter(address=participant2.address).count(), 0)
+
+    def test_transfer_tournament_tokens_non_from_participant(self):
+        participant1 = TournamentParticipantFactory()
+        participant2 = TournamentParticipantFactory()
+
+        transfer_event = {
+            'name': 'Transfer',
+            'address': 'not needed',
+            'params': [
+                {
+                    'name': 'from',
+                    'value': participant1.address
+                },
+                {
+                    'name': 'to',
+                    'value': participant2.address
+                },
+                {
+                    'name': 'value',
+                    'value': 15
+                }
+            ]
+        }
+
+        participant1.delete()
+
+        # Save event
+        TournamentTokenReceiver().save(transfer_event)
+        self.assertEqual(TournamentParticipant.objects.filter(address=participant1.address).count(), 0)
+        self.assertEqual(TournamentParticipant.objects.get(address=participant2.address).balance.__float__(), float(participant2.balance+15))
