@@ -21,10 +21,17 @@ from .filters import (
 
 
 class CentralizedOracleListView(generics.ListAPIView):
-    queryset = CentralizedOracle.objects.all()
     serializer_class = CentralizedOracleSerializer
     filter_class = CentralizedOracleFilter
     pagination_class = DefaultPagination
+
+    def get_queryset(self):
+        queryset = CentralizedOracle.objects.all().select_related(
+            'event_description',
+            'event_description__scalareventdescription',
+            'event_description__categoricaleventdescription'
+        )
+        return queryset
 
 
 class CentralizedOracleFetchView(generics.RetrieveAPIView):
@@ -36,10 +43,31 @@ class CentralizedOracleFetchView(generics.RetrieveAPIView):
 
 
 class EventListView(generics.ListAPIView):
-    queryset = Event.objects.all()
     serializer_class = EventSerializer
     filter_class = EventFilter
     pagination_class = DefaultPagination
+
+    def get_queryset(self):
+        queryset = Event.objects.all().select_related(
+            'oracle',
+            'scalarevent',
+            'scalarevent__oracle',
+            'scalarevent__oracle__centralizedoracle',
+            'scalarevent__oracle__centralizedoracle__event_description',
+            'scalarevent__oracle__centralizedoracle__event_description__categoricaleventdescription',
+            'scalarevent__oracle__centralizedoracle__event_description__scalareventdescription',
+            'categoricalevent',
+            'categoricalevent__oracle',
+            'categoricalevent__oracle__centralizedoracle',
+            'categoricalevent__oracle__centralizedoracle__event_description',
+            'categoricalevent__oracle__centralizedoracle__event_description__categoricaleventdescription',
+            'categoricalevent__oracle__centralizedoracle__event_description__scalareventdescription',
+            'oracle__centralizedoracle',
+            'oracle__centralizedoracle__event_description',
+            'oracle__centralizedoracle__event_description__categoricaleventdescription',
+            'oracle__centralizedoracle__event_description__scalareventdescription',
+        )
+        return queryset
 
 
 class EventFetchView(generics.RetrieveAPIView):
@@ -51,10 +79,34 @@ class EventFetchView(generics.RetrieveAPIView):
 
 
 class MarketListView(generics.ListAPIView):
-    queryset = Market.objects.all()
     serializer_class = MarketSerializer
     filter_class = MarketFilter
     pagination_class = DefaultPagination
+
+    def get_queryset(self):
+        # Eager loading of related models
+        queryset = Market.objects.all()
+        queryset = queryset.select_related(
+            'event',
+            'event__oracle',
+            'event__scalarevent',
+            'event__scalarevent__oracle',
+            'event__scalarevent__oracle__centralizedoracle',
+            'event__scalarevent__oracle__centralizedoracle__event_description',
+            'event__scalarevent__oracle__centralizedoracle__event_description__categoricaleventdescription',
+            'event__scalarevent__oracle__centralizedoracle__event_description__scalareventdescription',
+            'event__categoricalevent',
+            'event__categoricalevent__oracle',
+            'event__categoricalevent__oracle__centralizedoracle',
+            'event__categoricalevent__oracle__centralizedoracle__event_description',
+            'event__categoricalevent__oracle__centralizedoracle__event_description__categoricaleventdescription',
+            'event__categoricalevent__oracle__centralizedoracle__event_description__scalareventdescription',
+            'event__oracle__centralizedoracle',
+            'event__oracle__centralizedoracle__event_description',
+            'event__oracle__centralizedoracle__event_description__categoricaleventdescription',
+            'event__oracle__centralizedoracle__event_description__scalareventdescription',
+        )
+        return queryset
 
 
 class MarketFetchView(generics.RetrieveAPIView):
@@ -92,10 +144,18 @@ class MarketSharesView(generics.ListAPIView):
 
     def get_queryset(self):
         market = get_object_or_404(Market, address=self.kwargs['market_address'])
-        outcome_tokens = market.event.outcometoken_set.values_list('address', flat=True)
+        outcome_tokens = market.event.outcome_tokens.values_list('address', flat=True)
         return OutcomeTokenBalance.objects.filter(
             owner=self.kwargs['owner_address'],
             outcome_token__address__in=list(outcome_tokens)
+        ).select_related(
+            'outcome_token',
+            'outcome_token__event',
+            'outcome_token__event__oracle',
+            'outcome_token__event__oracle__centralizedoracle',
+            'outcome_token__event__oracle__centralizedoracle__event_description',
+            'outcome_token__event__oracle__centralizedoracle__event_description__categoricaleventdescription',
+            'outcome_token__event__oracle__centralizedoracle__event_description__scalareventdescription',
         )
 
 
@@ -111,9 +171,17 @@ class AllMarketSharesView(generics.ListAPIView):
             outcome_token__address__in=list(
                 Market.objects.get(
                     address=self.kwargs['market_address']
-                ).event.outcometoken_set.values_list('address', flat=True)
+                ).event.outcome_tokens.values_list('address', flat=True)
             )
-        )
+        ).select_related(
+            'outcome_token',
+            'outcome_token__event',
+            'outcome_token__event__oracle',
+            'outcome_token__event__oracle__centralizedoracle',
+            'outcome_token__event__oracle__centralizedoracle__event_description',
+            'outcome_token__event__oracle__centralizedoracle__event_description__categoricaleventdescription',
+            'outcome_token__event__oracle__centralizedoracle__event_description__scalareventdescription',
+        ).prefetch_related('outcome_token__event__markets')
 
 
 class MarketParticipantTradesView(generics.ListAPIView):
@@ -125,7 +193,7 @@ class MarketParticipantTradesView(generics.ListAPIView):
         return Order.objects.filter(
             market=self.kwargs['market_address'],
             sender=self.kwargs['owner_address']
-        ).order_by('creation_date_time')
+        )
 
 
 class MarketTradesView(generics.ListAPIView):
@@ -139,7 +207,16 @@ class MarketTradesView(generics.ListAPIView):
         # return trades
         return Order.objects.filter(
             market=self.kwargs['market_address'],
-        ).order_by('creation_block')
+        ).order_by('creation_block'
+        ).select_related(
+            'outcome_token',
+            'outcome_token__event',
+            'outcome_token__event__oracle',
+            'outcome_token__event__oracle__centralizedoracle',
+            'outcome_token__event__oracle__centralizedoracle__event_description',
+            'outcome_token__event__oracle__centralizedoracle__event_description__categoricaleventdescription',
+            'outcome_token__event__oracle__centralizedoracle__event_description__scalareventdescription',
+        ).prefetch_related('outcome_token__event__markets')
 
 
 class AccountTradesView(generics.ListAPIView):
@@ -153,7 +230,15 @@ class AccountTradesView(generics.ListAPIView):
     def get_queryset(self):
         return Order.objects.filter(
             sender=self.kwargs['account_address']
-        )
+        ).select_related(
+            'outcome_token',
+            'outcome_token__event',
+            'outcome_token__event__oracle',
+            'outcome_token__event__oracle__centralizedoracle',
+            'outcome_token__event__oracle__centralizedoracle__event_description',
+            'outcome_token__event__oracle__centralizedoracle__event_description__categoricaleventdescription',
+            'outcome_token__event__oracle__centralizedoracle__event_description__scalareventdescription',
+        ).prefetch_related('outcome_token__event__markets')
 
 
 class AccountSharesView(generics.ListAPIView):
@@ -166,7 +251,16 @@ class AccountSharesView(generics.ListAPIView):
     def get_queryset(self):
         return OutcomeTokenBalance.objects.filter(
             owner=self.kwargs['account_address'],
-        )
+        ).select_related(
+            'outcome_token',
+            'outcome_token__event',
+            'outcome_token__event__oracle',
+            'outcome_token__event__oracle__centralizedoracle',
+            'outcome_token__event__oracle__centralizedoracle__event_description',
+            'outcome_token__event__oracle__centralizedoracle__event_description__categoricaleventdescription',
+            'outcome_token__event__oracle__centralizedoracle__event_description__scalareventdescription',
+        ).prefetch_related('outcome_token__event__markets')
+
 
 # ========================================================
 #                 Olympia

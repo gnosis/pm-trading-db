@@ -29,6 +29,7 @@ INSTALLED_APPS = (
     'rest_framework_swagger',
     'chainevents',
     'django_google_authenticator',
+    'debug_toolbar',
 )
 
 MIDDLEWARE_CLASSES = [
@@ -42,6 +43,7 @@ MIDDLEWARE_CLASSES = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.contrib.admindocs.middleware.XViewMiddleware',
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
 ]
 
 LOGGING = {

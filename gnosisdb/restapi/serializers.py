@@ -29,19 +29,22 @@ class EventDescriptionSerializer(serializers.BaseSerializer):
             'resolution_date': instance.resolution_date,
             'ipfs_hash': instance.ipfs_hash
         }
-
-        try:
-            scalar_event = ScalarEventDescription.objects.get(id=instance.id)
+        if isinstance(instance, ScalarEventDescription):
+            scalar_event = instance
             result['unit'] = scalar_event.unit
             result['decimals'] = scalar_event.decimals
-        except ObjectDoesNotExist:
-            pass
-
-        try:
-            categorical_event = CategoricalEventDescription.objects.get(id=instance.id)
+            return remove_null_values(result)
+        elif isinstance(instance, CategoricalEventDescription):
+            categorical_event = instance
             result['outcomes'] = categorical_event.outcomes
-        except ObjectDoesNotExist:
-            pass
+            return remove_null_values(result)
+        try:
+            scalar_event = instance.scalareventdescription
+            result['unit'] = scalar_event.unit
+            result['decimals'] = scalar_event.decimals
+        except:
+            categorical_event = instance.categoricaleventdescription
+            result['outcomes'] = categorical_event.outcomes
 
         return remove_null_values(result)
 
@@ -49,7 +52,10 @@ class EventDescriptionSerializer(serializers.BaseSerializer):
 class OracleSerializer(serializers.Serializer):
 
     def to_representation(self, instance):
-        centralized_oracle = CentralizedOracle.objects.get(address=instance.address)
+        if isinstance(instance, CentralizedOracle):
+            centralized_oracle = instance
+        else:
+            centralized_oracle = instance.centralizedoracle
         response = CentralizedOracleSerializer(centralized_oracle).to_representation(centralized_oracle)
         return remove_null_values(response)
 
@@ -111,20 +117,14 @@ class ScalarEventSerializer(serializers.ModelSerializer):
 class EventSerializer(serializers.Serializer):
 
     def to_representation(self, instance):
-        result = None
         try:
-            categorical_event = CategoricalEvent.objects.get(address=instance.address)
+            categorical_event = instance.categoricalevent
             result = CategoricalEventSerializer(categorical_event).to_representation(categorical_event)
             return remove_null_values(result)
-        except CategoricalEvent.DoesNotExist:
-            pass
-
-        try:
-            scalar_event = ScalarEvent.objects.get(address=instance.address)
+        except:
+            scalar_event = instance.scalarevent
             result = ScalarEventSerializer(scalar_event).to_representation(scalar_event)
             return remove_null_values(result)
-        except ScalarEvent.DoesNotExist:
-            pass
 
 
 class MarketSerializer(serializers.ModelSerializer):
@@ -135,10 +135,10 @@ class MarketSerializer(serializers.ModelSerializer):
     funding = serializers.DecimalField(max_digits=80, decimal_places=0)
     net_outcome_tokens_sold = serializers.ListField(child=serializers.DecimalField(max_digits=80, decimal_places=0, read_only=True))
     stage = serializers.IntegerField()
-    trading_volume = serializers.SerializerMethodField()
+    trading_volume = serializers.DecimalField(max_digits=80, decimal_places=0)
     withdrawn_fees = serializers.DecimalField(max_digits=80, decimal_places=0)
     collected_fees = serializers.DecimalField(max_digits=80, decimal_places=0)
-    marginal_prices = serializers.SerializerMethodField()
+    marginal_prices = serializers.ListField(child=serializers.DecimalField(max_digits=5, decimal_places=4))
 
     class Meta:
         model = Market
@@ -151,36 +151,6 @@ class MarketSerializer(serializers.ModelSerializer):
 
     def get_market_maker(self, obj):
         return add_0x_prefix(obj)
-
-    def get_trading_volume(self, obj):
-        orders = BuyOrder.objects.filter(market=obj.address)
-        if orders.count():
-            return str(orders.aggregate(Sum('cost'))['cost__sum'])
-        else:
-            return "0"
-
-    def get_marginal_prices(selfself, obj):
-        """Get the marginal prices of the last order on the market"""
-        marginal_prices = []
-        orders = Order.objects.filter(market=obj.address).order_by('-creation_date_time')
-
-        if orders.count():
-            marginal_prices = orders[0].marginal_prices
-        else:
-            try:
-                categorical_event = CategoricalEvent.objects.get(address=obj.event.address)
-                n_outcome_tokens = categorical_event.outcometoken_set.count()
-                marginal_prices = [str(1.0/n_outcome_tokens) for x in range(0, n_outcome_tokens)]
-            except CategoricalEvent.DoesNotExist:
-                pass
-
-            try:
-                scalar_event = ScalarEvent.objects.get(address=obj.event.address)
-                marginal_prices = ["0.5", "0.5"]
-            except ScalarEvent.DoesNotExist:
-                pass
-
-        return marginal_prices
 
 
 class OutcomeTokenSerializer(serializers.ModelSerializer):
@@ -220,8 +190,8 @@ class MarketTradesSerializer(serializers.ModelSerializer):
 
     def get_event_description(self, obj):
         try:
-            centralized_oracle = CentralizedOracle.objects.get(address=obj.outcome_token.event.oracle.address)
-            event_description = centralized_oracle.event_description
+            obj.outcome_token.event.oracle.centralizedoracle
+            event_description = obj.outcome_token.event.oracle.centralizedoracle.event_description
             result = EventDescriptionSerializer(event_description).to_representation(event_description)
             return result
         except CentralizedOracle.DoesNotExist:
@@ -282,36 +252,14 @@ class OutcomeTokenBalanceSerializer(serializers.ModelSerializer):
 
     def get_event_description(self, obj):
         try:
-            centralized_oracle = CentralizedOracle.objects.get(address=obj.outcome_token.event.oracle.address)
-            event_description = centralized_oracle.event_description
+            event_description = obj.outcome_token.event.oracle.centralizedoracle.event_description
             result = EventDescriptionSerializer(event_description).to_representation(event_description)
             return result
         except CentralizedOracle.DoesNotExist:
             return {}
 
     def get_marginal_price(self, obj):
-        """Get the marginal prices of the last order on the market"""
-        marginal_prices = []
-        orders = Order.objects.filter(market=obj.outcome_token.event.markets.all()[0].address).order_by('-creation_date_time')
-
-        if orders.count():
-            marginal_prices = orders[0].marginal_prices
-        else:
-            event = obj.outcome_token.event.address
-            try:
-                categorical_event = CategoricalEvent.objects.get(address=event)
-                n_outcome_tokens = categorical_event.outcometoken_set.count()
-                marginal_prices = [str(1.0 / n_outcome_tokens) for x in range(0, n_outcome_tokens)]
-            except CategoricalEvent.DoesNotExist:
-                pass
-
-            try:
-                scalar_event = ScalarEvent.objects.get(address=event)
-                marginal_prices = ["0.5", "0.5"]
-            except ScalarEvent.DoesNotExist:
-                pass
-
-        return marginal_prices[obj.outcome_token.index] if len(marginal_prices)+1 > obj.outcome_token.index else None
+        return obj.outcome_token.event.markets.all()[0].marginal_prices[obj.outcome_token.index]
 
 
 class OlympiaScoreboardSerializer(serializers.ModelSerializer):
@@ -329,4 +277,3 @@ class OlympiaScoreboardSerializer(serializers.ModelSerializer):
 
     contract = ContractSerializer(source='*', many=False, read_only=True)
     account = serializers.CharField(max_length=20)
-

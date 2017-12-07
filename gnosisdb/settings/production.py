@@ -10,7 +10,6 @@ SECRET_KEY = os.environ['SECRET_KEY']
 WSGI_APPLICATION = 'wsgi.application'
 
 INSTALLED_APPS += ("gunicorn", )
-
 if DEBUG is False:
     STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'
 

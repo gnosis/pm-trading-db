@@ -38,61 +38,6 @@ class ContractCreatedByFactory(ContractFactory, BlockTimestampedFactory):
     factory = factory_boy.Sequence(lambda n: '{:040d}'.format(n))
     creator = factory_boy.Sequence(lambda n: '{:040d}'.format(n))
 
-
-class OracleFactory(ContractCreatedByFactory):
-
-    class Meta:
-        model = models.Oracle
-
-    is_outcome_set = False
-    outcome = factory_boy.Sequence(lambda n: n)
-
-
-class EventFactory(ContractCreatedByFactory):
-
-    class Meta:
-        model = models.Event
-
-    collateral_token = factory_boy.Sequence(lambda n: '{:040d}'.format(n))
-    oracle = factory_boy.SubFactory(OracleFactory)
-    is_winning_outcome_set = False
-    outcome = 1
-    redeemed_winnings = 0
-
-
-class CategoricalEventFactory(EventFactory):
-    class Meta:
-        model = models.CategoricalEvent
-
-
-class ScalarEventFactory(EventFactory):
-    class Meta:
-        model = models.ScalarEvent
-
-    upper_bound = 1
-    lower_bound = 0
-
-
-class OutcomeTokenFactory(ContractFactory):
-
-    class Meta:
-        model = models.OutcomeToken
-
-    event = factory_boy.SubFactory(EventFactory)
-    index = 1
-    total_supply = factory_boy.Sequence(lambda n: n)
-
-
-class OutcomeTokenBalanceFactory(factory_boy.DjangoModelFactory):
-
-    class Meta:
-        model = models.OutcomeTokenBalance
-
-    outcome_token = factory_boy.SubFactory(OutcomeTokenFactory)
-    balance = factory_boy.Sequence(lambda n: n)
-    owner = factory_boy.Sequence(lambda n: '{:040d}'.format(n))
-
-
 class EventDescriptionFactory(factory_boy.DjangoModelFactory):
     class Meta:
         model = models.EventDescription
@@ -118,6 +63,15 @@ class ScalarEventDescriptionFactory(EventDescriptionFactory):
     decimals = factory_boy.Sequence(lambda n: n)
 
 
+class OracleFactory(ContractCreatedByFactory):
+
+    class Meta:
+        model = models.Oracle
+
+    is_outcome_set = False
+    outcome = factory_boy.Sequence(lambda n: n)
+
+
 class CentralizedOracleFactory(OracleFactory):
 
     class Meta:
@@ -128,17 +82,64 @@ class CentralizedOracleFactory(OracleFactory):
     event_description = factory_boy.SubFactory(CategoricalEventDescriptionFactory)
 
 
+class EventFactory(ContractCreatedByFactory):
+
+    class Meta:
+        model = models.Event
+
+    collateral_token = factory_boy.Sequence(lambda n: '{:040d}'.format(n))
+    oracle = factory_boy.SubFactory(CentralizedOracleFactory)
+    is_winning_outcome_set = False
+    outcome = 1
+    redeemed_winnings = 0
+
+
+class CategoricalEventFactory(EventFactory):
+    class Meta:
+        model = models.CategoricalEvent
+
+
+class ScalarEventFactory(EventFactory):
+    class Meta:
+        model = models.ScalarEvent
+
+    upper_bound = 1
+    lower_bound = 0
+
+
+class OutcomeTokenFactory(ContractFactory):
+
+    class Meta:
+        model = models.OutcomeToken
+
+    event = factory_boy.SubFactory(CategoricalEventFactory)
+    index = 1
+    total_supply = factory_boy.Sequence(lambda n: n)
+
+
+class OutcomeTokenBalanceFactory(factory_boy.DjangoModelFactory):
+
+    class Meta:
+        model = models.OutcomeTokenBalance
+
+    outcome_token = factory_boy.SubFactory(OutcomeTokenFactory)
+    balance = factory_boy.Sequence(lambda n: n)
+    owner = factory_boy.Sequence(lambda n: '{:040d}'.format(n))
+
+
 class MarketFactory(ContractCreatedByFactory):
 
     class Meta:
         model = models.Market
 
-    event = factory_boy.SubFactory(EventFactory)
+    event = factory_boy.SubFactory(CategoricalEventFactory)
     market_maker = factory_boy.Sequence(lambda n: '{:040d}'.format(n))
     fee = factory_boy.Sequence(lambda n: n)
     funding = factory_boy.Sequence(lambda n: (n+1)*1e18)
     net_outcome_tokens_sold = [0, 0]
+    marginal_prices = ['0.5000', '0.5000']
     withdrawn_fees = 0
+    trading_volume = 0
     # outcome_probabilities = factory.Sequence(lambda n: n)
     stage = 0
     revenue = factory_boy.Sequence(lambda n: n)
@@ -151,7 +152,7 @@ class OrderFactory(BlockTimestampedFactory, factory_boy.DjangoModelFactory):
     outcome_token = factory_boy.SubFactory(OutcomeTokenFactory)
     outcome_token_count = factory_boy.Sequence(lambda n: n)
     net_outcome_tokens_sold = [0, 0]
-    marginal_prices = [0.5, 0.5]
+    marginal_prices = ['0.5000', '0.5000']
 
 
 class BuyOrderFactory(OrderFactory):

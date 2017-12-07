@@ -112,7 +112,8 @@ class TestViews(APITestCase):
 
         self.assertEqual(json.loads(market_response_data.content)['results'][0]['tradingVolume'], "0")
 
-        BuyOrderFactory(market=market, cost=12)
+        market.trading_volume = 12
+        market.save()
 
         market_response_data2 = self.client.get(reverse('api:markets'), content_type='application/json')
         self.assertEquals(market_response_data2.status_code, status.HTTP_200_OK)
@@ -172,6 +173,7 @@ class TestViews(APITestCase):
         self.assertEquals(len(json.loads(response.content).get('results')), 0)
 
         outcome_token = OutcomeTokenFactory(event=market.event)
+        outcome_token2 = OutcomeTokenFactory(event=market.event)
         OutcomeTokenBalanceFactory(owner=market.creator, outcome_token=outcome_token)
         response = self.client.get(
             reverse('api:shares-by-owner', kwargs={'market_address': market.address, 'owner_address': market.creator}),
@@ -188,6 +190,7 @@ class TestViews(APITestCase):
         self.assertEquals(len(json.loads(response.content).get('results')), 0)
 
         outcome_token = OutcomeTokenFactory(event=market.event)
+        outcome_token2 = OutcomeTokenFactory(event=market.event)
         OutcomeTokenBalanceFactory(owner=market.creator, outcome_token=outcome_token)
         response = self.client.get(
             reverse('api:all-shares', kwargs={'market_address': market.address}),
