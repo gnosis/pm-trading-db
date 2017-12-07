@@ -268,16 +268,17 @@ class TournamentTokenReceiver(BaseInstanceEventReceiver):
             to_participant = filter(lambda x: x.get('name') == 'to', decoded_event.get('params'))[0].get('value')
             participants = serializer_model.objects.filter(address=from_participant) | \
                            serializer_model.objects.filter(address=to_participant)
-            instance = participants[0]
-            serializer = serializer_class(instance, data=decoded_event)
+            if len(participants.count()):
+                instance = participants[0]
+                serializer = serializer_class(instance, data=decoded_event)
 
-            if serializer.is_valid():
-                serializer.rollback()
-                logger.info('Event Receiver {} reverted: {}'.format(self.__class__.__name__, dumps(decoded_event)))
-            else:
-                logger.warning(
-                    'INVALID Data for Event Receiver {} rollback: {}'.format(
-                        self.__class__.__name__, dumps(decoded_event)
+                if serializer.is_valid():
+                    serializer.rollback()
+                    logger.info('Event Receiver {} reverted: {}'.format(self.__class__.__name__, dumps(decoded_event)))
+                else:
+                    logger.warning(
+                        'INVALID Data for Event Receiver {} rollback: {}'.format(
+                            self.__class__.__name__, dumps(decoded_event)
+                        )
                     )
-                )
-                logger.warning(serializer.errors)
+                    logger.warning(serializer.errors)
