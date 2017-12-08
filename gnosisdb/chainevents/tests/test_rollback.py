@@ -625,7 +625,8 @@ class TestRollabck(TestCase):
 
         # Transfer with only one
         participant2.delete()
-        TournamentTokenReceiver().save(transfer_event)
+        instance = TournamentTokenReceiver().save(transfer_event)
+        self.assertIsNotNone(instance)
         self.assertEqual(TournamentParticipant.objects.get(address=participant1.address).balance.__float__(),
                          float(participant1.balance + 150 - 15))
 
@@ -634,4 +635,4 @@ class TestRollabck(TestCase):
                          float(participant1.balance + 150))
 
         participant1.delete()
-        self.assertRaises(Exception, TournamentTokenReceiver().rollback, transfer_event)
+        TournamentTokenReceiver().rollback(transfer_event)
