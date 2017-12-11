@@ -23,7 +23,7 @@ docutils==0.14rc1
 gunicorn==19.7.1
 whitenoise==3.3.0
 gevent==1.0.1
-django-eth-events==1.0.15
+django-eth-events==1.0.23
 django_google_authenticator==0.1
 django-environ==0.4.3
 django-cors-headers==2.1.0
