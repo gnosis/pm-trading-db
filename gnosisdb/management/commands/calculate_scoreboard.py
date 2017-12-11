@@ -5,6 +5,7 @@ from relationaldb.models import (
 
 from django.db import connections
 from datetime import datetime
+from django.db.models import Prefetch
 
 
 class Command(BaseCommand):
@@ -44,7 +45,7 @@ class Command(BaseCommand):
         index = 0 # rank position (by adding +1)
         # Retrieve the users sorted by score DESC
         users = TournamentParticipant.objects.all().order_by('-score')
-        # Rank calcultation
+        # Rank calculation
         for user in users:
             user.current_rank = index+1
             user.diff_rank = user.past_rank-user.current_rank
@@ -66,6 +67,18 @@ class Command(BaseCommand):
             # Get the whitelisted events
             events = Event.objects.filter(creator__in=whitelisted_creators).values_list('address', flat=True)
             users = TournamentParticipant.objects.all()
+            users_addresses = users.values_list('address', flat=True)
+            all_outcome_token_balances = OutcomeTokenBalance.objects.filter(
+                owner__in=users_addresses,
+                outcome_token__event__address__in=events
+            ).select_related(
+                'outcome_token',
+                'outcome_token__event',
+            ).prefetch_related('outcome_token__event__markets')
+            all_orders = Order.objects.filter(
+                sender__in=users_addresses,
+                market__event__address__in=events
+            ).prefetch_related('market')
 
             for user in users:
                 # Get balance
@@ -74,23 +87,19 @@ class Command(BaseCommand):
                 predicted_value = 0
                 predictions = 0  # number of markets the user is participating in
 
-                outcome_token_balances = OutcomeTokenBalance.objects.filter(
+                outcome_token_balances = all_outcome_token_balances.filter(
                     owner=user_address,
                     outcome_token__event__address__in = events
-                ).select_related(
-                    'outcome_token',
-                    'outcome_token__event',
-                    'outcome_token__event__markets'
                 )
 
                 for outcome_token_balance in outcome_token_balances:
                     market = outcome_token_balance.outcome_token.event.markets.first()
-                    order = Order.objects.filter(market=market.address, sender=user_address).order_by('-creation_date_time').first()
+                    order = all_orders.filter(market=market.address, sender=user_address).order_by('-creation_date_time').first()
                     outcome_token_index = order.outcome_token.index
                     marginal_price = order.marginal_prices[outcome_token_index]
                     predicted_value += (outcome_token_balance.balance * marginal_price)
 
-                predictions = Order.objects.filter(sender=user_address).distinct('market').count()
+                predictions = all_orders.filter(sender=user_address, market__event__address__in=events).distinct('market').count()
 
                 users_predicted_values[user_address] = {
                     'balance': balance,
