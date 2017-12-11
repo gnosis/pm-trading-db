@@ -34,6 +34,7 @@ def issue_tokens():
     else:
         logger.info("No new tournament participants")
 
+
 @shared_task
 def calculate_scoreboard():
     """

@@ -36,7 +36,6 @@ class Command(BaseCommand):
                 user.past_rank = user.current_rank
                 user.predicted_profit = dict_user.get('predicted_profit')
                 user.predictions = dict_user.get('predictions')
-                user.balance = dict_user.get('balance')
                 user.score = user.balance + user.predicted_profit
                 user.save()
             except Exception as e:
@@ -73,14 +72,15 @@ class Command(BaseCommand):
                 user_address = user.address.lower().replace('0x', '')
                 balance = user.balance
                 predicted_value = 0
-                predictions = 0 # number of markets the user is participating in
+                predictions = 0  # number of markets the user is participating in
 
                 outcome_token_balances = OutcomeTokenBalance.objects.filter(
-                    owner=user_address
-                )
-
-                outcome_token_balances = outcome_token_balances.filter(
-                    outcome_token__event__address__in=events
+                    owner=user_address,
+                    outcome_token__event__address__in = events
+                ).select_related(
+                    'outcome_token',
+                    'outcome_token__event',
+                    'outcome_token__event__markets'
                 )
 
                 for outcome_token_balance in outcome_token_balances:
