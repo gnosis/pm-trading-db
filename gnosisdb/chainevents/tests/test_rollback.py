@@ -505,3 +505,34 @@ class TestRollabck(TestCase):
         OutcomeTokenInstanceReceiver().rollback(transfer_event, block)
         owner_two_token_balance = OutcomeTokenBalance.objects.get(owner=owner_two)
         self.assertEquals(owner_two_token_balance.balance, 1000)
+
+    def test_winnings_redemption_rollback(self):
+        event_factory = CategoricalEventFactory(redeemed_winnings=100)
+        address = event_factory.address[0:-4] + 'user'
+        block = {
+            'number': 1,
+            'timestamp': self.to_timestamp(datetime.now())
+        }
+        winnings_event = {
+            'name': 'WinningsRedemption',
+            'address': event_factory.address,
+            'params': [
+                {
+                    'name': 'receiver',
+                    'value': address
+                },
+                {
+                    'name': 'winnings',
+                    'value': 10
+                }
+            ]
+        }
+
+        EventInstanceReceiver().save(winnings_event, block)
+        event_before_rollback = CategoricalEvent.objects.get(address=event_factory.address)
+        self.assertEquals(event_before_rollback.redeemed_winnings, event_factory.redeemed_winnings+10)
+        EventInstanceReceiver().rollback(winnings_event, block)
+        event_after_rollback = CategoricalEvent.objects.get(address=event_factory.address)
+        self.assertEquals(event_after_rollback.redeemed_winnings, event_factory.redeemed_winnings)
+
+
