@@ -5,7 +5,8 @@ from django.conf import settings
 from chainevents.event_receivers import (
     CentralizedOracleFactoryReceiver, EventFactoryReceiver, MarketFactoryReceiver,
     CentralizedOracleInstanceReceiver, OutcomeTokenInstanceReceiver,
-    MarketInstanceReceiver, UportIdentityManagerReceiver, TournamentTokenReceiver
+    MarketInstanceReceiver, UportIdentityManagerReceiver, TournamentTokenReceiver,
+    EventInstanceReceiver
 )
 
 from relationaldb.models import (
@@ -607,15 +608,17 @@ class TestRollabck(TestCase):
                 {
                     'name': 'value',
                     'value': 15
-                }
-            ]
-        }
+                    }
+                ]
+            }
 
         # Save event
         TournamentTokenReceiver().save(participant1_issuance_event)
         TournamentTokenReceiver().save(transfer_event)
-        self.assertEqual(TournamentParticipant.objects.get(address=participant1.address).balance.__float__(), float(participant1.balance+150-15))
-        self.assertEqual(TournamentParticipant.objects.get(address=participant2.address).balance.__float__(), float(participant2.balance+15))
+        self.assertEqual(TournamentParticipant.objects.get(address=participant1.address).balance.__float__(),
+                         float(participant1.balance + 150 - 15))
+        self.assertEqual(TournamentParticipant.objects.get(address=participant2.address).balance.__float__(),
+                         float(participant2.balance + 15))
 
         TournamentTokenReceiver().rollback(transfer_event)
         self.assertEqual(TournamentParticipant.objects.get(address=participant1.address).balance.__float__(),
@@ -636,3 +639,34 @@ class TestRollabck(TestCase):
 
         participant1.delete()
         TournamentTokenReceiver().rollback(transfer_event)
+
+    def test_winnings_redemption_rollback(self):
+        event = CategoricalEventFactory(redeemed_winnings=100)
+        address = event.address[0:-4] + 'user'
+
+        winnings_event = {
+            'name': 'WinningsRedemption',
+            'address': event.address,
+            'params': [
+                {
+                    'name': 'receiver',
+                    'value': address
+                },
+                {
+                    'name': 'winnings',
+                    'value': 10
+                }
+            ]
+        }
+
+        block = {
+            'number': 1,
+            'timestamp': self.to_timestamp(datetime.now())
+        }
+
+        EventInstanceReceiver().save(winnings_event, block)
+        event_before_rollback = CategoricalEvent.objects.get(address=event.address)
+        self.assertEquals(event_before_rollback.redeemed_winnings, event.redeemed_winnings+10)
+        EventInstanceReceiver().rollback(winnings_event, block)
+        event_after_rollback = CategoricalEvent.objects.get(address=event.address)
+        self.assertEquals(event_after_rollback.redeemed_winnings, event.redeemed_winnings)

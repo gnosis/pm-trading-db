@@ -690,7 +690,7 @@ class WinningsRedemptionSerializer(ContractNotTimestampted, serializers.ModelSer
             raise serializers.ValidationError('Event {} does not exist'.format(validated_data.get('address')))
 
     def rollback(self):
-        self.instance -= self.validated_data.get('winnings')
+        self.instance.redeemed_winnings -= self.validated_data.get('winnings')
         self.instance.save()
 
 
