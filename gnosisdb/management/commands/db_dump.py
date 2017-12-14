@@ -39,9 +39,14 @@ class Command(BaseCommand):
             db_name = os.environ.get('DATABASE_NAME', 'postgres')
             db_user = os.environ.get('DATABASE_USER', 'postgres')
             db_host = os.environ.get('DATABASE_HOST', 'localhost')
+            db_password = os.environ.get('DATABASE_PASSWORD', None)
             filename = self.dump_path + "{}_{}_dump-{}.sqlc".format(db_name, db_user, datetime.now().strftime('%Y-%m-%d_%H:%M:%S'))
             try:
-                cmd = "pg_dump -h {0} -d {1} -U {2} --format=c --file={3}".format(db_host, db_name, db_user, filename)
+                if not db_password:
+                    cmd = "pg_dump -h {0} -d {1} -U {2} --format=c --file={3}".format(db_host, db_name, db_user, filename)
+                else:
+                    cmd = "PGPASSWORD={0} pg_dump -h {1} -d {2} -U {3} --format=c --file={4}".format(db_password, db_host, db_name, db_user,
+                                                                                      filename)
                 self.stdout.write(self.style.SUCCESS('Executing command %s' % cmd))
                 process = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=PIPE)
                 stdout, stderr = process.communicate()
