@@ -1,9 +1,10 @@
-from subprocess import check_call, CalledProcessError
+from subprocess import PIPE, Popen
 from datetime import datetime
 from django.conf import settings
 from django.core.mail.message import EmailMultiAlternatives
 from django.core.management.base import BaseCommand
 from django_eth_events.models import Daemon, STATUS_CHOICES
+import os
 
 
 class Command(BaseCommand):
@@ -35,13 +36,26 @@ class Command(BaseCommand):
                 daemon.status = STATUS_CHOICES[1][0]
                 daemon.save()
 
-            filename = self.dump_path + "gnosisdb_dump-{}.json".format(datetime.now().strftime('%Y-%m-%d_%H:%M:%S'))
+            db_name = os.environ.get('DATABASE_NAME', 'postgres')
+            db_user = os.environ.get('DATABASE_USER', 'postgres')
+            db_host = os.environ.get('DATABASE_HOST', 'localhost')
+            db_password = os.environ.get('DATABASE_PASSWORD', None)
+            filename = self.dump_path + "{}_{}_dump-{}.sqlc".format(db_name, db_user, datetime.now().strftime('%Y-%m-%d_%H:%M:%S'))
             try:
-                check_call("python manage.py dumpdata --all --indent=4 --output " + filename, shell=True)
+                if not db_password:
+                    cmd = "pg_dump -h {0} -d {1} -U {2} --format=c --file={3}".format(db_host, db_name, db_user, filename)
+                else:
+                    cmd = "PGPASSWORD={0} pg_dump -h {1} -d {2} -U {3} --format=c --file={4}".format(db_password, db_host, db_name, db_user,
+                                                                                      filename)
+                self.stdout.write(self.style.SUCCESS('Executing command %s' % cmd))
+                process = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=PIPE)
+                stdout, stderr = process.communicate()
+                if process.returncode != 0:
+                    raise Exception(stderr)
                 self.stdout.write(self.style.SUCCESS('GnosisDB Dump completed and saved into: {}'.format(filename)))
                 # Send file via email to admins
                 self.send_email(filename)
-            except CalledProcessError as e:
+            except Exception as e:
                 self.stdout.write(self.style.ERROR('GnosisDB Dump error: {}'.format(e.message)))
             finally:
                 # Restart the system if it was running before starting dumping
