@@ -1,4 +1,4 @@
-FROM ubuntu:14.04
+FROM fpco/pid1:14.04
 RUN apt-get update && apt-get install -y -q curl python-dev \
     libreadline-dev libbz2-dev libssl-dev git wget \
     python-pip build-essential automake libtool \
@@ -14,4 +14,4 @@ RUN mkdir -p /root/var/run/celery
 
 COPY . /gnosisdb/
 WORKDIR /gnosisdb
-ENTRYPOINT ["/bin/bash", "/gnosisdb/scripts/entrypoint.sh"]
+ENTRYPOINT ["/sbin/pid1"]

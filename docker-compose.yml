@@ -35,7 +35,7 @@ services:
       - ipfs
       - db
     working_dir: /gnosisdb
-    command: sh scripts/run_web.sh
+    command: scripts/run_web.sh
     ports:
       - "8000:8000"
       - "27017"
@@ -44,7 +44,22 @@ services:
     build:
       context: .
       dockerfile: docker/web/Dockerfile
-    command: sh scripts/run_celery.sh
+    command: scripts/run_celery_worker.sh
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+    links:
+      - rabbit
+    depends_on:
+      - db
+      - rabbit
+
+  scheduler:
+    build:
+      context: .
+      dockerfile: docker/web/Dockerfile
+    command: scripts/run_celery_scheduler.sh
     env_file:
       - .env
     volumes:
