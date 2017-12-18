@@ -2,7 +2,7 @@ from django.core.management.base import BaseCommand
 from web3 import Web3, HTTPProvider
 from django.conf import settings
 from gnosisdb.chainevents.abis import abi_file_path, load_json_file
-from gnosisdb.relationaldb.models import TournamentParticipant
+from relationaldb.models import TournamentParticipant
 from django.db import transaction
 
 
@@ -27,7 +27,7 @@ class Command(BaseCommand):
             token = web3.eth.contract(abi=abi, address=settings.TOURNAMENT_TOKEN)
 
             with transaction.atomic():
-                locked_user = TournamentParticipant.objects.get(address=user.address).select_for_update()
+                locked_user = TournamentParticipant.objects.select_for_update().get(address=user.address)
                 block_chain_balance = token.call().balanceOf(locked_user.address)
                 if block_chain_balance != locked_user.balance:
                     self.stdout.write(self.style.SUCCESS(
