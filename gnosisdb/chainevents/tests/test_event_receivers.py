@@ -9,11 +9,13 @@ from chainevents.event_receivers import (
 )
 from relationaldb.models import (
     CentralizedOracle, ScalarEvent, CategoricalEvent, Market, OutcomeToken,
-    Event, BuyOrder, SellOrder, OutcomeTokenBalance, TournamentParticipant
+    Event, BuyOrder, SellOrder, OutcomeTokenBalance, TournamentParticipant,
+    TournamentParticipantBalance
 )
 from relationaldb.tests.factories import (
     CentralizedOracleFactory, ScalarEventFactory, OracleFactory,
-    MarketFactory, OutcomeTokenFactory, CategoricalEventFactory, TournamentParticipantFactory
+    MarketFactory, OutcomeTokenFactory, CategoricalEventFactory,
+    TournamentParticipantBalanceFactory
 )
 from datetime import datetime
 from time import mktime
@@ -640,7 +642,9 @@ class TestEventReceiver(TestCase):
         self.assertEqual(TournamentParticipant.objects.all().count(), 1)
 
     def test_issue_tournament_tokens(self):
-        participant = TournamentParticipantFactory(balance=0)
+        participant_balance = TournamentParticipantBalanceFactory()
+        participant = participant_balance.participant
+        amount_to_add = 150
         participant_event = {
             'name': 'Issuance',
             'address': 'not needed',
@@ -651,19 +655,20 @@ class TestEventReceiver(TestCase):
                 },
                 {
                     'name': 'amount',
-                    'value': 123
+                    'value': amount_to_add
                 }
             ]
         }
 
-        self.assertEqual(TournamentParticipant.objects.get(address=participant.address).balance, 0)
+        self.assertEqual(TournamentParticipantBalance.objects.get(participant=participant.address).balance, participant_balance.balance)
         # Save event
         TournamentTokenReceiver().save(participant_event)
-        self.assertEqual(TournamentParticipant.objects.get(address=participant.address).balance, 123)
+        self.assertEqual(TournamentParticipantBalance.objects.get(participant=participant.address).balance, participant_balance.balance+amount_to_add)
 
     def test_issue_non_participant(self):
         # should not break, just don't save anything
-        participant = TournamentParticipantFactory()
+        participant_balance = TournamentParticipantBalanceFactory()
+        participant = participant_balance.participant
         participant_event = {
             'name': 'Issuance',
             'address': 'not needed',
@@ -686,8 +691,11 @@ class TestEventReceiver(TestCase):
         self.assertIsNone(participant.pk)
 
     def test_transfer_tournament_tokens(self):
-        participant1 = TournamentParticipantFactory()
-        participant2 = TournamentParticipantFactory()
+        participant_balance1 = TournamentParticipantBalanceFactory()
+        participant1 = participant_balance1.participant
+        participant_balance2 = TournamentParticipantBalanceFactory()
+        participant2 = participant_balance2.participant
+
         participant1_issuance_event = {
             'name': 'Issuance',
             'address': 'not needed',
@@ -725,12 +733,14 @@ class TestEventReceiver(TestCase):
         # Save event
         TournamentTokenReceiver().save(participant1_issuance_event)
         TournamentTokenReceiver().save(transfer_event)
-        self.assertEqual(TournamentParticipant.objects.get(address=participant1.address).balance.__float__(), float(participant1.balance+150-15))
-        self.assertEqual(TournamentParticipant.objects.get(address=participant2.address).balance.__float__(), float(participant2.balance+15))
+        self.assertEqual(TournamentParticipantBalance.objects.get(participant=participant1.address).balance.__float__(), float(participant_balance1.balance+150-15))
+        self.assertEqual(TournamentParticipantBalance.objects.get(participant=participant2.address).balance.__float__(), float(participant_balance2.balance+15))
 
     def test_transfer_tournament_tokens_non_to_participants(self):
-        participant1 = TournamentParticipantFactory()
-        participant2 = TournamentParticipantFactory()
+        participant_balance1 = TournamentParticipantBalanceFactory()
+        participant1 = participant_balance1.participant
+        participant_balance2 = TournamentParticipantBalanceFactory()
+        participant2 = participant_balance2.participant
         participant1_issuance_event = {
             'name': 'Issuance',
             'address': 'not needed',
@@ -770,12 +780,13 @@ class TestEventReceiver(TestCase):
         # Save event
         TournamentTokenReceiver().save(participant1_issuance_event)
         TournamentTokenReceiver().save(transfer_event)
-        self.assertEqual(TournamentParticipant.objects.get(address=participant1.address).balance.__float__(), float(participant1.balance+150-15))
+        self.assertEqual(TournamentParticipantBalance.objects.get(participant=participant1.address).balance.__float__(), float(participant_balance1.balance+150-15))
         self.assertEqual(TournamentParticipant.objects.filter(address=participant2.address).count(), 0)
 
     def test_transfer_tournament_tokens_non_from_participant(self):
-        participant1 = TournamentParticipantFactory()
-        participant2 = TournamentParticipantFactory()
+        participant1 = TournamentParticipantBalanceFactory().participant
+        participant_balance2 = TournamentParticipantBalanceFactory()
+        participant2 = participant_balance2.participant
 
         transfer_event = {
             'name': 'Transfer',
@@ -801,4 +812,4 @@ class TestEventReceiver(TestCase):
         # Save event
         TournamentTokenReceiver().save(transfer_event)
         self.assertEqual(TournamentParticipant.objects.filter(address=participant1.address).count(), 0)
-        self.assertEqual(TournamentParticipant.objects.get(address=participant2.address).balance.__float__(), float(participant2.balance+15))
+        self.assertEqual(TournamentParticipantBalance.objects.get(participant=participant2.address).balance.__float__(), float(participant_balance2.balance+15))

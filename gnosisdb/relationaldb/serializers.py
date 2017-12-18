@@ -1053,7 +1053,13 @@ class TournamentParticipantSerializer(ContractCreatedByFactorySerializer, serial
         validated_data.update({
             'address': validated_data.get('address').lower()
         })
-        return models.TournamentParticipant.objects.create(**validated_data)
+
+        participant = models.TournamentParticipant.objects.create(**validated_data)
+        participant_balance = models.TournamentParticipantBalance()
+        participant_balance.balance = 0
+        participant_balance.participant = participant
+        participant_balance.save()
+        return participant
 
     def rollback(self):
         self.instance.delete()
@@ -1065,7 +1071,7 @@ class TournamentTokenIssuanceSerializer(ContractNotTimestampted, serializers.Mod
     """
 
     class Meta:
-        model = models.TournamentParticipant
+        model = models.TournamentParticipantBalance
         fields = ('owner', 'amount',)
 
     owner = serializers.CharField(max_length=40)
@@ -1073,18 +1079,20 @@ class TournamentTokenIssuanceSerializer(ContractNotTimestampted, serializers.Mod
 
     def validate_owner(self, owner):
         try:
-            models.TournamentParticipant.objects.get(address=owner)
-        except models.TournamentParticipant.DoesNotExist:
+            models.TournamentParticipantBalance.objects.get(participant=owner)
+        except models.TournamentParticipantBalance.DoesNotExist:
             raise serializers.ValidationError('Tournament Participant with address {} does not exist'.format(owner))
-
         return owner
 
     def create(self, validated_data):
         logger.info("issuance serializer")
-        participant = models.TournamentParticipant.objects.get(address=validated_data.get('owner'))
-        participant.balance += validated_data.get('amount')
-        participant.save()
-        return participant
+        participant_balance, created = models.TournamentParticipantBalance.objects.get_or_create(
+            participant=validated_data.get('owner')
+        )
+        participant_balance.balance += validated_data.get('amount')
+        participant_balance.save()
+
+        return participant_balance.participant
 
     def rollback(self):
         self.instance.balance -= self.validated_data.get('amount')
@@ -1098,7 +1106,7 @@ class TournamentTokenTransferSerializer(ContractNotTimestampted, serializers.Mod
     """
 
     class Meta:
-        model = models.TournamentParticipant
+        model = models.TournamentParticipantBalance
         fields = ('from_participant', 'to_participant', 'value',)
 
     from_participant = serializers.CharField(max_length=40)
@@ -1120,7 +1128,7 @@ class TournamentTokenTransferSerializer(ContractNotTimestampted, serializers.Mod
         super(TournamentTokenTransferSerializer, self).validate(attrs)
         error_message = ''
         try:
-            models.TournamentParticipant.objects.get(address=attrs.get('from_participant'))
+            models.TournamentParticipantBalance.objects.get(participant=attrs.get('from_participant'))
         except:
             error_message += 'Invalid from_participant: user with address {} does not exist. \n'.format(
                 attrs.get('from_participant')
@@ -1128,7 +1136,7 @@ class TournamentTokenTransferSerializer(ContractNotTimestampted, serializers.Mod
             attrs.pop('from_participant')
 
         try:
-            models.TournamentParticipant.objects.get(address=attrs.get('to_participant'))
+            models.TournamentParticipantBalance.objects.get(participant=attrs.get('to_participant'))
         except:
             error_message += 'Invalid to_participant: user with address {} does not exist. \n'.format(
                 attrs.get('from_participant')
@@ -1146,18 +1154,18 @@ class TournamentTokenTransferSerializer(ContractNotTimestampted, serializers.Mod
         :return: TournamentParticipant istance
         """
         if validated_data.get('from_participant'):
-            from_user = models.TournamentParticipant.objects.get(address=validated_data.get('from_participant'))
+            from_user = models.TournamentParticipantBalance.objects.get(participant=validated_data.get('from_participant'))
             from_user.balance -= validated_data.get('value')
             from_user.save()
             if validated_data.get('to_participant'):
-                to_user = models.TournamentParticipant.objects.get(address=validated_data.get('to_participant'))
+                to_user = models.TournamentParticipantBalance.objects.get(participant=validated_data.get('to_participant'))
                 to_user.balance += validated_data.get('value')
                 to_user.save()
                 return to_user
             else:
                 return from_user
         else:
-            to_user = models.TournamentParticipant.objects.get(address=validated_data.get('to_participant'))
+            to_user = models.TournamentParticipantBalance.objects.get(participant=validated_data.get('to_participant'))
             to_user.balance += validated_data.get('value')
             to_user.save()
             return to_user
@@ -1169,12 +1177,12 @@ class TournamentTokenTransferSerializer(ContractNotTimestampted, serializers.Mod
         :return: TournamentParticipant instance
         """
         if self.validated_data.get('from_participant'):
-            from_user = models.TournamentParticipant.objects.get(address=self.validated_data.get('from_participant'))
+            from_user = models.TournamentParticipantBalance.objects.get(participant=self.validated_data.get('from_participant'))
             from_user.balance += self.validated_data.get('value')
             from_user.save()
 
             if self.validated_data.get('to_participant'):
-                to_user = models.TournamentParticipant.objects.get(address=self.validated_data.get('to_participant'))
+                to_user = models.TournamentParticipantBalance.objects.get(participant=self.validated_data.get('to_participant'))
                 to_user.balance -= self.validated_data.get('value')
                 to_user.save()
                 return to_user
@@ -1182,7 +1190,7 @@ class TournamentTokenTransferSerializer(ContractNotTimestampted, serializers.Mod
                 return from_user
 
         else:
-            to_user = models.TournamentParticipant.objects.get(address=self.validated_data.get('to_participant'))
+            to_user = models.TournamentParticipantBalance.objects.get(participant=self.validated_data.get('to_participant'))
             to_user.balance -= self.validated_data.get('value')
             to_user.save()
             return to_user

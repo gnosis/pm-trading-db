@@ -254,7 +254,7 @@ class TournamentTokenReceiver(BaseInstanceEventReceiver):
         }
         primary_key_name = {
             'Issuance': {
-                'address': 'owner'
+                'participant': 'owner'
             }
         }
 
@@ -267,8 +267,8 @@ class TournamentTokenReceiver(BaseInstanceEventReceiver):
                 serializer_model = serializer_class.Meta.model
                 from_participant = filter(lambda x: x.get('name') == 'from', decoded_event.get('params'))[0].get('value')
                 to_participant = filter(lambda x: x.get('name') == 'to', decoded_event.get('params'))[0].get('value')
-                participants = serializer_model.objects.filter(address=from_participant) | \
-                               serializer_model.objects.filter(address=to_participant)
+                participants = serializer_model.objects.filter(participant=from_participant) | \
+                               serializer_model.objects.filter(participant=to_participant)
                 if participants.count():
                     instance = participants[0]
                     serializer = serializer_class(instance, data=decoded_event)
