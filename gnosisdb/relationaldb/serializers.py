@@ -1092,7 +1092,7 @@ class TournamentTokenIssuanceSerializer(ContractNotTimestampted, serializers.Mod
         participant_balance.balance += validated_data.get('amount')
         participant_balance.save()
 
-        return participant_balance.participant
+        return participant_balance
 
     def rollback(self):
         self.instance.balance -= self.validated_data.get('amount')

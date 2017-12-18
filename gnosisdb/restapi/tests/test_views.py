@@ -6,7 +6,7 @@ from rest_framework import status
 from relationaldb.tests.factories import (
     CentralizedOracleFactory, BuyOrderFactory, MarketFactory,
     CategoricalEventFactory, OutcomeTokenFactory, OutcomeTokenBalanceFactory,
-    TournamentParticipantFactory
+    TournamentParticipantBalanceFactory
 )
 from relationaldb.models import CentralizedOracle, Market, ShortSellOrder
 from datetime import datetime, timedelta
@@ -343,7 +343,7 @@ class TestViews(APITestCase):
         self.assertEquals(len(json.loads(no_shares_response.content).get('results')), 0)
 
     def test_tournament_serializer(self):
-        participant1 = TournamentParticipantFactory()
+        participant1 = TournamentParticipantBalanceFactory()
         scoreboard_response = self.client.get(reverse('api:scoreboard', kwargs={'account_address': participant1.address}), content_type='application/json')
         self.assertEquals(scoreboard_response.status_code, status.HTTP_200_OK)
         scoreboard_response = self.client.get(reverse('api:scoreboard', kwargs={'account_address': '0x0'}), content_type='application/json')

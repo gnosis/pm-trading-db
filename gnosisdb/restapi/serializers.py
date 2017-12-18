@@ -276,7 +276,9 @@ class OlympiaScoreboardSerializer(serializers.ModelSerializer):
         return obj.address
 
     def get_balance(self, obj):
-        balance = obj.tournamentparticipantbalance_set.first().balance
-        # Convert to Char
-        return str(balance)
+        if obj and obj.tournamentparticipantbalance_set.first():
+            balance = obj.tournamentparticipantbalance_set.first().balance
+            # Convert to Char
+            return str(balance)
+        return str(0)
 

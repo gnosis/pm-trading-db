@@ -4,7 +4,7 @@ from django.core.urlresolvers import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 from relationaldb.tests.factories import (
-    ScalarEventFactory, CategoricalEventFactory, CentralizedOracleFactory, TournamentParticipantFactory
+    ScalarEventFactory, CategoricalEventFactory, CentralizedOracleFactory, TournamentParticipantBalanceFactory
 )
 import json
 
@@ -29,8 +29,8 @@ class TestSerializers(APITestCase):
         self.assertEquals(json.loads(centralized_response.content).get('results')[0].get('type'), 'CENTRALIZED')
 
     def test_tournament_serializer(self):
-        participant1 = TournamentParticipantFactory()
-        participant2 = TournamentParticipantFactory()
+        participant1 = TournamentParticipantBalanceFactory()
+        participant2 = TournamentParticipantBalanceFactory()
 
         scoreboard_response = self.client.get(reverse('api:scoreboard'), content_type='application/json')
         self.assertEquals(scoreboard_response.status_code, status.HTTP_200_OK)
