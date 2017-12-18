@@ -24,8 +24,9 @@ def issue_tokens():
         try:
             participant_addresses = participants.values_list('address', flat=True)
             participant_addresses_string = ",".join(address for address in participant_addresses)
-            call_command('issue_tournament_tokens', participant_addresses_string , settings.TOURNAMENT_TOKEN_ISSUANCE)
+            # Update first
             TournamentParticipant.objects.filter(address__in=participant_addresses).update(tokens_issued=True)
+            call_command('issue_tournament_tokens', participant_addresses_string , settings.TOURNAMENT_TOKEN_ISSUANCE)
         except Exception as err:
             logger.error(str(err))
             send_email(traceback.format_exc())
