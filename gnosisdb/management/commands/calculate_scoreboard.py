@@ -27,7 +27,7 @@ class Command(BaseCommand):
         except Exception as e:
             self.stdout.write(self.style.ERROR(e.message))
 
-    def calculate_scoreboard(self, users_predicted_values):
+    def calculate_scahahoreboard(self, users_predicted_values):
         """Updates the all the users values and calculates the scoreboard (rankings)"""
         self.stdout.write(self.style.SUCCESS('Starting updating users values'))
         # Update users data
