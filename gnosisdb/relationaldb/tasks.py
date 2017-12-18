@@ -22,12 +22,10 @@ def issue_tokens():
 
     if len(participants):
         try:
-            participant_addresses = ",".join(participant.address for participant in participants)
-            call_command('issue_tournament_tokens', participant_addresses , settings.TOURNAMENT_TOKEN_ISSUANCE)
-            for participant in participants:
-                # Set tokens issued to True
-                participant.tokens_issued = True
-                participant.save()
+            participant_addresses = participants.values_list('address', flat=True)
+            participant_addresses_string = ",".join(address for address in participant_addresses)
+            call_command('issue_tournament_tokens', participant_addresses_string , settings.TOURNAMENT_TOKEN_ISSUANCE)
+            TournamentParticipant.objects.filter(address__in=participant_addresses).update(tokens_issued=True)
         except Exception as err:
             logger.error(str(err))
             send_email(traceback.format_exc())
