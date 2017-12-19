@@ -2,6 +2,7 @@ from __future__ import unicode_literals
 
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
+from model_utils.models import TimeStampedModel
 
 # ==================================
 #       Abstract classes
@@ -166,7 +167,7 @@ class ShortSellOrder(Order):
 #      Tournament classes
 # ==================================
 
-class TournamentParticipant(ContractCreatedByFactory):
+class TournamentParticipant(ContractCreatedByFactory, TimeStampedModel):
     """Tournament participant"""
     current_rank = models.IntegerField()  # current rank position
     past_rank = models.IntegerField(default=0)  # previous rank position

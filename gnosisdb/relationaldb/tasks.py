@@ -4,6 +4,8 @@ from django.core.mail import mail_admins
 from relationaldb.models import TournamentParticipant
 import traceback
 from django.core.management import call_command, settings
+from django.db import transaction
+from datetime import datetime, timedelta
 
 logger = get_task_logger(__name__)
 
@@ -18,14 +20,18 @@ def send_email(message):
 
 @shared_task
 def issue_tokens():
-    participants = TournamentParticipant.objects.filter(tokens_issued=False)[:50]
+    participants = TournamentParticipant.objects.filter(
+        tokens_issued=False,
+        created__gte=datetime.now() + timedelta(minutes=1) # 1min timefrome for avoiding twice tokens in the event of reorg
+    )[:50]
 
     if len(participants):
         try:
             participant_addresses = participants.values_list('address', flat=True)
             participant_addresses_string = ",".join(address for address in participant_addresses)
             # Update first
-            TournamentParticipant.objects.filter(address__in=participant_addresses).update(tokens_issued=True)
+            with transaction.atomic():
+                TournamentParticipant.objects.filter(address__in=participant_addresses).update(tokens_issued=True)
             call_command('issue_tournament_tokens', participant_addresses_string , settings.TOURNAMENT_TOKEN_ISSUANCE)
         except Exception as err:
             logger.error(str(err))
