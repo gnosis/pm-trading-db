@@ -343,8 +343,8 @@ class TestViews(APITestCase):
         self.assertEquals(len(json.loads(no_shares_response.content).get('results')), 0)
 
     def test_tournament_serializer(self):
-        participant1 = TournamentParticipantBalanceFactory()
-        scoreboard_response = self.client.get(reverse('api:scoreboard', kwargs={'account_address': participant1.address}), content_type='application/json')
+        balance = TournamentParticipantBalanceFactory()
+        scoreboard_response = self.client.get(reverse('api:scoreboard', kwargs={'account_address': balance.participant.address}), content_type='application/json')
         self.assertEquals(scoreboard_response.status_code, status.HTTP_200_OK)
         scoreboard_response = self.client.get(reverse('api:scoreboard', kwargs={'account_address': '0x0'}), content_type='application/json')
         self.assertEquals(scoreboard_response.status_code, status.HTTP_404_NOT_FOUND)
