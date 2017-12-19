@@ -168,7 +168,6 @@ class ShortSellOrder(Order):
 
 class TournamentParticipant(ContractCreatedByFactory):
     """Tournament participant"""
-    balance = models.DecimalField(max_digits=80, decimal_places=0, default=0)
     current_rank = models.IntegerField()  # current rank position
     past_rank = models.IntegerField(default=0)  # previous rank position
     diff_rank = models.IntegerField(default=0)  # difference between current and previous rank position
@@ -176,6 +175,12 @@ class TournamentParticipant(ContractCreatedByFactory):
     predicted_profit = models.DecimalField(max_digits=80, decimal_places=0, default=0)  # outcome tokens current price
     predictions = models.IntegerField(default=0)  # number of events the user is participating in
     tokens_issued = models.BooleanField(default=False)  # True if the user already issued tokens
+
+
+class TournamentParticipantBalance(models.Model):
+    """Defines the participant's balance"""
+    balance = models.DecimalField(max_digits=80, decimal_places=0, default=0)
+    participant = models.ForeignKey(TournamentParticipant, to_field='address')
 
 
 class TournamentWhitelistedCreator(models.Model):

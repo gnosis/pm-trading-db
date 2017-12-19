@@ -1,6 +1,7 @@
 from django.core.management.base import BaseCommand
 from relationaldb.models import (
-    Event, TournamentWhitelistedCreator, TournamentParticipant, OutcomeTokenBalance, Order
+    Event, TournamentWhitelistedCreator, TournamentParticipant, OutcomeTokenBalance, Order,
+    TournamentParticipantBalance
 )
 
 from django.db import connections
@@ -33,11 +34,13 @@ class Command(BaseCommand):
         for address in users_predicted_values.keys():
             dict_user = users_predicted_values.get(address)
             try:
-                user = TournamentParticipant.objects.get(address=address)
+                user_balance = TournamentParticipantBalance.objects.get(participant=address)
+
+                user = user_balance.participant
                 user.past_rank = user.current_rank
                 user.predicted_profit = dict_user.get('predicted_profit')
                 user.predictions = dict_user.get('predictions')
-                user.score = user.balance + user.predicted_profit
+                user.score = user_balance.balance + user.predicted_profit
                 user.save()
             except Exception as e:
                 self.stdout.write(self.style.ERROR('Scoreboard Error: Was not possible updating user {} due to: {}'.format(address, e.message)))
@@ -66,24 +69,25 @@ class Command(BaseCommand):
             whitelisted_creators = TournamentWhitelistedCreator.objects.all().values_list('address', flat=True)
             # Get the whitelisted events
             events = Event.objects.filter(creator__in=whitelisted_creators).values_list('address', flat=True)
-            users = TournamentParticipant.objects.all()
-            users_addresses = users.values_list('address', flat=True)
+            users_balances = TournamentParticipantBalance.objects.all()
+            users_addresses = users_balances.values_list('participant', flat=True)
             all_outcome_token_balances = OutcomeTokenBalance.objects.filter(
                 owner__in=users_addresses,
                 outcome_token__event__address__in=events
             ).select_related(
                 'outcome_token',
                 'outcome_token__event',
+                'balance'
             ).prefetch_related('outcome_token__event__markets')
             all_orders = Order.objects.filter(
                 sender__in=users_addresses,
                 market__event__address__in=events
             ).prefetch_related('market')
 
-            for user in users:
+            for user_balance in users_balances:
                 # Get balance
-                user_address = user.address.lower().replace('0x', '')
-                balance = user.balance
+                user_address = user_balance.participant.address.lower().replace('0x', '')
+                balance = user_balance.balance
                 predicted_value = 0
                 predictions = 0  # number of markets the user is participating in
 
