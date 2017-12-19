@@ -22,7 +22,7 @@ def send_email(message):
 def issue_tokens():
     participants = TournamentParticipant.objects.filter(
         tokens_issued=False,
-        created__gte=datetime.now() + timedelta(minutes=1) # 1min timefrome for avoiding twice tokens in the event of reorg
+        created__lte=datetime.now() - timedelta(minutes=1)  # 1min timefrome for avoiding twice tokens in the event of reorg
     )[:50]
 
     if len(participants):
