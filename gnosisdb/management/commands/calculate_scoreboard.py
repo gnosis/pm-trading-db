@@ -5,8 +5,9 @@ from relationaldb.models import (
 )
 
 from django.db import connections
-from datetime import datetime
-from django.db.models import Prefetch
+from datetime import datetime, timedelta
+from django.db import transaction
+from operator import itemgetter
 
 
 class Command(BaseCommand):
@@ -29,36 +30,29 @@ class Command(BaseCommand):
 
     def calculate_scoreboard(self, users_predicted_values):
         """Updates the all the users values and calculates the scoreboard (rankings)"""
-        self.stdout.write(self.style.SUCCESS('Starting updating users values'))
+        self.stdout.write(self.style.SUCCESS('Starting updating users values {}'.format(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))))
         # Update users data
-        for address in users_predicted_values.keys():
-            dict_user = users_predicted_values.get(address)
+        for index, dict_user in enumerate(users_predicted_values):
             try:
-                user = dict_user['user_model']
-                user.past_rank = user.current_rank
-                user.predicted_profit = dict_user.get('predicted_profit')
-                user.predictions = dict_user.get('predictions')
-                user.score = dict_user['balance'] + user.predicted_profit
-                user.save()
+                # Atomic update
+                with transaction.atomic():
+                    user = TournamentParticipant.objects.select_for_update().get(address=dict_user['address'])
+                    user.past_rank = user.current_rank
+                    user.predicted_profit = dict_user['predicted_profit']
+                    user.predictions = dict_user['predictions']
+                    user.score = dict_user['score']
+                    user.current_rank = index + 1
+                    user.diff_rank = user.past_rank - user.current_rank
+                    user.save()
             except Exception as e:
-                self.stdout.write(self.style.ERROR('Scoreboard Error: Was not possible updating user {} due to: {}'.format(address, e.message)))
-
-        index = 0 # rank position (by adding +1)
-        # Retrieve the users sorted by score DESC
-        users = TournamentParticipant.objects.all().order_by('-score')
-        # Rank calculation
-        for user in users:
-            user.current_rank = index+1
-            user.diff_rank = user.past_rank-user.current_rank
-            user.save()
-            index += 1
+                self.stdout.write(self.style.ERROR('Scoreboard Error: Was not possible updating user {} due to: {}'.format(dict_user['address'], e.message)))
 
         self.stdout.write(self.style.SUCCESS('Users updated successfully'))
 
     def handle(self, *args, **options):
         """Command entrypoint"""
 
-        users_predicted_values = {}
+        users_predicted_values = []
         start_time = datetime.now()
         self.stdout.write(self.style.SUCCESS('Starting Scoreboard process, {}'.format(start_time.strftime("%Y-%m-%d %H:%M:%S"))))
 
@@ -67,7 +61,9 @@ class Command(BaseCommand):
             whitelisted_creators = TournamentWhitelistedCreator.objects.all().values_list('address', flat=True)
             # Get the whitelisted events
             events = Event.objects.filter(creator__in=whitelisted_creators).values_list('address', flat=True)
-            users = TournamentParticipant.objects.filter(tokens_issued=True).select_related('tournament_balance')
+            users = TournamentParticipant.objects.filter(
+                created__lte=datetime.now() - timedelta(minutes=1)
+            ).select_related('tournament_balance')
             users_addresses = users.values_list('address', flat=True)
             all_outcome_token_balances = OutcomeTokenBalance.objects.filter(
                 owner__in=users_addresses,
@@ -102,15 +98,17 @@ class Command(BaseCommand):
 
                 predictions = all_orders.filter(sender=user_address, market__event__address__in=events).distinct('market').count()
 
-                users_predicted_values[user_address] = {
+                users_predicted_values.append({
                     'balance': balance,
                     'predicted_profit': predicted_value,
                     'predictions': predictions,
-                    'user_model': user
-                }
+                    'score': predicted_value + balance,
+                    'address': user.address
+                })
 
+            sorted_scoreboard = sorted(users_predicted_values, key=itemgetter('score'), reverse=True)
             # Calculate scoreboard
-            self.calculate_scoreboard(users_predicted_values)
+            self.calculate_scoreboard(sorted_scoreboard)
         except Exception as e:
             self.stdout.write(self.style.ERROR("Scoreboard Error: {}".format(e.message)))
             raise e
