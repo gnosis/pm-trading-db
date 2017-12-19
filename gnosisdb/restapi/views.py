@@ -272,7 +272,7 @@ class ScoreboardView(generics.ListAPIView):
     pagination_class = DefaultPagination
     queryset = TournamentParticipant.objects.all().order_by('current_rank').exclude(
         address__in=TournamentWhitelistedCreator.objects.all().values_list('address', flat=True)
-    )
+    ).select_related('tournament_balance')
 
 
 class ScoreboardUserView(generics.RetrieveAPIView):

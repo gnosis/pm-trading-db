@@ -68,7 +68,7 @@ class Command(BaseCommand):
             # Get the whitelisted events
             events = Event.objects.filter(creator__in=whitelisted_creators).values_list('address', flat=True)
             users = TournamentParticipant.objects.filter(tokens_issued=True).select_related('tournament_balance')
-            users_addresses = users.values_list('participant', flat=True)
+            users_addresses = users.values_list('address', flat=True)
             all_outcome_token_balances = OutcomeTokenBalance.objects.filter(
                 owner__in=users_addresses,
                 outcome_token__event__address__in=events

@@ -2,7 +2,7 @@ from django.core.management.base import BaseCommand
 from web3 import Web3, HTTPProvider
 from django.conf import settings
 from gnosisdb.chainevents.abis import abi_file_path, load_json_file
-from relationaldb.models import TournamentParticipant
+from relationaldb.models import TournamentParticipant, TournamentParticipantBalance
 from django.db import transaction
 
 
@@ -28,11 +28,12 @@ class Command(BaseCommand):
 
             with transaction.atomic():
                 locked_user = TournamentParticipant.objects.select_for_update().get(address=user.address)
+                TournamentParticipantBalance.objects.get_or_create(participant=locked_user)
                 block_chain_balance = token.call().balanceOf(locked_user.address)
-                if block_chain_balance != locked_user.balance:
+                if block_chain_balance != locked_user.tournament_balance.balance:
                     self.stdout.write(self.style.SUCCESS(
-                        'User {} had wrong balance, blockchain: {} | database: {}'.format(locked_user.address, block_chain_balance, locked_user.balance)))
-                    locked_user.balance = block_chain_balance
-                    locked_user.save()
+                        'User {} had wrong balance, blockchain: {} | database: {}'.format(locked_user.address, block_chain_balance, locked_user.tournament_balance.balance)))
+                    locked_user.tournament_balance.balance = block_chain_balance
+                    locked_user.tournament_balance.save()
 
         self.stdout.write(self.style.SUCCESS('Finished synchronizing balances'))
