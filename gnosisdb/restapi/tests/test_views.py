@@ -8,7 +8,7 @@ from relationaldb.tests.factories import (
     CategoricalEventFactory, OutcomeTokenFactory, OutcomeTokenBalanceFactory,
     TournamentParticipantBalanceFactory
 )
-from relationaldb.models import CentralizedOracle, Market, ShortSellOrder
+from relationaldb.models import CentralizedOracle, Market, ShortSellOrder, TournamentParticipant
 from datetime import datetime, timedelta
 from gnosisdb.utils import add_0x_prefix
 import json
@@ -348,3 +348,17 @@ class TestViews(APITestCase):
         self.assertEquals(scoreboard_response.status_code, status.HTTP_200_OK)
         scoreboard_response = self.client.get(reverse('api:scoreboard', kwargs={'account_address': '0x0'}), content_type='application/json')
         self.assertEquals(scoreboard_response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_scoreboard_view(self):
+        current_users = TournamentParticipant.objects.all().count()
+        scoreboard_response = self.client.get(reverse('api:scoreboard'), content_type='application/json')
+        self.assertEquals(scoreboard_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(current_users, len(json.loads(scoreboard_response.content)['results']))
+        balance = TournamentParticipantBalanceFactory()
+        scoreboard_response = self.client.get(reverse('api:scoreboard'), content_type='application/json')
+        self.assertEquals(scoreboard_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(current_users + 1, len(json.loads(scoreboard_response.content)['results']))
+        balance = TournamentParticipantBalanceFactory()
+        scoreboard_response = self.client.get(reverse('api:scoreboard'), content_type='application/json')
+        self.assertEquals(scoreboard_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(current_users + 2, len(json.loads(scoreboard_response.content)['results']))

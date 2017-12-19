@@ -270,15 +270,8 @@ class OlympiaScoreboardSerializer(serializers.ModelSerializer):
 
     contract = ContractSerializer(source='*', many=False, read_only=True)
     account = serializers.SerializerMethodField()
-    balance = serializers.SerializerMethodField()
+    balance = serializers.DecimalField(max_digits=80, decimal_places=0, source='tournament_balance.balance')
 
     def get_account(self, obj):
-        return obj.address
-
-    def get_balance(self, obj):
-        if obj and obj.tournamentparticipantbalance_set.first():
-            balance = obj.tournamentparticipantbalance_set.first().balance
-            # Convert to Char
-            return str(balance)
-        return str(0)
+        return add_0x_prefix(obj.address)
 

@@ -180,7 +180,7 @@ class TournamentParticipant(ContractCreatedByFactory):
 class TournamentParticipantBalance(models.Model):
     """Defines the participant's balance"""
     balance = models.DecimalField(max_digits=80, decimal_places=0, default=0)
-    participant = models.ForeignKey(TournamentParticipant, to_field='address')
+    participant = models.OneToOneField(TournamentParticipant, to_field='address', related_name='tournament_balance')
 
 
 class TournamentWhitelistedCreator(models.Model):
