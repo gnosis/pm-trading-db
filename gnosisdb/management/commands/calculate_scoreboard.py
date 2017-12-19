@@ -27,7 +27,7 @@ class Command(BaseCommand):
         except Exception as e:
             self.stdout.write(self.style.ERROR(e.message))
 
-    def calculate_scahahoreboard(self, users_predicted_values):
+    def calculate_scoreboard(self, users_predicted_values):
         """Updates the all the users values and calculates the scoreboard (rankings)"""
         self.stdout.write(self.style.SUCCESS('Starting updating users values'))
         # Update users data
@@ -77,6 +77,7 @@ class Command(BaseCommand):
             ).select_related(
                 'outcome_token',
                 'outcome_token__event',
+                'balance'
             ).prefetch_related('outcome_token__event__markets')
             all_orders = Order.objects.filter(
                 sender__in=users_addresses,
