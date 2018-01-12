@@ -9,6 +9,8 @@ from datetime import datetime, timedelta
 from django.db import transaction
 from operator import itemgetter
 
+OUTCOME_RANGE = 1000000
+
 
 class Command(BaseCommand):
     help = 'Calculates the scoreboard for the tournament participants'
@@ -70,7 +72,9 @@ class Command(BaseCommand):
                 outcome_token__event__address__in=events
             ).select_related(
                 'outcome_token',
-                'outcome_token__event'
+                'outcome_token__event',
+                'outcome_token__event__categoricalevent',
+                'outcome_token__event__scalarevent',
             ).prefetch_related('outcome_token__event__markets')
             all_orders = Order.objects.filter(
                 sender__in=users_addresses,
@@ -86,15 +90,40 @@ class Command(BaseCommand):
 
                 outcome_token_balances = all_outcome_token_balances.filter(
                     owner=user_address,
-                    outcome_token__event__address__in = events
+                    outcome_token__event__address__in = events,
+                    balance__gt=0
                 )
 
                 for outcome_token_balance in outcome_token_balances:
                     market = outcome_token_balance.outcome_token.event.markets.first()
-                    order = all_orders.filter(market=market.address, sender=user_address).order_by('-creation_date_time').first()
-                    outcome_token_index = order.outcome_token.index
-                    marginal_price = order.marginal_prices[outcome_token_index]
-                    predicted_value += (outcome_token_balance.balance * marginal_price)
+                    event = outcome_token_balance.outcome_token.event
+                    if event.is_winning_outcome_set:
+                        outcome_token_index = outcome_token_balance.outcome_token.index
+                        if hasattr(event, 'categoricalevent') and outcome_token_index == event.outcome:
+                            predicted_value += outcome_token_balance.balance
+                        elif hasattr(event, 'scalarevent'):
+                            lower_bound = event.scalarevent.lower_bound
+                            upper_bound = event.scalarevent.upper_bound
+                            if event.outcome < 0:
+                                converted_winning_outcome = 0
+                            elif event.outcome > upper_bound:
+                                converted_winning_outcome = OUTCOME_RANGE
+                            else:
+                                converted_winning_outcome = OUTCOME_RANGE * (event.outcome - lower_bound) / (upper_bound - lower_bound)
+
+                            factor_short = OUTCOME_RANGE - converted_winning_outcome
+                            factor_long = OUTCOME_RANGE - factor_short
+
+                            if outcome_token_index == 0:
+                                predicted_value += outcome_token_balance.balance * factor_short / OUTCOME_RANGE
+                            elif outcome_token_index == 1:
+                                predicted_value += outcome_token_balance.balance * factor_long / OUTCOME_RANGE
+
+                    else:
+                        order = all_orders.filter(market=market.address, sender=user_address).order_by('-creation_date_time').first()
+                        outcome_token_index = order.outcome_token.index
+                        marginal_price = order.marginal_prices[outcome_token_index]
+                        predicted_value += (outcome_token_balance.balance * marginal_price)
 
                 predictions = all_orders.filter(sender=user_address, market__event__address__in=events).distinct('market').count()
 
