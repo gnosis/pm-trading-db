@@ -10,10 +10,10 @@ from django.conf import settings
 from gnosisdb.utils import calc_lmsr_marginal_price
 from mpmath import mp
 from decimal import Decimal
-
+from six.moves import map
 
 mp.dps = 100
-mp.pretty=True
+mp.pretty = True
 
 logger = get_task_logger(__name__)
 
@@ -796,11 +796,13 @@ class OutcomeTokenPurchaseSerializer(ContractEventTimestamped, serializers.Model
             order.fees = validated_data.get('marketFees')
             order.net_outcome_tokens_sold = market.net_outcome_tokens_sold
             # calculate current marginal price
-            order.marginal_prices = map(
-                lambda (index, _): Decimal(calc_lmsr_marginal_price(int(index), [int(x) for x in market.net_outcome_tokens_sold],
-                                                            int(market.funding))),
+            order.marginal_prices = list(map(
+                lambda index_: Decimal(calc_lmsr_marginal_price(int(index_[0]),
+                                                                [int(x) for x in market.net_outcome_tokens_sold],
+                                                                int(market.funding))
+                                       ),
                 enumerate(market.net_outcome_tokens_sold)
-            )
+            ))
             # Save order successfully, save market changes, then save the share entry
             order.save()
             market.trading_volume += order.cost
@@ -817,11 +819,13 @@ class OutcomeTokenPurchaseSerializer(ContractEventTimestamped, serializers.Model
         market.net_outcome_tokens_sold[token_index] -= token_count
         market.collected_fees -= self.validated_data.get('marketFees')
         market.trading_volume -= self.instance.cost
-        market.marginal_prices = map(
-            lambda (index, _): Decimal(calc_lmsr_marginal_price(int(index), [int(x) for x in market.net_outcome_tokens_sold],
-                                                        int(market.funding))),
+        market.marginal_prices = list(map(
+            lambda index_: Decimal(calc_lmsr_marginal_price(int(index_[0]),
+                                                            [int(x) for x in market.net_outcome_tokens_sold],
+                                                            int(market.funding))
+                                   ),
             enumerate(market.net_outcome_tokens_sold)
-        )
+        ))
 
         # Remove order
         self.instance.delete()
@@ -866,11 +870,13 @@ class OutcomeTokenSaleSerializer(ContractEventTimestamped, serializers.ModelSeri
             order.outcome_token_profit = validated_data.get('outcomeTokenProfit')
             order.fees = validated_data.get('marketFees')
             order.net_outcome_tokens_sold = market.net_outcome_tokens_sold
-            order.marginal_prices = map(
-                lambda (index, _): Decimal(calc_lmsr_marginal_price(int(index), [int(x) for x in market.net_outcome_tokens_sold],
-                                                            int(market.funding))),
+            order.marginal_prices = list(map(
+                lambda index_: Decimal(calc_lmsr_marginal_price(int(index_[0]),
+                                                                [int(x) for x in market.net_outcome_tokens_sold],
+                                                                int(market.funding))
+                                       ),
                 enumerate(market.net_outcome_tokens_sold)
-            )
+            ))
             # Save order successfully, save market changes, then save the share entry
             order.save()
             market.marginal_prices = order.marginal_prices
@@ -887,12 +893,13 @@ class OutcomeTokenSaleSerializer(ContractEventTimestamped, serializers.ModelSeri
         market.net_outcome_tokens_sold[token_index] += token_count
         market.collected_fees -= self.validated_data.get('marketFees')
 
-        market.marginal_prices = map(
-            lambda (index, _): Decimal(
-                calc_lmsr_marginal_price(int(index), [int(x) for x in market.net_outcome_tokens_sold],
-                                         int(market.funding))),
+        market.marginal_prices = list(map(
+            lambda index_: Decimal(calc_lmsr_marginal_price(int(index_[0]),
+                                                            [int(x) for x in market.net_outcome_tokens_sold],
+                                                            int(market.funding))
+                                   ),
             enumerate(market.net_outcome_tokens_sold)
-        )
+        ))
 
         # Remove order
         self.instance.delete()
