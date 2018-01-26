@@ -173,11 +173,12 @@ class MarketTradesSerializer(serializers.ModelSerializer):
     cost = serializers.SerializerMethodField()
     profit = serializers.SerializerMethodField()
     event_description = serializers.SerializerMethodField()
+    owner = serializers.SerializerMethodField()
 
     class Meta:
         model = Order
         fields = ('date', 'net_outcome_tokens_sold', 'marginal_prices', 'outcome_token',
-                  'outcome_token_count', 'order_type', 'cost', 'profit', 'event_description',)
+                  'outcome_token_count', 'order_type', 'cost', 'profit', 'event_description', 'owner', )
 
     def get_order_type(self, obj):
         return get_order_type(obj)
@@ -196,6 +197,9 @@ class MarketTradesSerializer(serializers.ModelSerializer):
             return result
         except CentralizedOracle.DoesNotExist:
             return {}
+
+    def get_owner(self, obj):
+        return add_0x_prefix(obj.sender)
 
     def to_representation(self, instance):
         response = super(MarketTradesSerializer, self).to_representation(instance)
