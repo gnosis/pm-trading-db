@@ -105,23 +105,28 @@ The application is made up of several container images that are linked together 
 
 ### Create a Django superuser
 Run the Web container with the following command and create a super user in order to access the /admin interface.
-`docker-compose run web bash`
 
-`python manage.py createsuperuser`
+```
+docker-compose run web bash
+python gnosisdb/manage.py migrate
+python gnosisdb/manage.py createsuperuser
+```
 
 ### Run application
 Start the gnosisdb server simply by bringing up the set of containers:
 `sudo docker-compose up`
 
+You can access it on http://localhost:8000 and the admin is on http://localhost:8000/admin
+
 Development
 -------
-For development purposes you may want to run a testrpc node on your machine. To do so, run:
+For development purposes you may want to run a Ganache node on your machine. To do so, run:
 
-`testrpc --gasLimit 400000000 -d -h 0.0.0.0`
+`ganache-cli --gasLimit 400000000 -d -h 0.0.0.0`
 
-The -d option allows you to get the same address everytime a contract is deployed. You will not have to update your django settings everytime a new testrpc server is running.
+The -d option allows you to get the same address everytime a contract is deployed. You will not have to update your django settings everytime a new Ganache server is running.
 
-The -h option tells TestRPC to listen on all interfaces, including the bridge interfaces which are exposed inside of the docker containers. This will allow a setting of `ETHEREUM_NODE_HOST = '172.x.x.x'` to work for the Celery worker.
+The -h option tells Ganache to listen on all interfaces, including the bridge interfaces which are exposed inside of the docker containers. This will allow a setting of `ETHEREUM_NODE_HOST = '172.x.x.x'` to work for the Celery worker.
 
 In another terminal instance, install `gnosis.js` (https://github.com/gnosis/gnosis.js) following the provided instructions. Go into that directory and deploy the contracts with:
 
