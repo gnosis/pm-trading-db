@@ -1,4 +1,5 @@
 from django_eth_events.chainevents import AbstractEventReceiver
+from django_eth_events.utils import JsonBytesEncoder
 from relationaldb.serializers import (
     CentralizedOracleSerializer, ScalarEventSerializer, CategoricalEventSerializer,
     MarketSerializer, OutcomeTokenInstanceSerializer,
@@ -14,6 +15,8 @@ from relationaldb.models import (
 
 from celery.utils.log import get_task_logger
 from json import dumps
+from six import iteritems
+from six.moves import filter
 
 logger = get_task_logger(__name__)
 
@@ -36,12 +39,14 @@ class SerializerEventReceiver(AbstractEventReceiver):
             # Only valid data goes forward, non valid data is logged
             if serializer.is_valid():
                 instance = serializer.save()
-                logger.info('Event Receiver {} added: {}'.format(self.__class__.__name__, dumps(decoded_event)))
+                logger.info('Event Receiver {} added: {}'.format(self.__class__.__name__,
+                                                                 dumps(decoded_event,
+                                                                       cls=JsonBytesEncoder)))
                 # serializer model instance is returned in order to django-eth-events know it was a valid event
                 return instance
             else:
-                logger.warning('INVALID Data for Event Receiver {} save: {}'.format(self.__class__.__name__,
-                                                                                        dumps(decoded_event)))
+                logger.warning('INVALID Data for Event Receiver {} save: {}'.format(self.__class__.__name__, dumps(decoded_event,
+                                                                                                                   cls=JsonBytesEncoder)))
                 logger.warning(serializer.errors)
 
     def rollback(self, decoded_event, block_info):
@@ -52,7 +57,8 @@ class SerializerEventReceiver(AbstractEventReceiver):
             primary_key_name = self.Meta.primary_key_name
         else:
             primary_key_name = self.Meta.primary_key_name.get(decoded_event.get('name'))
-        primary_key = filter(lambda x: x.get('name') == primary_key_name, decoded_event.get('params'))[0].get('value')
+        primary_key = next(filter(lambda x: x.get('name') == primary_key_name,
+                                  decoded_event.get('params'))).get('value')
 
         # Find instance to update/delete
         instance = serializer_class.Meta.model.objects.get(
@@ -62,9 +68,11 @@ class SerializerEventReceiver(AbstractEventReceiver):
         serializer = serializer_class(instance, data=decoded_event, block=block_info)
         if serializer.is_valid():
             serializer.rollback()
-            logger.info('Event Receiver {} reverted: {}'.format(self.__class__.__name__, dumps(decoded_event)))
+            logger.info('Event Receiver {} reverted: {}'.format(self.__class__.__name__, dumps(decoded_event,
+                                                                                               cls=JsonBytesEncoder)))
         else:
-            logger.warning('INVALID Data for Event Receiver {} rollback: {}'.format(self.__class__.__name__, dumps(decoded_event)))
+            logger.warning('INVALID Data for Event Receiver {} rollback: {}'.format(self.__class__.__name__, dumps(decoded_event,
+                                                                                                                   cls=JsonBytesEncoder)))
             logger.warning(serializer.errors)
 
 
@@ -121,11 +129,12 @@ class BaseInstanceEventReceiver(SerializerEventReceiver):
             filter_dict = {primary_key_name: decoded_event.get('address')}
         else:
             filter_dict = {}
-            for pk_model, pk_event in primary_key_name.iteritems():
+            for pk_model, pk_event in iteritems(primary_key_name):
                 if pk_event == 'creation_block':
                     filter_dict[pk_model] = block_info['number']
                 elif decoded_event.get(pk_event) is None:
-                    filter_dict[pk_model] = filter(lambda x: x.get('name') == pk_event, decoded_event.get('params'))[0].get('value')
+                    filter_dict[pk_model] = next(filter(lambda x: x.get('name') == pk_event,
+                                                        decoded_event.get('params'))).get('value')
                 else:
                     filter_dict[pk_model] = decoded_event.get(pk_event)
 
@@ -136,10 +145,12 @@ class BaseInstanceEventReceiver(SerializerEventReceiver):
         serializer = serializer_class(instance, data=decoded_event, block=block_info)
         if serializer.is_valid():
             serializer.rollback()
-            logger.info('Event Receiver {} reverted: {}'.format(self.__class__.__name__, dumps(decoded_event)))
+            logger.info('Event Receiver {} reverted: {}'.format(self.__class__.__name__, dumps(decoded_event,
+                                                                                               cls=JsonBytesEncoder)))
         else:
             logger.warning(
-                'INVALID Data for Event Receiver {} rollback: {}'.format(self.__class__.__name__, dumps(decoded_event))
+                'INVALID Data for Event Receiver {} rollback: {}'.format(self.__class__.__name__, dumps(decoded_event,
+                                                                                                        cls=JsonBytesEncoder))
             )
             logger.warning(serializer.errors)
 
