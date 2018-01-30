@@ -1,6 +1,4 @@
 Django==1.11
-anyjson==0.3.3
-boto3==1.4.7
 celery==4.1.0
 django-authtools==1.6.0
 django-celery-beat==1.1.0
@@ -27,7 +25,6 @@ ipfsapi==0.4.1
 kombu==4.1.0
 mpmath==0.19
 psycopg2==2.7.3.2
-requests[security]==2.18.4
 six==1.11.0
 web3[tester]==3.16.4
 whitenoise==3.3.1
