@@ -10,18 +10,20 @@ os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 # reqs = [str(ir.req) for ir in install_reqs]
 
 requirements = [
-    'bitcoin==1.1.42',
     'djangorestframework',
     'django-ether-logs',
-    'ethereum==1.6.0',
-    'ethereum-abi-utils==0.4.0',
-    'ethereum-utils==0.2.0'
+    'ethereum==1.6.1',
+    'eth-abi==0.5.0',
+    'eth-utils==0.7.4'
 ]
 
 setup(
     name='django_gnosisdb',
     version='0.1',
-    packages=find_packages(exclude=["*.tests", "*.tests.*", "tests.*", "tests"]),
+    packages=find_packages(exclude=["*.tests",
+                                    "*.tests.*",
+                                    "tests.*",
+                                    "tests"]),
     include_package_data=True,
     install_requires=requirements,
     license='BSD License',  # example license
