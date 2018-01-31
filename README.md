@@ -62,11 +62,9 @@ BROKER_URL = 'amqp://{user}:{password}@{hostname}:{port}/{queue}'.format(
 )
 ```
 ##### LMSR MARKET MAKER
-You need to specify the LMSR Market Maker address you have deployed previously (to discover how to do that please take a look at <a href="https://github.com/gnosis/gnosis-contracts" target="_blank">gnosis-contracts</a>):
+You need to specify the LMSR Market Maker address you have deployed previously (to discover how to do that please take a look at [gnosis-contracts](https://github.com/gnosis/gnosis-contracts):
 
-```
-LSRM_MARKET_MAKER = '2f2be9db638cb31d4143cbc1525b0e104f7ed597'
-```
+`LSRM_MARKET_MAKER = '2f2be9db638cb31d4143cbc1525b0e104f7ed597'`
 
 ##### GNOSIS ETHEREUM CONTRACTS
 The ETH_EVENTS array variable allows you to define and map a list of addressess to their related event listeners.<br/>
@@ -75,13 +73,13 @@ Create a new array variable in your settings file and call it ETH_EVENTS as foll
 ```
 ETH_EVENTS = [
     {
-        'ADDRESSES': ['254dffcd3277c0b1660f6d42efbb754edababc2b'],      
+        'ADDRESSES': ['254dffcd3277c0b1660f6d42efbb754edababc2b'],
         'EVENT_ABI': '... ABI ...',
         'EVENT_DATA_RECEIVER': 'yourmodule.event_receivers.YourReceiverClass',
         'NAME': 'Your Contract Name',
         'PUBLISH': True,
     },
-    {        
+    {
         'ADDRESSES_GETTER': 'yourmodule.address_getters.YouCustomAddressGetter',
         'EVENT_ABI': '... ABI ...',
         'EVENT_DATA_RECEIVER': 'chainevents.event_receivers.MarketInstanceReceiver',
@@ -101,6 +99,7 @@ Installation
 
 ### Build containers
 The application is made up of several container images that are linked together using docker-compose. Before running the application, build the images:
+
 `docker-compose build --force-rm`
 
 ### Create a Django superuser
@@ -114,6 +113,7 @@ python gnosisdb/manage.py createsuperuser
 
 ### Run application
 Start the gnosisdb server simply by bringing up the set of containers:
+
 `sudo docker-compose up`
 
 You can access it on http://localhost:8000 and the admin is on http://localhost:8000/admin
@@ -162,13 +162,13 @@ Let's consider the ETH_EVENTS settings varable:
 ```
 ETH_EVENTS = [
     {
-        'ADDRESSES': ['254dffcd3277c0b1660f6d42efbb754edababc2b'],      
+        'ADDRESSES': ['254dffcd3277c0b1660f6d42efbb754edababc2b'],
         'EVENT_ABI': '... ABI ...',
         'EVENT_DATA_RECEIVER': 'yourmodule.event_receivers.YourReceiverClass',
         'NAME': 'Your Contract Name',
         'PUBLISH': True,
     },
-    {        
+    {
         'ADDRESSES_GETTER': 'yourmodule.address_getters.YouCustomAddressGetter',
         'EVENT_ABI': '... ABI ...',
         'EVENT_DATA_RECEIVER': 'chainevents.event_receivers.MarketInstanceReceiver',
@@ -201,7 +201,7 @@ class CentralizedOracleFactoryReceiver(AbstractEventReceiver):
         if serializer.is_valid():
             serializer.save()
             logger.info('Centralized Oracle Factory Result Added: {}'.format(dumps(decoded_event)))
-        else:            
+        else:
             logger.warning(serializer.errors)
 ```
 
