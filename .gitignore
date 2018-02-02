@@ -58,8 +58,8 @@ typings/
 # .env
 
 # Virtualenv
-venv
-venv2
+env
+env2
 
 .vagrant
 .idea/

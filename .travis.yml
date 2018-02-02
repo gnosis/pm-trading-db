@@ -1,23 +1,23 @@
 language: python
+python:
+  - "2.7"
+  - "3.6"
 dist: trusty
 addons:
   ssh_known_hosts:
   - gnosisdb-kovan.gnosis.pm
 services:
-- postgresql
+  - postgresql
 before_script:
-- psql -c 'create database travisci;' -U postgres
+  - psql -c 'create database travisci;' -U postgres
 before_install:
-- openssl aes-256-cbc -d -S $salt -iv $iv -K $key
-   -in .travis/deploy_key.enc -out .travis/deploy_key
-- export DJANGO_SETTINGS_MODULE="settings.test"
-- export PYTHONPATH="$HOME/build/gnosis/gnosisdb"
-- export PIP_USE_MIRRORS=true
+  - openssl aes-256-cbc -d -S $salt -iv $iv -K $key
+     -in .travis/deploy_key.enc -out .travis/deploy_key
+  - export DJANGO_SETTINGS_MODULE="settings.test" PYTHONPATH="$HOME/build/gnosis/gnosisdb" PIP_USE_MIRRORS=true
 install:
-- pip install -r requirements.txt
-- pip install coveralls
+  - pip install -r requirements.txt
+  - pip install coveralls
 script:
-- python gnosisdb/manage.py test
-- coverage run --source=gnosisdb gnosisdb/manage.py test
+  - python gnosisdb/manage.py test && coverage run --source=gnosisdb gnosisdb/manage.py test
 after_success:
 - coveralls
