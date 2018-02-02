@@ -250,6 +250,16 @@ REST API
 -------
 GnosisDB comes with a handy RESTful API. Run GnosisDB, open your Web browser and connect to http://localhost:8000. You will get all the relevant API endpoints and their input/return data.
 
+RESYNC DATABASE
+----------------
+To resync database with the blockchain, first we must delete every information that is on the database with the following task:
+
+`python gnosisdb/manage.py cleandatabase`
+
+Then we must force the daemon to resync everything again:
+
+`python gnosisdb/manage.py resync_daemon`
+
 Contributors
 ------------
 - Stefan George (stefan@gnosis.pm)
