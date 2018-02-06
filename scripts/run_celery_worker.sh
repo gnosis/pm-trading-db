@@ -24,6 +24,13 @@ shutdown() {
 trap shutdown SIGTERM SIGINT
 
 echo "==> run worker <=="
-celery -A gnosisdb.apps worker -Q default -n default@%h --loglevel info --workdir="$PWD" -c 2 &
+
+# DEBUG set in .env
+if [ "$DEBUG" = True ]; then
+    loglevel="debug"
+else
+    loglevel="info"
+fi
+celery -A gnosisdb.apps worker -Q default -n default@%h --loglevel $loglevel --workdir="$PWD" -c 2 &
 child=$!
 wait $!
