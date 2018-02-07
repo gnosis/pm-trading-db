@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 from django.test import TestCase
-from web3 import Web3
 from django_eth_events.factories import DaemonFactory
 from django_eth_events.event_listener import EventListener
 from django_eth_events.web3_service import Web3Service
@@ -71,8 +70,8 @@ market_bytecode = ""
 class TestDaemonExec(TestCase):
     def setUp(self):
         os.environ.update({'TESTRPC_GAS_LIMIT': '10000000000'})
-        self.rpc = TestRPCProvider()
-        web3_service = Web3Service(self.rpc)
+        self.rpc_provider = TestRPCProvider()
+        web3_service = Web3Service(self.rpc_provider)
         self.web3 = web3_service.web3
         # Mock web3
         self.daemon = DaemonFactory()
@@ -95,12 +94,12 @@ class TestDaemonExec(TestCase):
             }
         ]
 
-        self.listener_under_test = EventListener(self.contracts)
+        self.listener_under_test = EventListener(contract_map=self.contracts, provider=self.rpc_provider)
 
     def tearDown(self):
-        self.rpc.server.shutdown()
-        self.rpc.server.server_close()
-        self.rpc = None
+        self.rpc_provider.server.shutdown()
+        self.rpc_provider.server.server_close()
+        self.rpc_provider = None
 
     def create_event_description(self):
         # Create event description

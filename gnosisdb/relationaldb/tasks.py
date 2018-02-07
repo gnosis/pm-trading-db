@@ -1,8 +1,9 @@
 from celery import shared_task
 from celery.utils.log import get_task_logger
 from django.core.mail import mail_admins
+from django.core.management import call_command
 import traceback
-from django.core.management import call_command, settings
+
 
 logger = get_task_logger(__name__)
 
