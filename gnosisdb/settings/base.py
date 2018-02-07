@@ -9,7 +9,7 @@ DEBUG = False
 ROOT_DIR = environ.Path(__file__) - 3  # (/a/b/myfile.py - 3 = /)
 DJANGO_DIR = ROOT_DIR.path('gnosisdb')
 
-INSTALLED_APPS = (
+INSTALLED_APPS = [
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -29,8 +29,7 @@ INSTALLED_APPS = (
     'rest_framework_swagger',
     'chainevents',
     'django_google_authenticator',
-    'debug_toolbar',
-)
+]
 
 MIDDLEWARE_CLASSES = [
     'corsheaders.middleware.CorsMiddleware',
@@ -43,7 +42,6 @@ MIDDLEWARE_CLASSES = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.contrib.admindocs.middleware.XViewMiddleware',
-    'debug_toolbar.middleware.DebugToolbarMiddleware',
 ]
 
 LOGGING = {
