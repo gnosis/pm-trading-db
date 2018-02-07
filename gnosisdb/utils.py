@@ -3,6 +3,7 @@ from mpmath import mp, mpf
 
 def singleton(clazz):
     instances = {}
+
     def getinstance(*args, **kwargs):
         if clazz not in instances:
             instances[clazz] = clazz(*args, **kwargs)
@@ -28,8 +29,7 @@ def remove_null_values(obj):
     if not isinstance(obj, dict):
         return obj
 
-    keys = obj.keys()
-    for k in keys:
+    for k in list(obj.keys()):
         _obj = obj[k]
         if _obj is None:
             del obj[k]
@@ -45,7 +45,8 @@ def add_0x_prefix(value):
 
 def calc_lmsr_marginal_price(token_index, net_outcome_tokens_sold, funding):
     b = mpf(funding) / mp.log(len(net_outcome_tokens_sold))
-    return float(mp.exp(net_outcome_tokens_sold[token_index]/b) / sum(mp.exp(share_count/b) for share_count in net_outcome_tokens_sold))
+    return float(mp.exp(net_outcome_tokens_sold[token_index] / b) / sum(mp.exp(share_count / b)
+                 for share_count in net_outcome_tokens_sold))
 
 
 def get_order_type(order):
