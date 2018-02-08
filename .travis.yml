@@ -31,3 +31,4 @@ after_success:
     docker tag gnosisdb gnosispm/gnosisdb:development;
     docker push gnosispm/gnosisdb:development;
   fi
+- python --version
