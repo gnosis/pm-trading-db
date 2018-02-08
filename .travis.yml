@@ -31,8 +31,5 @@ after_success:
     elif [ "$TRAVIS_BRANCH" == "development" ]; then
       docker tag gnosisdb gnosispm/gnosisdb:development;
       docker push gnosispm/gnosisdb:development;
-    elif [ "$TRAVIS_BRANCH" == "feature/DEV-103-autodeploy" ]; then
-      docker tag gnosisdb gnosispm/gnosisdb:development;
-      docker push gnosispm/gnosisdb:development;
     fi
   fi
