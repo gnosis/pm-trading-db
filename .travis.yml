@@ -19,15 +19,15 @@ script:
   - python gnosisdb/manage.py test && coverage run --source=gnosisdb gnosisdb/manage.py test
 after_success:
 - coveralls
-- docker build -t gnosisdb -f docker/web/Dockerfile .
-  docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD"
-  if [ "$TRAVIS_BRANCH" == "master" ]; then
-    docker tag gnosisdb gnosispm/gnosisdb:staging
-    docker push gnosispm/gnosisdb:staging
-  elif [ "$TRAVIS_BRANCH" == "development" ]; then
-    docker tag gnosisdb gnosispm/gnosisdb:development
-    docker push gnosispm/gnosisdb:development
-  elif [ "$TRAVIS_BRANCH" == "feature/DEV-103-autodeploy" ]; then
-    docker tag gnosisdb gnosispm/gnosisdb:development
-    docker push gnosispm/gnosisdb:development
+- docker build -t gnosisdb -f docker/web/Dockerfile .;
+  docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD";
+  if [ "$TRAVIS_BRANCH" == "master" ]; then;
+    docker tag gnosisdb gnosispm/gnosisdb:staging;
+    docker push gnosispm/gnosisdb:staging;
+  elif [ "$TRAVIS_BRANCH" == "development" ]; then;
+    docker tag gnosisdb gnosispm/gnosisdb:development;
+    docker push gnosispm/gnosisdb:development;
+  elif [ "$TRAVIS_BRANCH" == "feature/DEV-103-autodeploy" ]; then;
+    docker tag gnosisdb gnosispm/gnosisdb:development;
+    docker push gnosispm/gnosisdb:development;
   fi
