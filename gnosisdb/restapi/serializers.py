@@ -2,7 +2,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import serializers
 from relationaldb.models import (
     ScalarEventDescription, CategoricalEventDescription, OutcomeTokenBalance, OutcomeToken,
-    CentralizedOracle, Market, Order, ScalarEvent, CategoricalEvent, BuyOrder
+    CentralizedOracle, Market, Order, ScalarEvent, CategoricalEvent, BuyOrder, TournamentParticipant
 )
 from gnosisdb.utils import remove_null_values, add_0x_prefix, get_order_type, get_order_cost, get_order_profit
 from django.db.models import Sum
@@ -264,3 +264,18 @@ class OutcomeTokenBalanceSerializer(serializers.ModelSerializer):
 
     def get_marginal_price(self, obj):
         return obj.outcome_token.event.markets.all()[0].marginal_prices[obj.outcome_token.index]
+
+
+class OlympiaScoreboardSerializer(serializers.ModelSerializer):
+    """Serializes an olympia tournament participant"""
+    class Meta:
+        model = TournamentParticipant
+        fields = ('account', 'balance', 'contract', 'current_rank', 'past_rank', 'diff_rank', 'score', 'predicted_profit', 'predictions',)
+
+    contract = ContractSerializer(source='*', many=False, read_only=True)
+    account = serializers.SerializerMethodField()
+    balance = serializers.DecimalField(max_digits=80, decimal_places=0, source='tournament_balance.balance')
+
+    def get_account(self, obj):
+        return add_0x_prefix(obj.address)
+
