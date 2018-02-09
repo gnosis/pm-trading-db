@@ -1,6 +1,7 @@
 from __future__ import absolute_import
-import sys
 import environ
+import os
+import sys
 from gnosisdb.chainevents.abis import abi_file_path, load_json_file
 
 TIME_ZONE = 'UTC'
@@ -105,7 +106,7 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTOCOL', 'https')
 # STATIC FILE CONFIGURATION
 # ------------------------------------------------------------------------------
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#static-root
-STATIC_ROOT = str(ROOT_DIR('staticfiles'))
+STATIC_ROOT = os.environ.get('STATIC_ROOT', str(ROOT_DIR('staticfiles')))
 COMPRESS_ROOT = str(ROOT_DIR('staticfiles'))
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#static-url
