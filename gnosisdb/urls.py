@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 from django.conf.urls import url, include
 from django.conf import settings
 from django.contrib import admin
+from django.http import HttpResponse
 from rest_framework_swagger.views import get_swagger_view
 
 schema_view = get_swagger_view(title='GnosisDB API')
@@ -12,7 +13,8 @@ urlpatterns = [
     url(r'', include('django_google_authenticator.urls')),
     url(r'^admin/', include(admin.site.urls)),
     url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
-    url(r'^api/', include('gnosisdb.restapi.urls', namespace='api'))
+    url(r'^api/', include('gnosisdb.restapi.urls', namespace='api')),
+    url(r'^check/', lambda request: HttpResponse("Ok")),
 ]
 
 if settings.DEBUG:
