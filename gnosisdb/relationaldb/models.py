@@ -2,6 +2,7 @@ from __future__ import unicode_literals
 
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
+from model_utils.models import TimeStampedModel
 
 # ==================================
 #       Abstract classes
@@ -233,7 +234,31 @@ class SellOrder(Order):
 
 class ShortSellOrder(Order):
     cost = models.DecimalField(max_digits=80, decimal_places=0)
-
     def __str__(self):
         base = super(ShortSellOrder, self).__str__()
         return '{} - Cost {}'.format(base, self.cost)
+
+# ==================================
+#      Tournament classes
+# ==================================
+
+class TournamentParticipant(ContractCreatedByFactory, TimeStampedModel):
+    """Tournament participant"""
+    current_rank = models.IntegerField()  # current rank position
+    past_rank = models.IntegerField(default=0)  # previous rank position
+    diff_rank = models.IntegerField(default=0)  # difference between current and previous rank position
+    score = models.DecimalField(max_digits=80, decimal_places=0, default=0)  # sum of OLY balance and predicted profit
+    predicted_profit = models.DecimalField(max_digits=80, decimal_places=0, default=0)  # outcome tokens current price
+    predictions = models.IntegerField(default=0)  # number of events the user is participating in
+    tokens_issued = models.BooleanField(default=False)  # True if the user already issued tokens
+
+
+class TournamentParticipantBalance(models.Model):
+    """Defines the participant's balance"""
+    balance = models.DecimalField(max_digits=80, decimal_places=0, default=0)
+    participant = models.OneToOneField(TournamentParticipant, to_field='address', related_name='tournament_balance')
+
+
+class TournamentWhitelistedCreator(models.Model):
+    address = models.CharField(max_length=40, primary_key=True)
+    enabled = models.BooleanField(default=True)

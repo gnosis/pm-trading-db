@@ -24,7 +24,6 @@ shutdown() {
 trap shutdown SIGTERM SIGINT
 
 echo "==> run worker <=="
-
 # DEBUG set in .env
 if [ "$DEBUG" = True ]; then
     loglevel="debug"

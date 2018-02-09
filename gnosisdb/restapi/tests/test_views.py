@@ -5,9 +5,10 @@ from rest_framework.test import APITestCase
 from rest_framework import status
 from relationaldb.tests.factories import (
     CentralizedOracleFactory, BuyOrderFactory, MarketFactory,
-    CategoricalEventFactory, OutcomeTokenFactory, OutcomeTokenBalanceFactory
+    CategoricalEventFactory, OutcomeTokenFactory, OutcomeTokenBalanceFactory,
+    TournamentParticipantBalanceFactory
 )
-from relationaldb.models import CentralizedOracle, Market, ShortSellOrder
+from relationaldb.models import CentralizedOracle, Market, ShortSellOrder, TournamentParticipant
 from datetime import datetime, timedelta
 from gnosisdb.utils import add_0x_prefix
 import json
@@ -340,3 +341,24 @@ class TestViews(APITestCase):
         url = reverse('api:shares-by-account', kwargs={'account_address': account2})
         no_shares_response = self.client.get(url, content_type='application/json')
         self.assertEquals(len(json.loads(no_shares_response.content).get('results')), 0)
+
+    def test_tournament_serializer(self):
+        balance = TournamentParticipantBalanceFactory()
+        scoreboard_response = self.client.get(reverse('api:scoreboard', kwargs={'account_address': balance.participant.address}), content_type='application/json')
+        self.assertEquals(scoreboard_response.status_code, status.HTTP_200_OK)
+        scoreboard_response = self.client.get(reverse('api:scoreboard', kwargs={'account_address': '0x0'}), content_type='application/json')
+        self.assertEquals(scoreboard_response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_scoreboard_view(self):
+        current_users = TournamentParticipant.objects.all().count()
+        scoreboard_response = self.client.get(reverse('api:scoreboard'), content_type='application/json')
+        self.assertEquals(scoreboard_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(current_users, len(json.loads(scoreboard_response.content)['results']))
+        balance = TournamentParticipantBalanceFactory()
+        scoreboard_response = self.client.get(reverse('api:scoreboard'), content_type='application/json')
+        self.assertEquals(scoreboard_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(current_users + 1, len(json.loads(scoreboard_response.content)['results']))
+        balance = TournamentParticipantBalanceFactory()
+        scoreboard_response = self.client.get(reverse('api:scoreboard'), content_type='application/json')
+        self.assertEquals(scoreboard_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(current_users + 2, len(json.loads(scoreboard_response.content)['results']))
