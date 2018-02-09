@@ -46,8 +46,9 @@ services:
       - db
     working_dir: /gnosisdb
     command: scripts/run_web.sh
-    expose:
-      - "8000"
+    # Not needed, using socket through nginx-shared
+    # expose:
+    #  - "8000"
     ports:
       # - "8000:8000"
       - "27017"
