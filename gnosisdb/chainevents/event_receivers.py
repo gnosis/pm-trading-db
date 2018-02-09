@@ -276,12 +276,14 @@ class TournamentTokenReceiver(BaseInstanceEventReceiver):
             serializer_class = self.Meta.events.get(decoded_event.get('name'))
             if serializer_class is not None:
                 serializer_model = serializer_class.Meta.model
-                from_participant = filter(lambda x: x.get('name') == 'from', decoded_event.get('params'))[0].get('value')
-                to_participant = filter(lambda x: x.get('name') == 'to', decoded_event.get('params'))[0].get('value')
+                from_participant = next(filter(lambda x: x.get('name') == 'from',
+                                               decoded_event.get('params'))).get('value')
+                to_participant = next(filter(lambda x: x.get('name') == 'to',
+                                             decoded_event.get('params'))).get('value')
                 participants = serializer_model.objects.filter(participant=from_participant) | \
                                serializer_model.objects.filter(participant=to_participant)
                 if participants.count():
-                    instance = participants[0]
+                    instance = participants.first()
                     serializer = serializer_class(instance, data=decoded_event)
 
                     if serializer.is_valid():
