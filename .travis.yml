@@ -11,8 +11,6 @@ services:
 before_script:
   - psql -c 'create database travisci;' -U postgres
 before_install:
-  - openssl aes-256-cbc -d -S $salt -iv $iv -K $key
-     -in .travis/deploy_key.enc -out .travis/deploy_key
   - export DJANGO_SETTINGS_MODULE="settings.test" PYTHONPATH="$HOME/build/gnosis/gnosisdb" PIP_USE_MIRRORS=true
 install:
   - pip install -r requirements.txt
@@ -21,3 +19,16 @@ script:
   - python gnosisdb/manage.py test && coverage run --source=gnosisdb gnosisdb/manage.py test
 after_success:
 - coveralls
+- docker build -t gnosisdb -f docker/web/Dockerfile .;
+  docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD";
+  if [ "$TRAVIS_BRANCH" == "master" ]; then
+    docker tag gnosisdb gnosispm/gnosisdb:staging;
+    docker push gnosispm/gnosisdb:staging;
+  elif [ "$TRAVIS_BRANCH" == "development" ]; then
+    docker tag gnosisdb gnosispm/gnosisdb:development;
+    docker push gnosispm/gnosisdb:development;
+  elif [ "$TRAVIS_BRANCH" == "feature/DEV-103-autodeploy" ]; then
+    docker tag gnosisdb gnosispm/gnosisdb:development;
+    docker push gnosispm/gnosisdb:development;
+  fi
+- python --version
