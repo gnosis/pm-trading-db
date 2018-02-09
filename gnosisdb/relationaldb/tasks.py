@@ -1,19 +1,6 @@
 from celery import shared_task
 from celery.utils.log import get_task_logger
 from django.core.mail import mail_admins
-<<<<<<< HEAD
-from django.core.management import call_command
-import traceback
-
-
-logger = get_task_logger(__name__)
-
-
-def send_email(message):
-    logger.info('Task error: {}'.format(message))
-    # send email
-    mail_admins('[GnosisDB Error] ', message)
-=======
 from relationaldb.models import TournamentParticipant
 import traceback
 from django.core.management import call_command, settings
@@ -26,9 +13,9 @@ oid = 'TOURNAMENT_BLOCK'
 
 
 def send_email(message):
-    logger.info('Couldnt issue User tokens due to: {}'.format(message))
+    logger.info('Task error: {}'.format(message))
     # send email
-    mail_admins('[Olympia Issuance Error] ', message)
+    mail_admins('[GnosisDB Error] ', message)
 
 
 @shared_task
