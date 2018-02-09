@@ -19,16 +19,20 @@ script:
   - python gnosisdb/manage.py test && coverage run --source=gnosisdb gnosisdb/manage.py test
 after_success:
 - coveralls
-- docker build -t gnosisdb -f docker/web/Dockerfile .;
-  docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD";
-  if [ "$TRAVIS_BRANCH" == "master" ]; then
-    docker tag gnosisdb gnosispm/gnosisdb:staging;
-    docker push gnosispm/gnosisdb:staging;
-  elif [ "$TRAVIS_BRANCH" == "development" ]; then
-    docker tag gnosisdb gnosispm/gnosisdb:development;
-    docker push gnosispm/gnosisdb:development;
-  elif [ "$TRAVIS_BRANCH" == "feature/DEV-103-autodeploy" ]; then
-    docker tag gnosisdb gnosispm/gnosisdb:development;
-    docker push gnosispm/gnosisdb:development;
+- # Create Python 3 image only
+  python_version_to_deploy="^Python\s3.*";
+  current_python_version=`python --version 2>&1`;
+  if [[ $current_python_version =~ $python_version_to_deploy ]]; then
+    docker build -t gnosisdb -f docker/web/Dockerfile .;
+    docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD";
+    if [ "$TRAVIS_BRANCH" == "master" ]; then
+      docker tag gnosisdb gnosispm/gnosisdb:staging;
+      docker push gnosispm/gnosisdb:staging;
+    elif [ "$TRAVIS_BRANCH" == "development" ]; then
+      docker tag gnosisdb gnosispm/gnosisdb:development;
+      docker push gnosispm/gnosisdb:development;
+    elif [ "$TRAVIS_BRANCH" == "feature/DEV-103-autodeploy" ]; then
+      docker tag gnosisdb gnosispm/gnosisdb:development;
+      docker push gnosispm/gnosisdb:development;
+    fi
   fi
-- python --version
