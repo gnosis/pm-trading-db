@@ -11,6 +11,7 @@ WSGI_APPLICATION = 'wsgi.application'
 
 INSTALLED_APPS += ("gunicorn", )
 ETH_PROCESS_BLOCKS = os.environ.get('ETH_PROCESS_BLOCKS', '100')
+DEBUG = bool(int(os.environ.get('DEBUG', '0')))
 
 if DEBUG is False:
     STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'
@@ -34,7 +35,6 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 ADMINS = (
     ('Giacomo', 'giacomo.licari@gnosis.pm'),
     ('Denis', 'denis@gnosis.pm'),
-    ('Stefan', 'stefan@gnosis.pm'),
 )
 
 # ------------------------------------------------------------------------------
@@ -72,6 +72,14 @@ BROKER_URL = 'amqp://{user}:{password}@{hostname}:{port}/{queue}'.format(
 LMSR_MARKET_MAKER = os.environ['LMSR_MARKET_MAKER']
 
 # ------------------------------------------------------------------------------
+# Tournament settings
+# ------------------------------------------------------------------------------
+TOURNAMENT_TOKEN = os.environ['TOURNAMENT_TOKEN']
+TOURNAMENT_TOKEN_ISSUANCE = os.environ.get('TOURNAMENT_TOKEN_ISSUANCE', '200000000000000000000')
+
+ETHEREUM_DEFAULT_ACCOUNT = os.environ['ETHEREUM_DEFAULT_ACCOUNT']
+
+# ------------------------------------------------------------------------------
 # GNOSIS ETHEREUM CONTRACTS
 # ------------------------------------------------------------------------------
 ETH_EVENTS = [
@@ -96,6 +104,20 @@ ETH_EVENTS = [
         'NAME': 'standardMarketFactory',
         'PUBLISH': True,
         'PUBLISH_UNDER': 'marketFactories'
+    },
+    {
+        'ADDRESSES': [os.environ['UPORT_IDENTITY_MANAGER']],
+        'EVENT_ABI': load_json_file(abi_file_path('UportIdentityManager.json')),
+        'EVENT_DATA_RECEIVER': 'chainevents.event_receivers.UportIdentityManagerReceiver',
+        'NAME': 'UportIdentityManagerInstanceReceiver',
+        'PUBLISH': True,
+    },
+    {
+        'ADDRESSES': [os.environ['TOURNAMENT_TOKEN']],
+        'EVENT_ABI': load_json_file(abi_file_path('TournamentToken.json')),
+        'EVENT_DATA_RECEIVER': 'chainevents.event_receivers.TournamentTokenReceiver',
+        'NAME': 'OlympiaToken',
+        'PUBLISH': True,
     },
     {
         'ADDRESSES_GETTER': 'chainevents.address_getters.MarketAddressGetter',
@@ -134,5 +156,12 @@ DATABASES = {
         'PASSWORD': os.environ['DATABASE_PASSWORD'],
         'HOST': os.environ['DATABASE_HOST'],
         'PORT': os.environ['DATABASE_PORT'],
+    }
+}
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+        'LOCATION': 'celery_locking',
     }
 }

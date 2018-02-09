@@ -3,7 +3,9 @@ from .models import CentralizedOracle
 from .models import EventDescription, ScalarEventDescription, CategoricalEventDescription
 from .models import OutcomeToken, OutcomeTokenBalance
 from .models import Market, CategoricalEvent, ScalarEvent
-from .models import BuyOrder, SellOrder, ShortSellOrder
+from .models import BuyOrder, SellOrder
+from .models import TournamentParticipant
+from .models import TournamentWhitelistedCreator
 
 admin.site.register(Market)
 admin.site.register(CategoricalEvent)
@@ -16,4 +18,5 @@ admin.site.register(CategoricalEventDescription)
 admin.site.register(OutcomeTokenBalance)
 admin.site.register(BuyOrder)
 admin.site.register(SellOrder)
-admin.site.register(ShortSellOrder)
+admin.site.register(TournamentParticipant)
+admin.site.register(TournamentWhitelistedCreator)
