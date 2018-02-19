@@ -1,6 +1,6 @@
-from settings.local import *
 import os
 
+from .local import *
 
 # Insert your rpc config here
 ETHEREUM_NODE_HOST= 'localhost'
@@ -13,7 +13,7 @@ IPFS_HOST = 'https://ipfs.infura.io'
 if 'TRAVIS' in os.environ:
     DATABASES = {
         'default': {
-            'ENGINE':   'django.db.backends.postgresql_psycopg2',
+            'ENGINE':   'django.db.backends.postgresql',
             'NAME':     'travisci',
             'USER':     'postgres',
             'PASSWORD': '',

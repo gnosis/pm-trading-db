@@ -1,11 +1,13 @@
+import traceback
+from datetime import datetime, timedelta
+
 from celery import shared_task
 from celery.utils.log import get_task_logger
 from django.core.mail import mail_admins
-from relationaldb.models import TournamentParticipant
-import traceback
 from django.core.management import call_command, settings
 from django.db import transaction
-from datetime import datetime, timedelta
+
+from .models import TournamentParticipant
 
 logger = get_task_logger(__name__)
 
@@ -62,4 +64,3 @@ def db_dump():
     except Exception as err:
         logger.error(str(err))
         send_email(traceback.format_exc())
-

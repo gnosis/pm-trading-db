@@ -1,6 +1,8 @@
-from gnosisdb.settings.base import *
-from gnosisdb.chainevents.abis import abi_file_path, load_json_file
 import os
+
+from chainevents.abis import abi_file_path, load_json_file
+
+from .base import *
 
 CELERY_SEND_TASK_ERROR_EMAILS = False
 
@@ -147,7 +149,7 @@ ETH_EVENTS = [
 # ------------------------------------------------------------------------------
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'ENGINE': 'django.db.backends.postgresql',
         'NAME': os.environ['DATABASE_NAME'],
         'USER': os.environ['DATABASE_USER'],
         'PASSWORD': os.environ['DATABASE_PASSWORD'],

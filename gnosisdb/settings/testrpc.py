@@ -1,5 +1,6 @@
-from gnosisdb.settings.local import *
-from gnosisdb.chainevents.abis import abi_file_path, load_json_file
+from chainevents.abis import abi_file_path, load_json_file
+
+from .local import *
 
 # TestRPC
 # insert your rpc config here, ex. localhost - 0.0.0.0 - 192.168.0.1

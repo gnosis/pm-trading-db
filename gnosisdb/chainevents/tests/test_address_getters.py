@@ -1,6 +1,8 @@
 from django.test import TestCase
-from chainevents.address_getters import MarketAddressGetter, EventAddressGetter
-from relationaldb.tests.factories import MarketFactory, EventFactory
+
+from relationaldb.tests.factories import EventFactory, MarketFactory
+
+from ..address_getters import EventAddressGetter, MarketAddressGetter
 
 
 class TestAddressGetters(TestCase):

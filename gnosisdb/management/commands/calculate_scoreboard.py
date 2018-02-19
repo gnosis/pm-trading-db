@@ -1,13 +1,13 @@
-from django.core.management.base import BaseCommand
-from relationaldb.models import (
-    Event, TournamentWhitelistedCreator, TournamentParticipant, OutcomeTokenBalance, Order,
-    TournamentParticipantBalance
-)
-
-from django.db import connections
 from datetime import datetime, timedelta
-from django.db import transaction
 from operator import itemgetter
+
+from django.core.management.base import BaseCommand
+from django.db import connections, transaction
+
+from relationaldb.models import (Event, Order, OutcomeTokenBalance,
+                                 TournamentParticipant,
+                                 TournamentParticipantBalance,
+                                 TournamentWhitelistedCreator)
 
 OUTCOME_RANGE = 1000000
 

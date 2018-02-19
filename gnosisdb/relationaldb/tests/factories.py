@@ -1,13 +1,15 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-import factory as factory_boy
-from faker import Factory as FakerFactory, Faker
-from factory.fuzzy import FuzzyDateTime
-from relationaldb import models
-import random
 import hashlib
+import random
 from datetime import datetime
+
+import factory as factory_boy
 import pytz
+from factory.fuzzy import FuzzyDateTime
+from faker import Factory as FakerFactory
+from faker import Faker
+
+from .. import models
 
 fakerFactory = FakerFactory.create()
 faker = Faker()
@@ -37,6 +39,7 @@ class ContractCreatedByFactory(ContractFactory, BlockTimestampedFactory):
 
     factory = factory_boy.Sequence(lambda n: '{:040d}'.format(n))
     creator = factory_boy.Sequence(lambda n: '{:040d}'.format(n))
+
 
 class EventDescriptionFactory(factory_boy.DjangoModelFactory):
     class Meta:

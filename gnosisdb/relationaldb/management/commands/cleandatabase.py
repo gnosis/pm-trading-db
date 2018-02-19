@@ -1,5 +1,6 @@
 from django.core.management.base import BaseCommand
-from relationaldb.models import EventDescription
+
+from ...models import EventDescription
 
 
 class Command(BaseCommand):

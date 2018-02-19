@@ -1,23 +1,35 @@
-from unittest import TestCase
-from relationaldb.tests.factories import (
-    CentralizedOracleFactory, EventFactory, MarketFactory, OutcomeTokenFactory, OutcomeTokenBalanceFactory,
-    ScalarEventDescriptionFactory, CategoricalEventFactory, ScalarEventFactory, CategoricalEventDescriptionFactory,
-    TournamentParticipantFactory, TournamentParticipantBalanceFactory
-)
-from relationaldb.serializers import (
-    OutcomeTokenIssuanceSerializer, ScalarEventSerializer, OutcomeTokenRevocationSerializer,
-    CategoricalEventSerializer, MarketSerializer, IPFSEventDescriptionDeserializer, CentralizedOracleSerializer,
-    CentralizedOracleInstanceSerializer, OutcomeTokenInstanceSerializer, OutcomeTokenTransferSerializer,
-    TournamentParticipantSerializer, TournamentTokenIssuanceSerializer, TournamentTokenTransferSerializer
-)
-
-from relationaldb.models import (
-    OutcomeTokenBalance, OutcomeToken, ScalarEventDescription, TournamentParticipant,
-    TournamentParticipantBalance
-)
-from django.conf import settings
-from ipfs.ipfs import Ipfs
 from time import mktime
+
+from django.conf import settings
+from django.test import TestCase
+
+from ipfs.ipfs import Ipfs
+from relationaldb.models import (OutcomeToken, OutcomeTokenBalance,
+                                 ScalarEventDescription, TournamentParticipant,
+                                 TournamentParticipantBalance)
+from relationaldb.serializers import (CategoricalEventSerializer,
+                                      CentralizedOracleInstanceSerializer,
+                                      CentralizedOracleSerializer,
+                                      IPFSEventDescriptionDeserializer,
+                                      MarketSerializer,
+                                      OutcomeTokenInstanceSerializer,
+                                      OutcomeTokenIssuanceSerializer,
+                                      OutcomeTokenRevocationSerializer,
+                                      OutcomeTokenTransferSerializer,
+                                      ScalarEventSerializer,
+                                      TournamentParticipantSerializer,
+                                      TournamentTokenIssuanceSerializer,
+                                      TournamentTokenTransferSerializer)
+from relationaldb.tests.factories import (CategoricalEventDescriptionFactory,
+                                          CategoricalEventFactory,
+                                          CentralizedOracleFactory,
+                                          EventFactory, MarketFactory,
+                                          OutcomeTokenBalanceFactory,
+                                          OutcomeTokenFactory,
+                                          ScalarEventDescriptionFactory,
+                                          ScalarEventFactory,
+                                          TournamentParticipantBalanceFactory,
+                                          TournamentParticipantFactory)
 
 
 class TestSerializers(TestCase):
@@ -673,5 +685,3 @@ class TestSerializers(TestCase):
         instance = transfer_serializer.save()
         self.assertEqual(TournamentParticipantBalance.objects.get(participant=participant2.address).balance.__float__(), float(participant_balance2.balance+150))
         self.assertEqual(TournamentParticipantBalance.objects.get(participant=participant1.address).balance.__float__(), float(participant_balance1.balance-150))
-
-

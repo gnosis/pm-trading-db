@@ -1,25 +1,30 @@
-from django_eth_events.chainevents import AbstractEventReceiver
-from django_eth_events.utils import JsonBytesEncoder
-from relationaldb.serializers import (
-    CentralizedOracleSerializer, ScalarEventSerializer, CategoricalEventSerializer,
-    MarketSerializer, OutcomeTokenInstanceSerializer,
-    OutcomeTokenRevocationSerializer, OutcomeAssignmentEventSerializer,
-    WinningsRedemptionSerializer, OwnerReplacementSerializer, OutcomeTokenIssuanceSerializer,
-    OutcomeAssignmentOracleSerializer, OutcomeTokenTransferSerializer,
-    OutcomeTokenPurchaseSerializer, OutcomeTokenSaleSerializer, OutcomeTokenShortSaleOrderSerializer,
-    MarketFundingSerializer, MarketClosingSerializer, FeeWithdrawalSerializer, TournamentParticipantSerializer,
-    TournamentTokenIssuanceSerializer, TournamentTokenTransferSerializer
-)
-from relationaldb.models import (
-    CentralizedOracle, Market
-)
-
-from relationaldb.models import TournamentParticipant
+from json import dumps
 
 from celery.utils.log import get_task_logger
-from json import dumps
-from six import iteritems
-from six.moves import filter
+from django_eth_events.chainevents import AbstractEventReceiver
+from django_eth_events.utils import JsonBytesEncoder
+
+from relationaldb.serializers import (CategoricalEventSerializer,
+                                      CentralizedOracleSerializer,
+                                      FeeWithdrawalSerializer,
+                                      MarketClosingSerializer,
+                                      MarketFundingSerializer,
+                                      MarketSerializer,
+                                      OutcomeAssignmentEventSerializer,
+                                      OutcomeAssignmentOracleSerializer,
+                                      OutcomeTokenInstanceSerializer,
+                                      OutcomeTokenIssuanceSerializer,
+                                      OutcomeTokenPurchaseSerializer,
+                                      OutcomeTokenRevocationSerializer,
+                                      OutcomeTokenSaleSerializer,
+                                      OutcomeTokenShortSaleOrderSerializer,
+                                      OutcomeTokenTransferSerializer,
+                                      OwnerReplacementSerializer,
+                                      ScalarEventSerializer,
+                                      TournamentParticipantSerializer,
+                                      TournamentTokenIssuanceSerializer,
+                                      TournamentTokenTransferSerializer,
+                                      WinningsRedemptionSerializer)
 
 logger = get_task_logger(__name__)
 
@@ -132,7 +137,7 @@ class BaseInstanceEventReceiver(SerializerEventReceiver):
             filter_dict = {primary_key_name: decoded_event.get('address')}
         else:
             filter_dict = {}
-            for pk_model, pk_event in iteritems(primary_key_name):
+            for pk_model, pk_event in primary_key_name.items():
                 if pk_event == 'creation_block':
                     filter_dict[pk_model] = block_info['number']
                 elif decoded_event.get(pk_event) is None:

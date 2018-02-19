@@ -1,5 +1,7 @@
 import os
+
 from setuptools import find_packages, setup
+
 # from pip.req import parse_requirements
 
 # allow setup.py to be run from any path
