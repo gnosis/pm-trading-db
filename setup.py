@@ -30,7 +30,7 @@ setup(
     description='The Gnosisdb django app',
     url='https://github.com/gnosis/gnosisdb',
     author='Gnosis Inc.',
-    author_email='giacomo.licari@gnosis.pm, denis@gnosis.pm, stefan@gnosis.pm',
+    author_email='giacomo.licari@gnosis.pm, denis@gnosis.pm, stefan@gnosis.pm, uxio@gnosis.pm',
     classifiers=[
         'Environment :: Web Environment',
         'Framework :: Django',

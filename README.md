@@ -51,10 +51,9 @@ cd gnosis.js
 npm install
 ```
 
-You will need to have Ganache-cli running. Currently, last version of Ganache-cli is not compatible, so you can just use TestRPC,
-which has been downloaded by previous `npm install`. So in the same gnosis.js folder:
+You will need to have Ganache-cli running, which has been downloaded by previous `npm install`. So in the same gnosis.js folder:
 
-`./node_modules/.bin/testrpc --gasLimit 40000000 -d -h 0.0.0.0 -i 437894314312`
+`./node_modules/.bin/ganache-cli --gasLimit 40000000 -d -h 0.0.0.0 -i 437894314312`
 
 The -d option allows you to get the same address everytime a contract is deployed. You will not have to update your django settings everytime a new Ganache server is running.
 
@@ -64,14 +63,14 @@ This will allow a setting of `ETHEREUM_NODE_HOST = '172.x.x.x'` to work for the 
 The -i option sets the network id.
 
 Open another window and go to the gnosis.js folder, deploy the contracts and run gnosisdb tests. This emulates the creation of oracles, events and markets.
-Docker containers must be up because tests require ipfs, and of course testrpc too:
+Docker containers must be up because *tests require ipfs, and* of course *Ganache-cli* too:
 
 ```
 npm run migrate
 npm run test-gnosisdb
 ```
 
-The execution will furnish all the contracts' addesses in the node_modules/@gnosis.pm/gnosis-core-contracts/build/contracts folder as parts of the build artifacts.
+The execution will furnish all the contracts' addesses in the `node_modules/@gnosis.pm/gnosis-core-contracts/build/contracts` folder as parts of the build artifacts.
 You should also see the addresses displayed in your console.
 
 You should verify that the addresses in ETH_EVENTS specified in gnosisdb/settings/base.py match what is displayed by the console for all the contracts including:
@@ -79,7 +78,6 @@ You should verify that the addresses in ETH_EVENTS specified in gnosisdb/setting
 * Centralized Oracle Factory
 * Event Factory
 * Standard Market Factory
-* Ultimate Oracle Factory
 
 Open your browser and go to http://localhost:8000/admin, provide your superuser username and password.
 You should now see something like this:
@@ -111,9 +109,8 @@ Specify your application administrators:
 
 ```
 ADMINS = (
-    ('Giacomo', 'giacomo.licari@gnosis.pm'),
-    ('Denis', 'denis@gnosis.pm'),
-    ('Stefan', 'stefan@gnosis.pm'),
+    ('Batman', 'batman@gnosis.pm'),
+    ('Robin', 'robin@gnosis.pm'),
 )
 ```
 
@@ -290,3 +287,4 @@ Contributors
 - Stefan George (stefan@gnosis.pm)
 - Denís Graña (denis@gnosis.pm)
 - Giacomo Licari (giacomo.licari@gnosis.pm)
+- Uxío Fuentefría (uxio@gnosis.pm)
