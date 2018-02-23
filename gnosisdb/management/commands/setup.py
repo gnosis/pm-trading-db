@@ -1,9 +1,8 @@
 from django.core.management.base import BaseCommand
-from celery import Celery
-from celery.schedules import crontab
+from django_celery_beat.models import IntervalSchedule, PeriodicTask
+from django_eth_events.models import Block, Daemon
+
 from relationaldb.models import EventDescription
-from django_eth_events.models import Daemon, Block
-from django_celery_beat.models  import PeriodicTask, IntervalSchedule
 
 
 class Command(BaseCommand):
@@ -19,7 +18,7 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS('DB Successfully cleaned.'))
 
         # auto-create celery task
-        interval=IntervalSchedule(every=5, period='seconds')
+        interval = IntervalSchedule(every=5, period='seconds')
         interval.save()
         if not PeriodicTask.objects.filter(task='django_eth_events.tasks.event_listener').count():
             PeriodicTask.objects.create(

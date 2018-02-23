@@ -1,9 +1,11 @@
-from django.core.management.base import BaseCommand
-from web3 import Web3, HTTPProvider
 from django.conf import settings
-from gnosisdb.chainevents.abis import abi_file_path, load_json_file
-from relationaldb.models import TournamentParticipant, TournamentParticipantBalance
+from django.core.management.base import BaseCommand
 from django.db import transaction
+from web3 import HTTPProvider, Web3
+
+from chainevents.abis import abi_file_path, load_json_file
+from relationaldb.models import (TournamentParticipant,
+                                 TournamentParticipantBalance)
 
 
 class Command(BaseCommand):
@@ -32,7 +34,10 @@ class Command(BaseCommand):
                 block_chain_balance = token.call().balanceOf(locked_user.address)
                 if block_chain_balance != locked_user.tournament_balance.balance:
                     self.stdout.write(self.style.SUCCESS(
-                        'User {} had wrong balance, blockchain: {} | database: {}'.format(locked_user.address, block_chain_balance, locked_user.tournament_balance.balance)))
+                        'User {} had wrong balance, blockchain: {} | database: {}'.format(locked_user.address,
+                                                                                          block_chain_balance,
+                                                                                          locked_user.tournament_balance.balance))
+                    )
                     locked_user.tournament_balance.balance = block_chain_balance
                     locked_user.tournament_balance.save()
 

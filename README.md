@@ -1,5 +1,7 @@
-
+[![Build Status](https://travis-ci.org/gnosis/gnosisdb.svg?branch=master)](https://travis-ci.org/gnosis/gnosisdb)
 [![Coverage Status](https://coveralls.io/repos/github/gnosis/gnosisdb/badge.svg?branch=feature%2Fcoverage)](https://coveralls.io/github/gnosis/gnosisdb?branch=feature%2Fcoverage)
+![Python 3.6](https://img.shields.io/badge/Python-3.6-blue.svg)
+![Django 2](https://img.shields.io/badge/Django-2-blue.svg)
 
 # GnosisDB
 Gnosis Core Database Layer

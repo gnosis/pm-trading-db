@@ -1,23 +1,19 @@
 from django.conf import settings
-from django.shortcuts import get_object_or_404, get_list_or_404
+from django.shortcuts import get_list_or_404, get_object_or_404
 from rest_framework import generics
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from relationaldb.models import (
-    CentralizedOracle, Event, Market, Order, OutcomeTokenBalance,
-    TournamentParticipant, TournamentWhitelistedCreator
-)
 
-from .serializers import (
-    CentralizedOracleSerializer, EventSerializer, MarketSerializer,
-    MarketTradesSerializer, OutcomeTokenBalanceSerializer, MarketParticipantTradesSerializer,
-    OlympiaScoreboardSerializer
-)
+from relationaldb.models import (CentralizedOracle, Event, Market, Order,
+                                 OutcomeTokenBalance, TournamentParticipant,
+                                 TournamentWhitelistedCreator)
 
-from .filters import (
-    CentralizedOracleFilter, EventFilter, MarketFilter, DefaultPagination,
-    MarketTradesFilter
-)
+from .filters import (CentralizedOracleFilter, DefaultPagination, EventFilter,
+                      MarketFilter, MarketTradesFilter)
+from .serializers import (CentralizedOracleSerializer, EventSerializer,
+                          MarketParticipantTradesSerializer, MarketSerializer,
+                          MarketTradesSerializer, OlympiaScoreboardSerializer,
+                          OutcomeTokenBalanceSerializer)
 
 
 class CentralizedOracleListView(generics.ListAPIView):

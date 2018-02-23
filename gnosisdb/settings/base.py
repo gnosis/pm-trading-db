@@ -1,8 +1,9 @@
-from __future__ import absolute_import
-import environ
 import os
 import sys
-from gnosisdb.chainevents.abis import abi_file_path, load_json_file
+
+import environ
+
+from chainevents.abis import abi_file_path, load_json_file
 
 TIME_ZONE = 'UTC'
 DEBUG = False
@@ -11,38 +12,41 @@ ROOT_DIR = environ.Path(__file__) - 3  # (/a/b/myfile.py - 3 = /)
 DJANGO_DIR = ROOT_DIR.path('gnosisdb')
 
 INSTALLED_APPS = [
+    'debug_toolbar',
+    'django.contrib.admin',
+    'django.contrib.admindocs',
     'django.contrib.auth',
     'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.admin',
     'django.contrib.messages',
+    'django.contrib.sessions',
     'django.contrib.staticfiles',
-    'django.contrib.admindocs',
     'django_filters',
     'corsheaders',
-    'solo',
     'django_celery_beat',
+    'rest_framework',
+    'rest_framework_swagger',
+    'solo',
+    # Gnosis apps
+    'chainevents',
+    'django_eth_events',
+    'django_google_authenticator',
     'gnosisdb',
     'relationaldb',
-    'rest_framework',
     'restapi',
-    'django_eth_events',
-    'rest_framework_swagger',
-    'chainevents',
-    'django_google_authenticator',
 ]
 
-MIDDLEWARE_CLASSES = [
+MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
+    # 'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.contrib.admindocs.middleware.XViewMiddleware',
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
 ]
 
 LOGGING = {
@@ -144,6 +148,7 @@ REST_FRAMEWORK = {
         'rest_framework.renderers.BrowsableAPIRenderer',
     ),
     'PAGE_SIZE': 100,
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
 }
 
 # ETHEREUM_NODE_HOST='192.168.0.103'

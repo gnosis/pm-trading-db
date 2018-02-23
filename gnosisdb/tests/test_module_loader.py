@@ -42,7 +42,7 @@
 #     def test_getting_addresses_utils_function(self):
 #         clazz_addresses = import_string(self.class_path)().get_addresses()
 #
-#         self.assertEquals(len(clazz_addresses), 2)
+#         self.assertEqual(len(clazz_addresses), 2)
 #
 #         with self.assertRaises(ImportError):
 #             import_string(self.invalid_class_path)

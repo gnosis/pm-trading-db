@@ -1,7 +1,8 @@
-from django.core.management.base import BaseCommand
-from web3 import Web3, HTTPProvider
 from django.conf import settings
-from gnosisdb.chainevents.abis import abi_file_path, load_json_file
+from django.core.management.base import BaseCommand
+from web3 import HTTPProvider, Web3
+
+from chainevents.abis import abi_file_path, load_json_file
 
 
 class Command(BaseCommand):

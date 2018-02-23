@@ -1,5 +1,5 @@
-import os
 import json
+import os
 
 
 def abi_file_path(file):
@@ -7,4 +7,5 @@ def abi_file_path(file):
 
 
 def load_json_file(path):
-    return json.load(open(path))
+    with open(path) as f:
+        return json.load(f)

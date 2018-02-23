@@ -1,16 +1,17 @@
-from rest_framework import serializers
-from rest_framework.fields import CharField
-from relationaldb import models
-from ipfs.ipfs import Ipfs
 from datetime import datetime
-from ipfsapi.exceptions import ErrorResponse
-from time import mktime
+from decimal import Decimal
+
 from celery.utils.log import get_task_logger
 from django.conf import settings
-from gnosisdb.utils import calc_lmsr_marginal_price
+from ipfsapi.exceptions import ErrorResponse
 from mpmath import mp
-from decimal import Decimal
-from six.moves import map
+from rest_framework import serializers
+from rest_framework.fields import CharField
+
+from ipfs.ipfs import Ipfs
+from utils import calc_lmsr_marginal_price
+
+from . import models
 
 mp.dps = 100
 mp.pretty = True
@@ -56,7 +57,7 @@ class ContractEventTimestamped(BlockTimestampedSerializer):
         }
 
         for param in data.get('params'):
-            new_data[param[u'name']] = param[u'value']
+            new_data[param['name']] = param['value']
 
         self.initial_data = new_data
 
@@ -87,14 +88,14 @@ class ContractCreatedByFactorySerializer(BlockTimestampedSerializer, ContractSer
         data = kwargs.pop('data')
         # Event params moved to root object
         new_data = {
-            'address': data[u'address'],
-            'factory': data[u'address'],
+            'address': data['address'],
+            'factory': data['address'],
             'creation_date_time': datetime.fromtimestamp(self.block.get('timestamp')),
             'creation_block': self.block.get('number')
         }
 
         for param in data.get('params'):
-            new_data[param[u'name']] = param[u'value']
+            new_data[param['name']] = param['value']
 
         self.initial_data = new_data
 
@@ -120,7 +121,7 @@ class ContractNotTimestampted(ContractSerializer):
         }
 
         for param in data.get('params'):
-            new_data[param[u'name']] = param[u'value']
+            new_data[param['name']] = param['value']
 
         self.initial_data = new_data
 
@@ -136,12 +137,13 @@ class IpfsHashField(CharField):
 
     def get_event_description(self, ipfs_hash):
         """Returns the IPFS event_description object"""
-        ipfs = Ipfs()
-        return ipfs.get(ipfs_hash)
+        return Ipfs().get(ipfs_hash)
 
     def to_internal_value(self, data):
         event_description = None
         event_description_json = None
+        # Ipfs hash is returned as bytes
+        data = data.decode() if isinstance(data, bytes) else data
         try:
             event_description = models.EventDescription.objects.get(ipfs_hash=data)
             if event_description.title is None:
@@ -1201,4 +1203,3 @@ class TournamentTokenTransferSerializer(ContractNotTimestampted, serializers.Mod
             to_user.balance -= self.validated_data.get('value')
             to_user.save()
             return to_user
-

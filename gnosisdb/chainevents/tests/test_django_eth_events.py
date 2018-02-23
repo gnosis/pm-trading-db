@@ -1,16 +1,18 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-from django.test import TestCase
-from django_eth_events.factories import DaemonFactory
-from django_eth_events.event_listener import EventListener
-from django_eth_events.web3_service import Web3Service
-from web3 import TestRPCProvider
-from relationaldb import models
-from ipfs.ipfs import Ipfs
-from relationaldb.tests.factories import EventDescriptionFactory
-from chainevents.abis import load_json_file, abi_file_path
 import os
 
+from django.test import TestCase
+from django_eth_events.event_listener import EventListener
+from django_eth_events.factories import DaemonFactory
+from django_eth_events.web3_service import Web3Service
+from eth_tester import EthereumTester
+from web3.providers.eth_tester import EthereumTesterProvider
+
+from ipfs.ipfs import Ipfs
+from relationaldb import models
+from relationaldb.tests.factories import EventDescriptionFactory
+
+from ..abis import abi_file_path, load_json_file
 
 centralized_oracle_bytecode = "6060604052341561000c57fe5b5b6109ad8061001c6000396000f30060606040526000357c01000000000000000000000000000000" \
           "00000000000000000000000000900463ffffffff1680634e2f220c1461003b575bfe5b341561004357fe5b61009360048080359060" \
@@ -70,9 +72,10 @@ market_bytecode = ""
 class TestDaemonExec(TestCase):
     def setUp(self):
         os.environ.update({'TESTRPC_GAS_LIMIT': '10000000000'})
-        self.rpc_provider = TestRPCProvider()
-        web3_service = Web3Service(self.rpc_provider)
-        self.web3 = web3_service.web3
+        self.web3 = Web3Service(provider=EthereumTesterProvider(EthereumTester())).web3
+        self.provider = self.web3.providers[0]
+        self.web3.eth.defaultAccount = self.web3.eth.coinbase
+
         # Mock web3
         self.daemon = DaemonFactory()
         self.ipfs = Ipfs()
@@ -80,10 +83,12 @@ class TestDaemonExec(TestCase):
         self.tx_data = {'from': self.web3.eth.accounts[0], 'gas': 100000000}
 
         # create oracles
-        centralized_contract_factory = self.web3.eth.contract(abi=load_json_file(abi_file_path('CentralizedOracleFactory.json')), bytecode=centralized_oracle_bytecode)
+        centralized_contract_factory = self.web3.eth.contract(abi=load_json_file(abi_file_path('CentralizedOracleFactory.json')),
+                                                              bytecode=centralized_oracle_bytecode)
         tx_hash = centralized_contract_factory.deploy()
         self.centralized_oracle_factory_address = self.web3.eth.getTransactionReceipt(tx_hash).get('contractAddress')
-        self.centralized_oracle_factory = self.web3.eth.contract(self.centralized_oracle_factory_address, abi=load_json_file(abi_file_path('CentralizedOracleFactory.json')))
+        self.centralized_oracle_factory = self.web3.eth.contract(self.centralized_oracle_factory_address,
+                                                                 abi=load_json_file(abi_file_path('CentralizedOracleFactory.json')))
 
         self.contracts = [
             {
@@ -94,12 +99,12 @@ class TestDaemonExec(TestCase):
             }
         ]
 
-        self.listener_under_test = EventListener(contract_map=self.contracts, provider=self.rpc_provider)
+        self.listener_under_test = EventListener(contract_map=self.contracts,
+                                                 provider=self.provider)
 
     def tearDown(self):
-        self.rpc_provider.server.shutdown()
-        self.rpc_provider.server.server_close()
-        self.rpc_provider = None
+        self.provider.ethereum_tester.reset_to_genesis()
+        self.assertEqual(0, self.web3.eth.blockNumber)
 
     def create_event_description(self):
         # Create event description

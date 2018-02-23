@@ -1,11 +1,10 @@
 from django.contrib import admin
-from .models import CentralizedOracle
-from .models import EventDescription, ScalarEventDescription, CategoricalEventDescription
-from .models import OutcomeToken, OutcomeTokenBalance
-from .models import Market, CategoricalEvent, ScalarEvent
-from .models import BuyOrder, SellOrder
-from .models import TournamentParticipant
-from .models import TournamentWhitelistedCreator
+
+from .models import (BuyOrder, CategoricalEvent, CategoricalEventDescription,
+                     CentralizedOracle, EventDescription, Market, OutcomeToken,
+                     OutcomeTokenBalance, ScalarEvent, ScalarEventDescription,
+                     SellOrder, TournamentParticipant,
+                     TournamentWhitelistedCreator)
 
 admin.site.register(Market)
 admin.site.register(CategoricalEvent)
