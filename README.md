@@ -1,5 +1,5 @@
 
-[![Coverage Status](https://coveralls.io/repos/github/gnosis/gnosisdb/badge.svg?branch=feature%2Fcoverage)](https://coveralls.io/github/gnosis/gnosisdb?branch=feature%2Fcoverage)
+[![Coverage Status](https://coveralls.io/repos/github/gnosis/gnosisdb/badge.svg?branch=master)](https://coveralls.io/github/gnosis/gnosisdb?branch=master)
 
 # GnosisDB
 Gnosis Core Database Layer
