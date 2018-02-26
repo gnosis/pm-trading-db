@@ -29,8 +29,8 @@ Run the Web container with the following command and inside create a super user 
 
 ```
 docker-compose run web bash
-python gnosisdb/manage.py migrate
-python gnosisdb/manage.py createsuperuser
+python manage.py migrate
+python manage.py createsuperuser
 ```
 
 ### Run application
@@ -238,7 +238,7 @@ An Addresses Getter class must inherit from [**django_eth_events.chainevents.Abs
 Take a look at ContractAddressGetter:
 
 ```
-from relationaldb.models import Contract
+from gnosisdb.relationaldb.models import Contract
 from django.core.exceptions import ObjectDoesNotExist
 from django_eth_events.chainevents import AbstractAddressesGetter
 
@@ -278,11 +278,11 @@ RESYNC DATABASE
 ----------------
 To resync database with the blockchain, first we must delete every information that is on the database with the following task:
 
-`python gnosisdb/manage.py cleandatabase`
+`python manage.py cleandatabase`
 
 Then we must force the daemon to resync everything again:
 
-`python gnosisdb/manage.py resync_daemon`
+`python manage.py resync_daemon`
 
 Contributors
 ------------

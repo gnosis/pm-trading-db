@@ -2,7 +2,7 @@
 import ipfsapi
 from django.conf import settings
 
-from utils import singleton
+from gnosis.utils import singleton
 
 
 @singleton

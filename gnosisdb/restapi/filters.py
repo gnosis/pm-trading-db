@@ -3,7 +3,8 @@ from datetime import datetime, timedelta
 from django_filters import rest_framework as filters
 from rest_framework.pagination import LimitOffsetPagination
 
-from relationaldb.models import CentralizedOracle, Event, Market, Order
+from gnosisdb.relationaldb.models import (CentralizedOracle, Event, Market,
+                                          Order)
 
 
 class DefaultPagination(LimitOffsetPagination):

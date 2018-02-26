@@ -23,15 +23,14 @@ class Command(BaseCommand):
             from_email=settings.SERVER_EMAIL,
             to=[a[1] for a in settings.ADMINS]
         )
-        with open(filename, 'r') as fd:
-            email.attach('GnosisDB_dump', fd.read(), 'text/plain')
+        email.attach_file(filename)
         email.send()
 
     def is_locked(self):
         locked = False
 
         with transaction.atomic():
-            daemon = Daemon.objects.select_for_update().first()
+            daemon = Daemon.get_solo()
             locked = daemon.listener_lock
 
             if not locked:

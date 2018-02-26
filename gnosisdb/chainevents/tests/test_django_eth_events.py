@@ -8,9 +8,9 @@ from django_eth_events.web3_service import Web3Service
 from eth_tester import EthereumTester
 from web3.providers.eth_tester import EthereumTesterProvider
 
+from gnosisdb.relationaldb import models
+from gnosisdb.relationaldb.tests.factories import EventDescriptionFactory
 from ipfs.ipfs import Ipfs
-from relationaldb import models
-from relationaldb.tests.factories import EventDescriptionFactory
 
 from ..abis import abi_file_path, load_json_file
 

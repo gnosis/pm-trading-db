@@ -1,8 +1,9 @@
 from django.test import TestCase
 
-from relationaldb.tests.factories import (CategoricalEventFactory,
-                                          MarketFactory, OutcomeTokenFactory)
-from utils import calc_lmsr_marginal_price
+from gnosisdb.relationaldb.tests.factories import (MarketFactory,
+                                                   OutcomeTokenFactory)
+
+from ..utils import calc_lmsr_marginal_price
 
 
 class TestUtils(TestCase):

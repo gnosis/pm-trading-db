@@ -4,10 +4,10 @@ from operator import itemgetter
 from django.core.management.base import BaseCommand
 from django.db import connections, transaction
 
-from relationaldb.models import (Event, Order, OutcomeTokenBalance,
-                                 TournamentParticipant,
-                                 TournamentParticipantBalance,
-                                 TournamentWhitelistedCreator)
+from gnosisdb.relationaldb.models import (Event, Order, OutcomeTokenBalance,
+                                          TournamentParticipant,
+                                          TournamentParticipantBalance,
+                                          TournamentWhitelistedCreator)
 
 OUTCOME_RANGE = 1000000
 

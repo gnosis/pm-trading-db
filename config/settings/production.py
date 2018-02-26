@@ -1,6 +1,6 @@
 import os
 
-from chainevents.abis import abi_file_path, load_json_file
+from gnosisdb.chainevents.abis import abi_file_path, load_json_file
 
 from .base import *
 
@@ -8,10 +8,9 @@ CELERY_SEND_TASK_ERROR_EMAILS = False
 
 SECRET_KEY = os.environ['SECRET_KEY']
 
-# See: https://docs.djangoproject.com/en/dev/ref/settings/#wsgi-application
-WSGI_APPLICATION = 'wsgi.application'
+INSTALLED_APPS.append("gunicorn")
 
-INSTALLED_APPS += ("gunicorn", )
+
 ETH_PROCESS_BLOCKS = os.environ.get('ETH_PROCESS_BLOCKS', '100')
 DEBUG = bool(int(os.environ.get('DEBUG', '0')))
 

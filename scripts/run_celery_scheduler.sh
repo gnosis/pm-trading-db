@@ -20,7 +20,6 @@ fi
 # wait for RabbitMQ server and Postgres to start
 echo "==> call run_celery.sh <=="
 
-cd $PWD/gnosisdb
 python manage.py migrate --noinput
 
 shutdown() {
@@ -32,7 +31,8 @@ shutdown() {
 trap shutdown SIGTERM SIGINT
 
 echo "==> run beat <=="
-celery -A gnosisdb.apps beat -S django_celery_beat.schedulers:DatabaseScheduler --loglevel debug --workdir="$PWD" --pidfile=$HOME/celerybeat.pid &
+cd gnosisdb
+celery -A gnosisdb.taskapp beat -S django_celery_beat.schedulers:DatabaseScheduler --loglevel debug --pidfile=$HOME/celerybeat.pid &
 
 child=$!
 wait $!

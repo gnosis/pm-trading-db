@@ -4,32 +4,28 @@ from django.conf import settings
 from django.test import TestCase
 
 from ipfs.ipfs import Ipfs
-from relationaldb.models import (OutcomeToken, OutcomeTokenBalance,
-                                 ScalarEventDescription, TournamentParticipant,
-                                 TournamentParticipantBalance)
-from relationaldb.serializers import (CategoricalEventSerializer,
-                                      CentralizedOracleInstanceSerializer,
-                                      CentralizedOracleSerializer,
-                                      IPFSEventDescriptionDeserializer,
-                                      MarketSerializer,
-                                      OutcomeTokenInstanceSerializer,
-                                      OutcomeTokenIssuanceSerializer,
-                                      OutcomeTokenRevocationSerializer,
-                                      OutcomeTokenTransferSerializer,
-                                      ScalarEventSerializer,
-                                      TournamentParticipantSerializer,
-                                      TournamentTokenIssuanceSerializer,
-                                      TournamentTokenTransferSerializer)
-from relationaldb.tests.factories import (CategoricalEventDescriptionFactory,
-                                          CategoricalEventFactory,
-                                          CentralizedOracleFactory,
-                                          EventFactory, MarketFactory,
-                                          OutcomeTokenBalanceFactory,
-                                          OutcomeTokenFactory,
-                                          ScalarEventDescriptionFactory,
-                                          ScalarEventFactory,
-                                          TournamentParticipantBalanceFactory,
-                                          TournamentParticipantFactory)
+
+from ..models import (OutcomeToken, OutcomeTokenBalance,
+                      ScalarEventDescription, TournamentParticipant,
+                      TournamentParticipantBalance)
+from ..serializers import (CategoricalEventSerializer,
+                           CentralizedOracleInstanceSerializer,
+                           CentralizedOracleSerializer,
+                           IPFSEventDescriptionDeserializer, MarketSerializer,
+                           OutcomeTokenInstanceSerializer,
+                           OutcomeTokenIssuanceSerializer,
+                           OutcomeTokenRevocationSerializer,
+                           OutcomeTokenTransferSerializer,
+                           ScalarEventSerializer,
+                           TournamentParticipantSerializer,
+                           TournamentTokenIssuanceSerializer,
+                           TournamentTokenTransferSerializer)
+from .factories import (CategoricalEventDescriptionFactory,
+                        CategoricalEventFactory, CentralizedOracleFactory,
+                        EventFactory, MarketFactory,
+                        OutcomeTokenBalanceFactory, OutcomeTokenFactory,
+                        ScalarEventDescriptionFactory, ScalarEventFactory,
+                        TournamentParticipantBalanceFactory)
 
 
 class TestSerializers(TestCase):

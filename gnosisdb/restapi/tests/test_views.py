@@ -6,16 +6,17 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from relationaldb.models import (CentralizedOracle, Market, ShortSellOrder,
-                                 TournamentParticipant)
-from relationaldb.tests.factories import (BuyOrderFactory,
-                                          CategoricalEventFactory,
-                                          CentralizedOracleFactory,
-                                          MarketFactory,
-                                          OutcomeTokenBalanceFactory,
-                                          OutcomeTokenFactory,
-                                          TournamentParticipantBalanceFactory)
-from utils import add_0x_prefix
+from gnosis.utils import add_0x_prefix
+from gnosisdb.relationaldb.models import (CentralizedOracle, Market,
+                                          ShortSellOrder,
+                                          TournamentParticipant)
+from gnosisdb.relationaldb.tests.factories import (BuyOrderFactory,
+                                                   CategoricalEventFactory,
+                                                   CentralizedOracleFactory,
+                                                   MarketFactory,
+                                                   OutcomeTokenBalanceFactory,
+                                                   OutcomeTokenFactory,
+                                                   TournamentParticipantBalanceFactory)
 
 
 class TestViews(APITestCase):

@@ -10,25 +10,23 @@ services:
 before_script:
   - psql -c 'create database travisci;' -U postgres
 before_install:
-  - export DJANGO_SETTINGS_MODULE="settings.test" PYTHONPATH="$HOME/build/gnosis/gnosisdb" PIP_USE_MIRRORS=true
+  - export PIP_USE_MIRRORS=true
 install:
   - pip install -r requirements.txt
   - pip install coveralls
 script:
-  - python gnosisdb/manage.py test && coverage run --source=gnosisdb gnosisdb/manage.py test
+  - coverage run --source=gnosisdb manage.py test --settings=config.settings.test
 after_success:
 - coveralls
-- # Create Python 3 image only
-  python_version_to_deploy="^Python\s3.*";
-  current_python_version=`python --version 2>&1`;
-  if [[ $current_python_version =~ $python_version_to_deploy ]]; then
+- # Create Docker image if branch master or development
+  if [ "$TRAVIS_BRANCH" == "master" ]; then
     docker build -t gnosisdb -f docker/web/Dockerfile .;
     docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD";
-    if [ "$TRAVIS_BRANCH" == "master" ]; then
-      docker tag gnosisdb gnosispm/gnosisdb:staging;
-      docker push gnosispm/gnosisdb:staging;
-    elif [ "$TRAVIS_BRANCH" == "development" ]; then
-      docker tag gnosisdb gnosispm/gnosisdb:development;
-      docker push gnosispm/gnosisdb:development;
-    fi
+    docker tag gnosisdb gnosispm/gnosisdb:staging;
+    docker push gnosispm/gnosisdb:staging;
+  elif [ "$TRAVIS_BRANCH" == "development" ]; then
+    docker build -t gnosisdb -f docker/web/Dockerfile .;
+    docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD";
+    docker tag gnosisdb gnosispm/gnosisdb:development;
+    docker push gnosispm/gnosisdb:development;
   fi

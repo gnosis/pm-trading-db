@@ -4,27 +4,27 @@ from celery.utils.log import get_task_logger
 from django_eth_events.chainevents import AbstractEventReceiver
 from django_eth_events.utils import JsonBytesEncoder
 
-from relationaldb.serializers import (CategoricalEventSerializer,
-                                      CentralizedOracleSerializer,
-                                      FeeWithdrawalSerializer,
-                                      MarketClosingSerializer,
-                                      MarketFundingSerializer,
-                                      MarketSerializer,
-                                      OutcomeAssignmentEventSerializer,
-                                      OutcomeAssignmentOracleSerializer,
-                                      OutcomeTokenInstanceSerializer,
-                                      OutcomeTokenIssuanceSerializer,
-                                      OutcomeTokenPurchaseSerializer,
-                                      OutcomeTokenRevocationSerializer,
-                                      OutcomeTokenSaleSerializer,
-                                      OutcomeTokenShortSaleOrderSerializer,
-                                      OutcomeTokenTransferSerializer,
-                                      OwnerReplacementSerializer,
-                                      ScalarEventSerializer,
-                                      TournamentParticipantSerializer,
-                                      TournamentTokenIssuanceSerializer,
-                                      TournamentTokenTransferSerializer,
-                                      WinningsRedemptionSerializer)
+from gnosisdb.relationaldb.serializers import (CategoricalEventSerializer,
+                                               CentralizedOracleSerializer,
+                                               FeeWithdrawalSerializer,
+                                               MarketClosingSerializer,
+                                               MarketFundingSerializer,
+                                               MarketSerializer,
+                                               OutcomeAssignmentEventSerializer,
+                                               OutcomeAssignmentOracleSerializer,
+                                               OutcomeTokenInstanceSerializer,
+                                               OutcomeTokenIssuanceSerializer,
+                                               OutcomeTokenPurchaseSerializer,
+                                               OutcomeTokenRevocationSerializer,
+                                               OutcomeTokenSaleSerializer,
+                                               OutcomeTokenShortSaleOrderSerializer,
+                                               OutcomeTokenTransferSerializer,
+                                               OwnerReplacementSerializer,
+                                               ScalarEventSerializer,
+                                               TournamentParticipantSerializer,
+                                               TournamentTokenIssuanceSerializer,
+                                               TournamentTokenTransferSerializer,
+                                               WinningsRedemptionSerializer)
 
 logger = get_task_logger(__name__)
 

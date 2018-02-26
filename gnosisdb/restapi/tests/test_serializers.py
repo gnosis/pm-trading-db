@@ -5,10 +5,10 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from relationaldb.tests.factories import (CategoricalEventFactory,
-                                          CentralizedOracleFactory,
-                                          ScalarEventFactory,
-                                          TournamentParticipantBalanceFactory)
+from gnosisdb.relationaldb.tests.factories import (CategoricalEventFactory,
+                                                   CentralizedOracleFactory,
+                                                   ScalarEventFactory,
+                                                   TournamentParticipantBalanceFactory)
 
 
 class TestSerializers(APITestCase):

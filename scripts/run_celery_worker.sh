@@ -13,7 +13,6 @@ esac
 # wait for RabbitMQ server and Postgres to start
 echo "==> call run_celery.sh <=="
 
-cd $PWD/gnosisdb
 python manage.py migrate --noinput
 
 shutdown() {
@@ -30,6 +29,8 @@ if [ "$DEBUG" = True ]; then
 else
     loglevel="info"
 fi
-celery -A gnosisdb.apps worker -Q default -n default@%h --loglevel $loglevel --workdir="$PWD" -c 2 &
+
+cd gnosisdb
+celery -A gnosisdb.taskapp worker -Q default -n default@%h --loglevel $loglevel -c 2 &
 child=$!
 wait $!
