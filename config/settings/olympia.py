@@ -2,10 +2,10 @@ from gnosisdb.chainevents.abis import abi_file_path, load_json_file
 
 from .testrpc import *
 
-ETHEREUM_NODE_HOST= '192.168.1.48'
-TOURNAMENT_TOKEN = '254dffcd3277c0b1660f6d42efbb754edababc2b'
-TOURNAMENT_TOKEN_ISSUANCE='200000000000000000000'
+ETHEREUM_NODE_HOST = '192.168.1.48'
 ETHEREUM_DEFAULT_ACCOUNT = '90F8bf6A479f320ead074411a4B0e7944Ea8c9C1'
+TOURNAMENT_TOKEN = '254dffcd3277c0b1660f6d42efbb754edababc2b'
+TOURNAMENT_TOKEN_ISSUANCE ='200000000000000000000'
 
 # ------------------------------------------------------------------------------
 # GNOSIS ETHEREUM CONTRACTS

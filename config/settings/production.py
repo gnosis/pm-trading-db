@@ -10,11 +10,27 @@ SECRET_KEY = os.environ['SECRET_KEY']
 
 INSTALLED_APPS.append("gunicorn")
 
-
-ETH_PROCESS_BLOCKS = os.environ.get('ETH_PROCESS_BLOCKS', '100')
 DEBUG = bool(int(os.environ.get('DEBUG', '0')))
 
 ALLOWED_HOSTS = os.environ['ALLOWED_HOSTS'].split(',')
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.environ['DATABASE_NAME'],
+        'USER': os.environ['DATABASE_USER'],
+        'PASSWORD': os.environ['DATABASE_PASSWORD'],
+        'HOST': os.environ['DATABASE_HOST'],
+        'PORT': os.environ['DATABASE_PORT'],
+    }
+}
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+        'LOCATION': 'celery_locking',
+    }
+}
 
 # ------------------------------------------------------------------------------
 # EMAIL CONFIGURATION
@@ -33,20 +49,8 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 ADMINS = (
     ('Giacomo', 'giacomo.licari@gnosis.pm'),
     ('Denis', 'denis@gnosis.pm'),
+    ('Uxío', 'uxio@gnosis.pm'),
 )
-
-# ------------------------------------------------------------------------------
-# ETHEREUM
-# ------------------------------------------------------------------------------
-ETHEREUM_NODE_HOST = os.environ['ETHEREUM_NODE_HOST']
-ETHEREUM_NODE_PORT = os.environ['ETHEREUM_NODE_PORT']
-ETHEREUM_NODE_SSL = bool(int(os.environ['ETHEREUM_NODE_SSL']))
-
-# ------------------------------------------------------------------------------
-# IPFS
-# ------------------------------------------------------------------------------
-IPFS_HOST = os.environ['IPFS_HOST']
-IPFS_PORT = os.environ['IPFS_PORT']
 
 # ------------------------------------------------------------------------------
 # RABBIT MQ
@@ -63,6 +67,21 @@ BROKER_URL = 'amqp://{user}:{password}@{hostname}:{port}/{queue}'.format(
     port=RABBIT_PORT,
     queue=RABBIT_QUEUE
 )
+
+# ------------------------------------------------------------------------------
+# ETHEREUM
+# ------------------------------------------------------------------------------
+ETH_PROCESS_BLOCKS = os.environ.get('ETH_PROCESS_BLOCKS', '100')
+ETHEREUM_NODE_HOST = os.environ['ETHEREUM_NODE_HOST']
+ETHEREUM_NODE_PORT = os.environ['ETHEREUM_NODE_PORT']
+ETHEREUM_NODE_SSL = bool(int(os.environ['ETHEREUM_NODE_SSL']))
+
+# ------------------------------------------------------------------------------
+# IPFS
+# ------------------------------------------------------------------------------
+IPFS_HOST = os.environ['IPFS_HOST']
+IPFS_PORT = os.environ['IPFS_PORT']
+
 
 # ------------------------------------------------------------------------------
 # LMSR MARKET MAKER Address
@@ -143,23 +162,3 @@ ETH_EVENTS = [
     }
 ]
 
-# ------------------------------------------------------------------------------
-# GNOSIS ETHEREUM CONTRACTS
-# ------------------------------------------------------------------------------
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ['DATABASE_NAME'],
-        'USER': os.environ['DATABASE_USER'],
-        'PASSWORD': os.environ['DATABASE_PASSWORD'],
-        'HOST': os.environ['DATABASE_HOST'],
-        'PORT': os.environ['DATABASE_PORT'],
-    }
-}
-
-CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
-        'LOCATION': 'celery_locking',
-    }
-}
