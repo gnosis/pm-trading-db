@@ -1,6 +1,6 @@
 from django.test import TestCase
 
-from relationaldb.tests.factories import EventFactory, MarketFactory
+from gnosisdb.relationaldb.tests.factories import EventFactory, MarketFactory
 
 from ..address_getters import EventAddressGetter, MarketAddressGetter
 

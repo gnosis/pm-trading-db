@@ -1,8 +1,8 @@
 from django.core.exceptions import ObjectDoesNotExist
 from django_eth_events.chainevents import AbstractAddressesGetter
 
-from relationaldb.models import (CentralizedOracle, Contract, Event, Market,
-                                 OutcomeToken)
+from gnosisdb.relationaldb.models import (CentralizedOracle, Contract, Event,
+                                          Market, OutcomeToken)
 
 
 class ContractAddressGetter(AbstractAddressesGetter):

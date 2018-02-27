@@ -6,18 +6,20 @@ from time import mktime
 from django.conf import settings
 from django.test import TestCase
 
+from gnosisdb.relationaldb.models import (BuyOrder, CategoricalEvent,
+                                          CentralizedOracle, Event, Market,
+                                          OutcomeToken, OutcomeTokenBalance,
+                                          ScalarEvent, SellOrder,
+                                          TournamentParticipant,
+                                          TournamentParticipantBalance)
+from gnosisdb.relationaldb.tests.factories import (CategoricalEventFactory,
+                                                   CentralizedOracleFactory,
+                                                   MarketFactory,
+                                                   OracleFactory,
+                                                   OutcomeTokenFactory,
+                                                   ScalarEventFactory,
+                                                   TournamentParticipantBalanceFactory)
 from ipfs.ipfs import Ipfs
-from relationaldb.models import (BuyOrder, CategoricalEvent, CentralizedOracle,
-                                 Event, Market, OutcomeToken,
-                                 OutcomeTokenBalance, ScalarEvent, SellOrder,
-                                 TournamentParticipant,
-                                 TournamentParticipantBalance)
-from relationaldb.tests.factories import (CategoricalEventFactory,
-                                          CentralizedOracleFactory,
-                                          MarketFactory, OracleFactory,
-                                          OutcomeTokenFactory,
-                                          ScalarEventFactory,
-                                          TournamentParticipantBalanceFactory)
 
 from ..event_receivers import (CentralizedOracleFactoryReceiver,
                                CentralizedOracleInstanceReceiver,

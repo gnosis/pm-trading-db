@@ -8,8 +8,8 @@ from mpmath import mp
 from rest_framework import serializers
 from rest_framework.fields import CharField
 
+from gnosis.utils import calc_lmsr_marginal_price
 from ipfs.ipfs import Ipfs
-from utils import calc_lmsr_marginal_price
 
 from . import models
 

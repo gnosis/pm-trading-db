@@ -4,8 +4,8 @@ from django.db import transaction
 from web3 import HTTPProvider, Web3
 
 from chainevents.abis import abi_file_path, load_json_file
-from relationaldb.models import (TournamentParticipant,
-                                 TournamentParticipantBalance)
+from gnosisdb.relationaldb.models import (TournamentParticipant,
+                                          TournamentParticipantBalance)
 
 
 class Command(BaseCommand):

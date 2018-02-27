@@ -1,13 +1,13 @@
 from rest_framework import serializers
 
-from relationaldb.models import (BuyOrder, CategoricalEvent,
-                                 CategoricalEventDescription,
-                                 CentralizedOracle, Market, Order,
-                                 OutcomeToken, OutcomeTokenBalance,
-                                 ScalarEvent, ScalarEventDescription,
-                                 TournamentParticipant)
-from utils import (add_0x_prefix, get_order_cost, get_order_profit,
-                   get_order_type, remove_null_values)
+from gnosis.utils import (add_0x_prefix, get_order_cost, get_order_profit,
+                          get_order_type, remove_null_values)
+from gnosisdb.relationaldb.models import (CategoricalEvent,
+                                          CategoricalEventDescription,
+                                          CentralizedOracle, Market, Order,
+                                          OutcomeToken, OutcomeTokenBalance,
+                                          ScalarEvent, ScalarEventDescription,
+                                          TournamentParticipant)
 
 
 class ContractSerializer(serializers.BaseSerializer):

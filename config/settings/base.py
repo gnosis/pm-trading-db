@@ -3,37 +3,57 @@ import sys
 
 import environ
 
-from chainevents.abis import abi_file_path, load_json_file
+from gnosisdb.chainevents.abis import abi_file_path, load_json_file
 
 TIME_ZONE = 'UTC'
+LANGUAGE_CODE = 'en-us'
+
 DEBUG = False
 
 ROOT_DIR = environ.Path(__file__) - 3  # (/a/b/myfile.py - 3 = /)
-DJANGO_DIR = ROOT_DIR.path('gnosisdb')
+APPS_DIR = ROOT_DIR.path('gnosisdb')
 
-INSTALLED_APPS = [
-    'debug_toolbar',
-    'django.contrib.admin',
-    'django.contrib.admindocs',
+DJANGO_APPS = [
+    # Default Django apps:
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.messages',
     'django.contrib.sessions',
+    'django.contrib.sites',
     'django.contrib.staticfiles',
+
+    # Useful template tags:
+    # 'django.contrib.humanize',
+
+    # Admin
+    'django.contrib.admin',
+    'django.contrib.admindocs',
+]
+
+THIRD_PARTY_APPS = [
     'django_filters',
     'corsheaders',
     'django_celery_beat',
     'rest_framework',
     'rest_framework_swagger',
     'solo',
-    # Gnosis apps
-    'chainevents',
+]
+
+GNOSIS_APPS = [
     'django_eth_events',
     'django_google_authenticator',
-    'gnosisdb',
-    'relationaldb',
-    'restapi',
 ]
+
+LOCAL_APPS = [
+    'gnosisdb.chainevents',
+    'gnosisdb.gnosis',
+    'gnosisdb.relationaldb',
+    'gnosisdb.restapi',
+    'gnosisdb.taskapp.celery.CeleryConfig',
+]
+
+INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + GNOSIS_APPS + LOCAL_APPS
+
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
@@ -42,15 +62,20 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    # 'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.contrib.admindocs.middleware.XViewMiddleware',
-    'debug_toolbar.middleware.DebugToolbarMiddleware',
 ]
 
 LOGGING = {
     'version': 1,
+    # 'disable_existing_loggers': False,
+    # 'formatters': {
+    #    'verbose': {
+    #        'format': '%(levelname)s %(asctime)s %(module)s '
+    #                  '%(process)d %(thread)d %(message)s'
+    #    },
+    # },
     'handlers': {
         'console': {
             'class': 'logging.StreamHandler',
@@ -74,12 +99,14 @@ LOGGING = {
     }
 }
 
-
 TEMPLATES = [
     {
         # See: https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-TEMPLATES-BACKEND
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         # See: https://docs.djangoproject.com/en/dev/ref/settings/#template-dirs
+        'DIRS': [
+            str(APPS_DIR.path('templates')),
+        ],
         'OPTIONS': {
             # See: https://docs.djangoproject.com/en/dev/ref/settings/#template-debug
             'debug': DEBUG,
@@ -98,7 +125,8 @@ TEMPLATES = [
                 'django.template.context_processors.media',
                 'django.template.context_processors.static',
                 'django.template.context_processors.tz',
-                'django.contrib.messages.context_processors.messages'
+                'django.contrib.messages.context_processors.messages',
+                # Your stuff: custom template context processors go here
             ],
         },
     },
@@ -111,14 +139,13 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTOCOL', 'https')
 # ------------------------------------------------------------------------------
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#static-root
 STATIC_ROOT = os.environ.get('STATIC_ROOT', str(ROOT_DIR('staticfiles')))
-COMPRESS_ROOT = str(ROOT_DIR('staticfiles'))
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#static-url
 STATIC_URL = '/static/'
 
 # See: https://docs.djangoproject.com/en/dev/ref/contrib/staticfiles/#std:setting-STATICFILES_DIRS
 STATICFILES_DIRS = (
-    str(DJANGO_DIR.path('static')),
+    str(APPS_DIR.path('static')),
 )
 
 # See: https://docs.djangoproject.com/en/dev/ref/contrib/staticfiles/#staticfiles-finders
@@ -138,7 +165,9 @@ DATABASES = {
     }
 }
 
-ROOT_URLCONF = 'gnosisdb.urls'
+ROOT_URLCONF = 'config.urls'
+
+WSGI_APPLICATION = 'config.wsgi.application'
 
 # Filtering
 REST_FRAMEWORK = {
