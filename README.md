@@ -117,12 +117,21 @@ ADMINS = (
 ```
 
 ##### ETHEREUM
-Provide an Ethereum host, port and SSL (0, 1). Use SSL = 1 only if your Ethereum host supports https/SSL.
+Provide an Ethereum _host_, _port_ and _SSL (0, 1)_. Use _SSL = 1_ only if your Ethereum host supports HTTPS/SSL.
+Communication with node will use **RPC through HTTP/S**
 
 ```
 ETHEREUM_NODE_HOST = os.environ['ETHEREUM_NODE_HOST']
 ETHEREUM_NODE_PORT = os.environ['ETHEREUM_NODE_PORT']
 ETHEREUM_NODE_SSL = bool(int(os.environ['ETHEREUM_NODE_SSL']))
+```
+
+You can also provide an **IPC path** to a node running locally, which will be faster.
+If set, it will override _ETHEREUM_NODE_HOST_ and _ETHEREUM_NODE_PORT_, so **IPC will
+be used instead of RPC**:
+
+```
+ETHEREUM_IPC_PATH = '/tmp/geth.ipc'
 ```
 
 ##### IPFS
