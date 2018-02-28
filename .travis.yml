@@ -18,15 +18,15 @@ script:
   - coverage run --source=gnosisdb manage.py test --settings=config.settings.test
 after_success:
 - coveralls
-- # Create Docker image if branch master or development
+- # Create Docker image if branch master or develop
   if [ "$TRAVIS_BRANCH" == "master" ]; then
     docker build -t gnosisdb -f docker/web/Dockerfile .;
     docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD";
     docker tag gnosisdb gnosispm/gnosisdb:staging;
     docker push gnosispm/gnosisdb:staging;
-  elif [ "$TRAVIS_BRANCH" == "development" ]; then
+  elif [ "$TRAVIS_BRANCH" == "develop" ]; then
     docker build -t gnosisdb -f docker/web/Dockerfile .;
     docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD";
-    docker tag gnosisdb gnosispm/gnosisdb:development;
-    docker push gnosispm/gnosisdb:development;
+    docker tag gnosisdb gnosispm/gnosisdb:develop;
+    docker push gnosispm/gnosisdb:develop;
   fi
