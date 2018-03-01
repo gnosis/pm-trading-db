@@ -31,7 +31,6 @@ shutdown() {
 trap shutdown SIGTERM SIGINT
 
 echo "==> run beat <=="
-cd gnosisdb
 celery -A gnosisdb.taskapp beat -S django_celery_beat.schedulers:DatabaseScheduler --loglevel debug --pidfile=$HOME/celerybeat.pid &
 
 child=$!

@@ -30,7 +30,6 @@ else
     loglevel="info"
 fi
 
-cd gnosisdb
 celery -A gnosisdb.taskapp worker -Q default -n default@%h --loglevel $loglevel -c 2 &
 child=$!
 wait $!
