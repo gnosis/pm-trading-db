@@ -127,11 +127,12 @@ ETHEREUM_NODE_SSL = bool(int(os.environ['ETHEREUM_NODE_SSL']))
 ```
 
 You can also provide an **IPC path** to a node running locally, which will be faster.
+You can use the environment variable  _ETHEREUM_IPC_PATH_.
 If set, it will override _ETHEREUM_NODE_HOST_ and _ETHEREUM_NODE_PORT_, so **IPC will
 be used instead of RPC**:
 
 ```
-ETHEREUM_IPC_PATH = '/tmp/geth.ipc'
+ETHEREUM_IPC_PATH = os.environ['ETHEREUM_IPC_PATH']
 ```
 
 ##### IPFS
