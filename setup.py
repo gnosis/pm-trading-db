@@ -15,7 +15,7 @@ requirements = [
     'djangorestframework',
     'django-ether-logs',
     'ethereum==1.6.1',
-    'eth-abi==0.5.0',
+    'eth-abi==1.0.0',
     'eth-utils==0.7.4'
 ]
 
