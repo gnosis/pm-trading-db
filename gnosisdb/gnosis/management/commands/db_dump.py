@@ -66,7 +66,7 @@ class Command(BaseCommand):
             try:
                 if not locked:
                     if not db_password:
-                        cmd = "pg_dump -h {0} -d {1} -U {2} --format=c --file={3}".format(db_host, db_name, db_user, filename)
+                        cmd = "pg_dump -h {0} -d {1} -U {2} --compress=9 --format=c --file={3}".format(db_host, db_name, db_user, filename)
                     else:
                         cmd = "PGPASSWORD={0} pg_dump -h {1} -d {2} -U {3} --format=c --file={4}".format(db_password,
                                                                                                          db_host,
