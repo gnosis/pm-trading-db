@@ -294,6 +294,13 @@ Then we must force the daemon to resync everything again:
 
 `python manage.py resync_daemon`
 
+BACKUP DATABASE
+----------------
+If you use `python manage.py db_dump` you will get a backup of the database on the mail (it will be generated in _/tmp_ folder of the machine),
+using custom Postgres format (as recommended on the docs). If you want to convert it to standard SQL:
+
+`pg_restore -f mydatabase.sqlc mydatabase.dump`
+
 Contributors
 ------------
 - Stefan George (stefan@gnosis.pm)
