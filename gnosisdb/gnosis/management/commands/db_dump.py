@@ -26,9 +26,10 @@ class Command(BaseCommand):
         email.attach_file(filename)
         email.send()
 
-    def is_locked(self):
-        locked = False
-
+    def get_lock(self):
+        """
+        :return: True if lock can be acquired, False otherwise
+        """
         with transaction.atomic():
             daemon = Daemon.get_solo()
             locked = daemon.listener_lock
@@ -37,11 +38,16 @@ class Command(BaseCommand):
                 self.stdout.write(self.style.SUCCESS('LOCK acquired by db_dump task'))
                 daemon.listener_lock = True
                 daemon.save()
+                return True
+            else:
+                self.stdout.write(self.style.SUCCESS('LOCK already being imported by another worker'))
+                return False
 
-        if locked:
-            self.stdout.write(self.style.SUCCESS('LOCK already being imported by another worker'))
-
-        return locked
+    def release_lock(self):
+        with transaction.atomic():
+            daemon = Daemon.objects.select_for_update().first()
+            daemon.listener_lock = False
+            daemon.save()
 
     def handle(self, *args, **options):
         """
@@ -49,7 +55,6 @@ class Command(BaseCommand):
         """
         try:
             self.stdout.write(self.style.SUCCESS('Starting GnosisDB Dump'))
-            locked = False
             db_name = os.environ.get('DATABASE_NAME', 'postgres')
             db_user = os.environ.get('DATABASE_USER', 'postgres')
             db_host = os.environ.get('DATABASE_HOST', 'localhost')
@@ -57,37 +62,34 @@ class Command(BaseCommand):
             filename = self.dump_path + "{}_{}_dump-{}.sqlc".format(db_name, db_user, datetime.now().strftime('%Y-%m-%d_%H:%M:%S'))
 
             for _ in range(self.n_retries):
-                locked = self.is_locked()
-                if not locked:
+                locked = self.get_lock()
+                if locked:
                     break
 
                 time.sleep(1)
 
             try:
-                if not locked:
-                    if not db_password:
-                        cmd = "pg_dump -h {0} -d {1} -U {2} --compress=9 --format=c --file={3}".format(db_host, db_name, db_user, filename)
-                    else:
-                        cmd = "PGPASSWORD={0} pg_dump -h {1} -d {2} -U {3} --format=c --file={4}".format(db_password,
-                                                                                                         db_host,
-                                                                                                         db_name,
-                                                                                                         db_user,
-                                                                                                         filename)
+                if locked:
+                    cmd = "pg_dump -h {host} -d {db} -U {user} --compress=9 --format=c --file={file}".format(host=db_host,
+                                                                                                             db=db_name,
+                                                                                                             user=db_user,
+                                                                                                             file=filename)
+                    if db_password:
+                        cmd = "PGPASSWORD={password} {command}".format(password=db_password, command=cmd)
+
                     self.stdout.write(self.style.SUCCESS('Executing command %s' % cmd))
                     process = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=PIPE)
                     stdout, stderr = process.communicate()
                     if process.returncode != 0:
                         raise Exception(stderr)
-                    self.stdout.write(self.style.SUCCESS('GnosisDB Dump completed and saved into: {}'.format(filename)))
+                    self.stdout.write(self.style.SUCCESS('GnosisDB db_dump completed and saved into: {}'.format(filename)))
                     # Send file via email to admins
                     self.send_email(filename)
-            except Exception as e:
-                self.stdout.write(self.style.ERROR('GnosisDB Dump error: {}'.format(e.message)))
             finally:
-                self.stdout.write(self.style.SUCCESS('Releasing LOCK acquired by db_dump task'))
-                with transaction.atomic():
-                    daemon = Daemon.objects.select_for_update().first()
-                    daemon.listener_lock = False
-                    daemon.save()
+                if locked:
+                    self.stdout.write(self.style.SUCCESS('Releasing LOCK acquired by db_dump task'))
+                    self.release_lock()
+                else:
+                    self.stdout.write(self.style.ERROR('Could not get LOCK for db_dump task'))
         except Exception as e:
-            self.stdout.write(self.style.ERROR('GnosisDB Dump error: {}'.format(e.message)))
+            self.stdout.write(self.style.ERROR('GnosisDB db_dump error: {}'.format(e.message)))
