@@ -37,34 +37,41 @@ class SerializerEventReceiver(AbstractEventReceiver):
 
     def save(self, decoded_event, block_info=None):
         # Get serializer based on Event Name and saved serializers in Meta.events dictionary
-        if self.Meta.events.get(decoded_event.get('name')):
+        event_name = decoded_event.get('name')
+        if self.Meta.events.get(event_name):
             # Block info is optional, only models that inherit from ContractCreatedByFactory need it
             if block_info:
-                serializer = self.Meta.events.get(decoded_event.get('name'))(data=decoded_event, block=block_info)
+                serializer = self.Meta.events.get(event_name)(data=decoded_event, block=block_info)
             else:
-                serializer = self.Meta.events.get(decoded_event.get('name'))(data=decoded_event)
+                serializer = self.Meta.events.get(event_name)(data=decoded_event)
 
             # Only valid data goes forward, non valid data is logged
             if serializer.is_valid():
                 instance = serializer.save()
                 logger.info('Event Receiver {} added: {}'.format(self.__class__.__name__,
                                                                  dumps(decoded_event,
+                                                                       sort_keys=True,
+                                                                       indent=4,
                                                                        cls=JsonBytesEncoder)))
                 # serializer model instance is returned in order to django-eth-events know it was a valid event
                 return instance
             else:
-                logger.warning('INVALID Data for Event Receiver {} save: {}'.format(self.__class__.__name__, dumps(decoded_event,
-                                                                                                                   cls=JsonBytesEncoder)))
+                logger.warning('INVALID Data for Event Receiver {} save: {}'.format(self.__class__.__name__,
+                                                                                    dumps(decoded_event,
+                                                                                          sort_keys=True,
+                                                                                          indent=4,
+                                                                                          cls=JsonBytesEncoder)))
                 logger.warning(serializer.errors)
 
     def rollback(self, decoded_event, block_info=None):
-        serializer_class = self.Meta.events.get(decoded_event.get('name'))
+        event_name = decoded_event.get('name')
+        serializer_class = self.Meta.events.get(event_name)
         # Get primary key name from Meta.primary_key_name, it can be the same for all Events (string) or different for
         # each one (dictionary)
         if type(self.Meta.primary_key_name) is str:
             primary_key_name = self.Meta.primary_key_name
         else:
-            primary_key_name = self.Meta.primary_key_name.get(decoded_event.get('name'))
+            primary_key_name = self.Meta.primary_key_name.get(event_name)
         primary_key = next(filter(lambda x: x.get('name') == primary_key_name,
                                   decoded_event.get('params'))).get('value')
 
@@ -77,10 +84,15 @@ class SerializerEventReceiver(AbstractEventReceiver):
         if serializer.is_valid():
             serializer.rollback()
             logger.info('Event Receiver {} reverted: {}'.format(self.__class__.__name__, dumps(decoded_event,
+                                                                                               sort_keys=True,
+                                                                                               indent=4,
                                                                                                cls=JsonBytesEncoder)))
         else:
-            logger.warning('INVALID Data for Event Receiver {} rollback: {}'.format(self.__class__.__name__, dumps(decoded_event,
-                                                                                                                   cls=JsonBytesEncoder)))
+            logger.warning('INVALID Data for Event Receiver {} rollback: {}'.format(self.__class__.__name__,
+                                                                                    dumps(decoded_event,
+                                                                                          sort_keys=True,
+                                                                                          indent=4,
+                                                                                          cls=JsonBytesEncoder)))
             logger.warning(serializer.errors)
 
 
@@ -130,9 +142,10 @@ class BaseInstanceEventReceiver(SerializerEventReceiver):
         primary_key_name = {}
 
     def rollback(self, decoded_event, block_info=None):
-        serializer_class = self.Meta.events.get(decoded_event.get('name'))
+        event_name = decoded_event.get('name')
+        serializer_class = self.Meta.events.get(event_name)
 
-        primary_key_name = self.Meta.primary_key_name.get(decoded_event.get('name'))
+        primary_key_name = self.Meta.primary_key_name.get(event_name)
         if type(primary_key_name) is str:
             filter_dict = {primary_key_name: decoded_event.get('address')}
         else:
@@ -157,12 +170,18 @@ class BaseInstanceEventReceiver(SerializerEventReceiver):
 
         if serializer.is_valid():
             serializer.rollback()
-            logger.info('Event Receiver {} reverted: {}'.format(self.__class__.__name__, dumps(decoded_event,
-                                                                                               cls=JsonBytesEncoder)))
+            logger.info('Event Receiver {} reverted: {}'.format(self.__class__.__name__,
+                                                                dumps(decoded_event,
+                                                                      sort_keys=True,
+                                                                      indent=4,
+                                                                      cls=JsonBytesEncoder)))
         else:
             logger.warning(
-                'INVALID Data for Event Receiver {} rollback: {}'.format(self.__class__.__name__, dumps(decoded_event,
-                                                                                                        cls=JsonBytesEncoder))
+                'INVALID Data for Event Receiver {} rollback: {}'.format(self.__class__.__name__,
+                                                                         dumps(decoded_event,
+                                                                               sort_keys=True,
+                                                                               indent=4,
+                                                                               cls=JsonBytesEncoder))
             )
             logger.warning(serializer.errors)
 
@@ -275,29 +294,41 @@ class TournamentTokenReceiver(BaseInstanceEventReceiver):
         }
 
     def rollback(self, decoded_event, block_info=None):
-        if decoded_event.get('name') == 'Issuance':
+        event_name = decoded_event.get('name')
+        if event_name == 'Issuance':
             super(TournamentTokenReceiver, self).rollback(decoded_event, block_info)
         else:
-            serializer_class = self.Meta.events.get(decoded_event.get('name'))
+            serializer_class = self.Meta.events.get(event_name)
             if serializer_class is not None:
                 serializer_model = serializer_class.Meta.model
                 from_participant = next(filter(lambda x: x.get('name') == 'from',
                                                decoded_event.get('params'))).get('value')
                 to_participant = next(filter(lambda x: x.get('name') == 'to',
                                              decoded_event.get('params'))).get('value')
-                participants = serializer_model.objects.filter(participant=from_participant) | \
-                               serializer_model.objects.filter(participant=to_participant)
+                participants = (serializer_model.objects.filter(participant=from_participant) |
+                                serializer_model.objects.filter(participant=to_participant))
                 if participants.count():
                     instance = participants.first()
                     serializer = serializer_class(instance, data=decoded_event)
 
                     if serializer.is_valid():
                         serializer.rollback()
-                        logger.info('Event Receiver {} reverted: {}'.format(self.__class__.__name__, dumps(decoded_event)))
+                        logger.info('Event Receiver {} reverted: {}'.format(self.__class__.__name__,
+                                                                            dumps(decoded_event,
+                                                                                  sort_keys=True,
+                                                                                  indent=4,
+                                                                                  cls=JsonBytesEncoder
+                                                                                  )
+                                                                            )
+                                    )
                     else:
                         logger.warning(
                             'INVALID Data for Event Receiver {} rollback: {}'.format(
-                                self.__class__.__name__, dumps(decoded_event)
+                                self.__class__.__name__, dumps(decoded_event,
+                                                               sort_keys=True,
+                                                               indent=4,
+                                                               cls=JsonBytesEncoder
+                                                               )
                             )
                         )
                         logger.warning(serializer.errors)
