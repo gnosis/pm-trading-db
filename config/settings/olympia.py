@@ -72,10 +72,4 @@ ETH_EVENTS = [
         'EVENT_DATA_RECEIVER': 'chainevents.event_receivers.CentralizedOracleInstanceReceiver',
         'NAME': 'Centralized Oracle Instances'
     },
-    {
-        'ADDRESSES_GETTER': 'chainevents.address_getters.UltimateOracleGetter',
-        'EVENT_ABI': load_json_file(abi_file_path('UltimateOracle.json')),
-        'EVENT_DATA_RECEIVER': 'chainevents.event_receivers.UltimateOracleInstanceReceiver',
-        'NAME': 'Ultimate Oracle Instances'
-    },
 ]
