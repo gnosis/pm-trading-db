@@ -135,6 +135,12 @@ be used instead of RPC**:
 ETHEREUM_IPC_PATH = os.environ['ETHEREUM_IPC_PATH']
 ```
 
+Number of concurrent threads connected to the ethereum node can be configured:
+
+```
+ETHEREUM_MAX_WORKERS = os.environ['ETHEREUM_MAX_WORKERS']
+```
+
 ##### IPFS
 Provide an IPFS host and port:
 
