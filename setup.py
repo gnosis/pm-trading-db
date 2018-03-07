@@ -1,5 +1,7 @@
 import os
+
 from setuptools import find_packages, setup
+
 # from pip.req import parse_requirements
 
 # allow setup.py to be run from any path
@@ -11,9 +13,9 @@ os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
 requirements = [
     'djangorestframework',
-    'django-ether-logs',
+    'django-eth-events==2.0.3',
     'ethereum==1.6.1',
-    'eth-abi==0.5.0',
+    'eth-abi==1.0.0',
     'eth-utils==0.7.4'
 ]
 
@@ -30,7 +32,7 @@ setup(
     description='The Gnosisdb django app',
     url='https://github.com/gnosis/gnosisdb',
     author='Gnosis Inc.',
-    author_email='giacomo.licari@gnosis.pm, denis@gnosis.pm, stefan@gnosis.pm',
+    author_email='giacomo.licari@gnosis.pm, denis@gnosis.pm, stefan@gnosis.pm, uxio@gnosis.pm',
     classifiers=[
         'Environment :: Web Environment',
         'Framework :: Django',

@@ -1,13 +1,15 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-import factory as factory_boy
-from faker import Factory as FakerFactory, Faker
-from factory.fuzzy import FuzzyDateTime
-from relationaldb import models
-import random
 import hashlib
+import random
 from datetime import datetime
+
+import factory as factory_boy
 import pytz
+from factory.fuzzy import FuzzyDateTime
+from faker import Factory as FakerFactory
+from faker import Faker
+
+from .. import models
 
 fakerFactory = FakerFactory.create()
 faker = Faker()
@@ -37,6 +39,7 @@ class ContractCreatedByFactory(ContractFactory, BlockTimestampedFactory):
 
     factory = factory_boy.Sequence(lambda n: '{:040d}'.format(n))
     creator = factory_boy.Sequence(lambda n: '{:040d}'.format(n))
+
 
 class EventDescriptionFactory(factory_boy.DjangoModelFactory):
     class Meta:
@@ -171,3 +174,24 @@ class SellOrderFactory(OrderFactory):
     profit = factory_boy.Sequence(lambda n: n)
     outcome_token_profit = factory_boy.Sequence(lambda n: n)
     fees = 0
+
+
+class TournamentParticipantFactory(ContractCreatedByFactory):
+    class Meta:
+        model = models.TournamentParticipant
+
+    current_rank = factory_boy.Sequence(lambda n: n)
+    past_rank = factory_boy.Sequence(lambda n: n)
+    diff_rank = factory_boy.Sequence(lambda n: n)
+    score = factory_boy.Sequence(lambda n: (n+1)*1e18)
+    predicted_profit = factory_boy.Sequence(lambda n: n)
+    predictions = factory_boy.Sequence(lambda n: n)
+
+
+class TournamentParticipantBalanceFactory(factory_boy.DjangoModelFactory):
+
+    class Meta:
+        model = models.TournamentParticipantBalance
+
+    balance = factory_boy.Sequence(lambda n: (n * 100))
+    participant = factory_boy.SubFactory(TournamentParticipantFactory)

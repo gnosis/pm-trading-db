@@ -1,20 +1,20 @@
-FROM fpco/pid1:16.04
+FROM python:3-stretch
 
-RUN apt-get update && apt-get install -y -q curl python-dev software-properties-common \
-    libreadline-dev libbz2-dev libssl-dev git wget libffi-dev \
-    python-pip build-essential python-software-properties automake libtool pkg-config
+# Signal handling for PID1 https://github.com/krallin/tini
+ENV TINI_VERSION v0.17.0
+ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /tini
+RUN chmod +x /tini
 
-RUN add-apt-repository "deb http://apt.postgresql.org/pub/repos/apt/ xenial-pgdg main" && wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
-RUN apt-get update && apt-get install -y postgresql-9.6 postgresql-client-10
-
-RUN pip install --upgrade pip
-RUN pip install --upgrade pyOpenSSL cryptography idna certifi ndg-httpsclient pyasn1
-
-ADD requirements.txt /tmp/requirements.txt
-RUN pip install -qr /tmp/requirements.txt
+RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ stretch-pgdg main" > /etc/apt/sources.list.d/pgdg.list  && wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
+# Remove secp256k1 when it gets supported in debian stretch
+RUN apt-get update && apt-get install -y postgresql-client-10 libsecp256k1-dev
 
 RUN mkdir -p /root/var/run/celery
 
-COPY . /gnosisdb/
 WORKDIR /gnosisdb
-ENTRYPOINT ["/sbin/pid1"]
+COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+
+ENTRYPOINT ["/tini", "--"]

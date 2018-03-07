@@ -2,6 +2,8 @@ from django.conf.urls import url
 
 from . import views
 
+app_name = "restapi"
+
 timestamp_regex = '\\d{4}[-]?\\d{1,2}[-]?\\d{1,2} \\d{1,2}:\\d{1,2}:\\d{1,2}'
 
 urlpatterns = [
@@ -18,4 +20,7 @@ urlpatterns = [
     url(r'^account/(0x)?(?P<account_address>[a-fA-F0-9]+)/trades/$', views.AccountTradesView.as_view(), name='trades-by-account'),
     url(r'^account/(0x)?(?P<account_address>[a-fA-F0-9]+)/shares/$', views.AccountSharesView.as_view(), name='shares-by-account'),
     url(r'^factories/$', views.factories_view, name='factories'),
+
+    url(r'^scoreboard/$', views.ScoreboardView.as_view(), name='scoreboard'),
+    url(r'^scoreboard/(0x)?(?P<account_address>[a-fA-F0-9]+)$', views.ScoreboardUserView.as_view(), name='scoreboard'),
 ]

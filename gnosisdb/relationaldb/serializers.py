@@ -1,16 +1,17 @@
-from rest_framework import serializers
-from rest_framework.fields import CharField
-from relationaldb import models
-from ipfs.ipfs import Ipfs
 from datetime import datetime
-from ipfsapi.exceptions import ErrorResponse
-from time import mktime
+from decimal import Decimal
+
 from celery.utils.log import get_task_logger
 from django.conf import settings
-from gnosisdb.utils import calc_lmsr_marginal_price
+from ipfsapi.exceptions import ErrorResponse
 from mpmath import mp
-from decimal import Decimal
-from six.moves import map
+from rest_framework import serializers
+from rest_framework.fields import CharField
+
+from gnosis.utils import calc_lmsr_marginal_price
+from ipfs.ipfs import Ipfs
+
+from . import models
 
 mp.dps = 100
 mp.pretty = True
@@ -56,7 +57,7 @@ class ContractEventTimestamped(BlockTimestampedSerializer):
         }
 
         for param in data.get('params'):
-            new_data[param[u'name']] = param[u'value']
+            new_data[param['name']] = param['value']
 
         self.initial_data = new_data
 
@@ -87,14 +88,14 @@ class ContractCreatedByFactorySerializer(BlockTimestampedSerializer, ContractSer
         data = kwargs.pop('data')
         # Event params moved to root object
         new_data = {
-            'address': data[u'address'],
-            'factory': data[u'address'],
+            'address': data['address'],
+            'factory': data['address'],
             'creation_date_time': datetime.fromtimestamp(self.block.get('timestamp')),
             'creation_block': self.block.get('number')
         }
 
         for param in data.get('params'):
-            new_data[param[u'name']] = param[u'value']
+            new_data[param['name']] = param['value']
 
         self.initial_data = new_data
 
@@ -120,7 +121,7 @@ class ContractNotTimestampted(ContractSerializer):
         }
 
         for param in data.get('params'):
-            new_data[param[u'name']] = param[u'value']
+            new_data[param['name']] = param['value']
 
         self.initial_data = new_data
 
@@ -136,12 +137,13 @@ class IpfsHashField(CharField):
 
     def get_event_description(self, ipfs_hash):
         """Returns the IPFS event_description object"""
-        ipfs = Ipfs()
-        return ipfs.get(ipfs_hash)
+        return Ipfs().get(ipfs_hash)
 
     def to_internal_value(self, data):
         event_description = None
         event_description_json = None
+        # Ipfs hash is returned as bytes
+        data = data.decode() if isinstance(data, bytes) else data
         try:
             event_description = models.EventDescription.objects.get(ipfs_hash=data)
             if event_description.title is None:
@@ -1027,3 +1029,177 @@ class FeeWithdrawalSerializer(ContractNotTimestampted, serializers.ModelSerializ
         self.instance.withdrawn_fees -= self.validated_data.get('fees')
         self.instance.save()
         return self.instance
+
+
+class TournamentParticipantSerializer(ContractCreatedByFactorySerializer, serializers.ModelSerializer):
+    """
+    Serializes the Uport new Identitity event
+    """
+    class Meta:
+        model = models.TournamentParticipant
+        fields = ContractCreatedByFactorySerializer.Meta.fields + ('identity',)
+
+    identity = serializers.CharField(max_length=40, source='address')
+    address = serializers.CharField(max_length=40, source='factory')
+
+    def validate_identity(self, identity_address):
+        """
+        Only not whitelisted users can be saved
+        :param identity_address: a user participant address
+        :return: validated identity address
+        """
+        whitelisted_users = models.TournamentWhitelistedCreator.objects.all().values_list('address', flat=True)
+        if identity_address in whitelisted_users:
+            raise serializers.ValidationError('Tournament participant {} is admin, wont be saved'.format(identity_address))
+        else:
+            return identity_address
+
+    def create(self, validated_data):
+        participants_amount = models.TournamentParticipant.objects.all().count()
+        validated_data['current_rank'] = participants_amount + 1
+        validated_data['past_rank'] = participants_amount + 1
+        validated_data['diff_rank'] = 0
+        validated_data.update({
+            'address': validated_data.get('address').lower()
+        })
+
+        participant = models.TournamentParticipant.objects.create(**validated_data)
+        participant_balance = models.TournamentParticipantBalance()
+        participant_balance.balance = 0
+        participant_balance.participant = participant
+        participant_balance.save()
+        return participant
+
+    def rollback(self):
+        self.instance.delete()
+
+
+class TournamentTokenIssuanceSerializer(ContractNotTimestampted, serializers.ModelSerializer):
+    """
+    Serializes the issuance of new Tournament Tokens
+    """
+
+    class Meta:
+        model = models.TournamentParticipantBalance
+        fields = ('owner', 'amount',)
+
+    owner = serializers.CharField(max_length=40)
+    amount = serializers.IntegerField()
+
+    def validate_owner(self, owner):
+        try:
+            models.TournamentParticipantBalance.objects.get(participant=owner)
+        except models.TournamentParticipantBalance.DoesNotExist:
+            raise serializers.ValidationError('Tournament Participant with address {} does not exist'.format(owner))
+        return owner
+
+    def create(self, validated_data):
+        logger.info("issuance serializer")
+        participant_balance, created = models.TournamentParticipantBalance.objects.get_or_create(
+            participant=validated_data.get('owner')
+        )
+        participant_balance.balance += validated_data.get('amount')
+        participant_balance.save()
+
+        return participant_balance
+
+    def rollback(self):
+        self.instance.balance -= self.validated_data.get('amount')
+        return self.instance.save()
+
+
+class TournamentTokenTransferSerializer(ContractNotTimestampted, serializers.ModelSerializer):
+    """
+    Serializes the token transfer event
+    https://github.com/gnosis/gnosis-contracts/blob/master/contracts/Tokens/Token.sol#L11
+    """
+
+    class Meta:
+        model = models.TournamentParticipantBalance
+        fields = ('from_participant', 'to_participant', 'value',)
+
+    from_participant = serializers.CharField(max_length=40)
+    to_participant = serializers.CharField(max_length=40)
+    value = serializers.IntegerField()
+
+    def __init__(self, *args, **kwargs):
+        super(TournamentTokenTransferSerializer, self).__init__(*args, **kwargs)
+        self.initial_data['from_participant'] = self.initial_data.pop('from')
+        self.initial_data['to_participant'] = self.initial_data.pop('to')
+        
+    def validate(self, attrs):
+        """
+        One of the two participants could not be a Tournament participant, we need to check them
+        and remove in case they're not a participant
+        :return validated attrs
+        :raise ValidationError
+        """
+        super(TournamentTokenTransferSerializer, self).validate(attrs)
+        error_message = ''
+        try:
+            models.TournamentParticipantBalance.objects.get(participant=attrs.get('from_participant'))
+        except:
+            error_message += 'Invalid from_participant: user with address {} does not exist. \n'.format(
+                attrs.get('from_participant')
+            )
+            attrs.pop('from_participant')
+
+        try:
+            models.TournamentParticipantBalance.objects.get(participant=attrs.get('to_participant'))
+        except:
+            error_message += 'Invalid to_participant: user with address {} does not exist. \n'.format(
+                attrs.get('from_participant')
+            )
+            attrs.pop('to_participant')
+
+        if attrs.get('to_participant') is None and attrs.get('from_participant') is None:
+            raise serializers.ValidationError(error_message)
+        else:
+            return attrs
+
+    def create(self, validated_data):
+        """
+        :param validated_data:
+        :return: TournamentParticipant istance
+        """
+        if validated_data.get('from_participant'):
+            from_user = models.TournamentParticipantBalance.objects.get(participant=validated_data.get('from_participant'))
+            from_user.balance -= validated_data.get('value')
+            from_user.save()
+            if validated_data.get('to_participant'):
+                to_user = models.TournamentParticipantBalance.objects.get(participant=validated_data.get('to_participant'))
+                to_user.balance += validated_data.get('value')
+                to_user.save()
+                return to_user
+            else:
+                return from_user
+        else:
+            to_user = models.TournamentParticipantBalance.objects.get(participant=validated_data.get('to_participant'))
+            to_user.balance += validated_data.get('value')
+            to_user.save()
+            return to_user
+
+    def rollback(self):
+        """
+        In order to reach the rollback method, one of the two participants must exist.
+        See validate(attrs)
+        :return: TournamentParticipant instance
+        """
+        if self.validated_data.get('from_participant'):
+            from_user = models.TournamentParticipantBalance.objects.get(participant=self.validated_data.get('from_participant'))
+            from_user.balance += self.validated_data.get('value')
+            from_user.save()
+
+            if self.validated_data.get('to_participant'):
+                to_user = models.TournamentParticipantBalance.objects.get(participant=self.validated_data.get('to_participant'))
+                to_user.balance -= self.validated_data.get('value')
+                to_user.save()
+                return to_user
+            else:
+                return from_user
+
+        else:
+            to_user = models.TournamentParticipantBalance.objects.get(participant=self.validated_data.get('to_participant'))
+            to_user.balance -= self.validated_data.get('value')
+            to_user.save()
+            return to_user

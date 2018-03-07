@@ -1,25 +1,31 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-from django.test import TestCase
-from django.conf import settings
-from chainevents.event_receivers import (
-    CentralizedOracleFactoryReceiver, EventFactoryReceiver, MarketFactoryReceiver,
-    CentralizedOracleInstanceReceiver, EventInstanceReceiver, OutcomeTokenInstanceReceiver,
-    MarketInstanceReceiver
-)
-
-from relationaldb.models import (
-    CentralizedOracle, ScalarEvent, CategoricalEvent, Market, OutcomeToken,
-    OutcomeTokenBalance, BuyOrder, SellOrder
-)
-
-from relationaldb.tests.factories import (
-    CentralizedOracleFactory, OracleFactory, EventFactory, MarketFactory,
-    OutcomeTokenFactory, CategoricalEventFactory, ScalarEventFactory
-)
 from datetime import datetime
 from time import mktime
+
+from django.conf import settings
+from django.test import TestCase
+
+from gnosisdb.relationaldb.models import (BuyOrder, CategoricalEvent,
+                                          CentralizedOracle, Market,
+                                          OutcomeTokenBalance, ScalarEvent,
+                                          SellOrder, TournamentParticipant,
+                                          TournamentParticipantBalance)
+from gnosisdb.relationaldb.tests.factories import (CategoricalEventFactory,
+                                                   CentralizedOracleFactory,
+                                                   MarketFactory,
+                                                   OracleFactory,
+                                                   OutcomeTokenFactory,
+                                                   ScalarEventFactory,
+                                                   TournamentParticipantBalanceFactory)
 from ipfs.ipfs import Ipfs
+
+from ..event_receivers import (CentralizedOracleFactoryReceiver,
+                               CentralizedOracleInstanceReceiver,
+                               EventFactoryReceiver, EventInstanceReceiver,
+                               MarketFactoryReceiver, MarketInstanceReceiver,
+                               OutcomeTokenInstanceReceiver,
+                               TournamentTokenReceiver,
+                               UportIdentityManagerReceiver)
 
 
 class TestRollabck(TestCase):
@@ -105,11 +111,11 @@ class TestRollabck(TestCase):
         # Change owner
         CentralizedOracleInstanceReceiver().save(change_owner_event)
         centralized_oracle_with_owner_replacement = CentralizedOracle.objects.get(address=oracle.address)
-        self.assertEquals(centralized_oracle_with_owner_replacement.owner, new_owner_address)
+        self.assertEqual(centralized_oracle_with_owner_replacement.owner, new_owner_address)
         # Rollback
         CentralizedOracleInstanceReceiver().rollback(change_owner_event, block)
         centralized_oracle_with_owner_rollback = CentralizedOracle.objects.get(address=oracle.address)
-        self.assertEquals(centralized_oracle_with_owner_rollback.owner, centralized_oracle_without_owner_replacement.owner)
+        self.assertEqual(centralized_oracle_with_owner_rollback.owner, centralized_oracle_without_owner_replacement.owner)
 
     def test_oracle_outcome_assignment_rollback(self):
         # Create the oracle
@@ -321,7 +327,7 @@ class TestRollabck(TestCase):
             sender=buyer_address,
             market=market_without_rollback
         )
-        self.assertEquals(len(orders_before_rollback), 1)
+        self.assertEqual(len(orders_before_rollback), 1)
 
         # Outcome token purchase rollback
         MarketInstanceReceiver().rollback(outcome_token_purchase_event, block)
@@ -331,7 +337,7 @@ class TestRollabck(TestCase):
             sender=buyer_address,
             market=market_with_rollback
         )
-        self.assertEquals(len(orders_after_rollback), 0)
+        self.assertEqual(len(orders_after_rollback), 0)
 
     def test_market_outcome_token_sale_rollback(self):
         categorical_event = CategoricalEventFactory()
@@ -360,7 +366,7 @@ class TestRollabck(TestCase):
             creation_block=block.get('number'),
             sender=seller_address
         )
-        self.assertEquals(len(orders_before_rollback), 1)
+        self.assertEqual(len(orders_before_rollback), 1)
 
         # Outcome token sell rollback
         MarketInstanceReceiver().rollback(outcome_token_sell_event, block)
@@ -368,7 +374,7 @@ class TestRollabck(TestCase):
             creation_block=block.get('number'),
             sender=seller_address
         )
-        self.assertEquals(len(orders_before_rollback), 0)
+        self.assertEqual(len(orders_before_rollback), 0)
 
     def test_market_outcome_token_shortsale_rollback(self):
         pass
@@ -392,12 +398,12 @@ class TestRollabck(TestCase):
 
         MarketInstanceReceiver().save(market_funding_event)
         market_without_rollback = Market.objects.get(address=market_factory.address)
-        self.assertEquals(market_without_rollback.stage, 1)
-        self.assertEquals(market_without_rollback.funding, 100)
+        self.assertEqual(market_without_rollback.stage, 1)
+        self.assertEqual(market_without_rollback.funding, 100)
         # Rollback
         MarketInstanceReceiver().rollback(market_funding_event, block)
         market_with_rollback = Market.objects.get(address=market_factory.address)
-        self.assertEquals(market_with_rollback.stage, 0)
+        self.assertEqual(market_with_rollback.stage, 0)
         self.assertIsNone(market_with_rollback.funding)
 
     def test_market_closing_rollback(self):
@@ -414,11 +420,11 @@ class TestRollabck(TestCase):
 
         MarketInstanceReceiver().save(market_closing_event)
         market_without_rollback = Market.objects.get(address=market_factory.address)
-        self.assertEquals(market_without_rollback.stage, 2)
+        self.assertEqual(market_without_rollback.stage, 2)
         # Rollback
         MarketInstanceReceiver().rollback(market_closing_event, block)
         market_with_rollback = Market.objects.get(address=market_factory.address)
-        self.assertEquals(market_with_rollback.stage, 1)
+        self.assertEqual(market_with_rollback.stage, 1)
 
     def test_market_fee_withdrawal_rollback(self):
         market_factory = MarketFactory()
@@ -439,11 +445,11 @@ class TestRollabck(TestCase):
 
         MarketInstanceReceiver().save(market_withdraw_event)
         market_without_rollback = Market.objects.get(address=market_factory.address)
-        self.assertEquals(market_without_rollback.withdrawn_fees, market_factory.withdrawn_fees+10)
+        self.assertEqual(market_without_rollback.withdrawn_fees, market_factory.withdrawn_fees+10)
         # Rollback
         MarketInstanceReceiver().rollback(market_withdraw_event, block)
         market_with_rollback = Market.objects.get(address=market_factory.address)
-        self.assertEquals(market_with_rollback.withdrawn_fees, market_factory.withdrawn_fees)
+        self.assertEqual(market_with_rollback.withdrawn_fees, market_factory.withdrawn_fees)
 
     def test_outcome_token_transfer_rollback(self):
         outcome_token_factory = OutcomeTokenFactory()
@@ -489,7 +495,7 @@ class TestRollabck(TestCase):
         OutcomeTokenInstanceReceiver().save(issuance_event)
         OutcomeTokenInstanceReceiver().save(transfer_event)
         outcome_token_balance_before_rollback = OutcomeTokenBalance.objects.get(owner=owner_two)
-        self.assertEquals(outcome_token_balance_before_rollback.balance, 10)
+        self.assertEqual(outcome_token_balance_before_rollback.balance, 10)
 
         # Rollback
         OutcomeTokenInstanceReceiver().rollback(transfer_event, block)
@@ -504,18 +510,150 @@ class TestRollabck(TestCase):
         OutcomeTokenInstanceReceiver().save(transfer_event)
         OutcomeTokenInstanceReceiver().rollback(transfer_event, block)
         owner_two_token_balance = OutcomeTokenBalance.objects.get(owner=owner_two)
-        self.assertEquals(owner_two_token_balance.balance, 1000)
+        self.assertEqual(owner_two_token_balance.balance, 1000)
 
-    def test_winnings_redemption_rollback(self):
-        event_factory = CategoricalEventFactory(redeemed_winnings=100)
-        address = event_factory.address[0:-4] + 'user'
+    def test_tournament_participant_rollback(self):
+        identity = 'ebe4dd7a4a9e712e742862719aa04709cc6d80a6'
+        participant_event = {
+            'name': 'IdentityCreated',
+            'address': 'abbcd5b340c80b5f1c0545c04c987b87310296ae',
+            'params': [
+                {
+                    'name': 'identity',
+                    'value': identity
+                },
+                {
+                    'name': 'creator',
+                    'value': '50858f2c7873fac9398ed9c195d185089caa7967'
+                },
+                {
+                    'name': 'owner',
+                    'value': '8f357b2c8071c2254afbc65907997f9adea6cc78',
+                },
+                {
+                    'name': 'recoveryKey',
+                    'value': 'b67c2d2fcfa3e918e3f9a5218025ebdd12d26212'
+                }
+            ]
+        }
+
         block = {
             'number': 1,
             'timestamp': self.to_timestamp(datetime.now())
         }
+
+        self.assertEqual(TournamentParticipant.objects.all().count(), 0)
+        # Save event
+        UportIdentityManagerReceiver().save(participant_event, block)
+        # Check that collected fees was incremented
+        self.assertEqual(TournamentParticipant.objects.all().count(), 1)
+        # Rollback
+        UportIdentityManagerReceiver().rollback(participant_event, block)
+        self.assertEqual(TournamentParticipant.objects.all().count(), 0)
+        self.assertRaises(Exception, UportIdentityManagerReceiver().rollback, participant_event, block)
+
+    def test_tournament_participant_issuance_rollback(self):
+        amount = 123
+        participant_balance = TournamentParticipantBalanceFactory()
+        participant = participant_balance.participant
+        participant_event = {
+            'name': 'Issuance',
+            'address': 'not needed',
+            'params': [
+                {
+                    'name': 'owner',
+                    'value': participant.address
+                },
+                {
+                    'name': 'amount',
+                    'value': amount
+                }
+            ]
+        }
+
+        self.assertEqual(TournamentParticipantBalance.objects.get(participant=participant.address).balance, participant_balance.balance)
+        # Save event
+        TournamentTokenReceiver().save(participant_event)
+        self.assertEqual(TournamentParticipantBalance.objects.get(participant=participant.address).balance, participant_balance.balance+amount)
+
+        # Rollback
+        TournamentTokenReceiver().rollback(participant_event)
+        self.assertEqual(TournamentParticipantBalance.objects.get(participant=participant.address).balance, participant_balance.balance)
+
+    def test_transfer_tournament_tokens_rollback(self):
+        participant_balance1 = TournamentParticipantBalanceFactory()
+        participant1 = participant_balance1.participant
+        participant_balance2 = TournamentParticipantBalanceFactory()
+        participant2 = participant_balance2.participant
+        participant1_issuance_event = {
+            'name': 'Issuance',
+            'address': 'not needed',
+            'params': [
+                {
+                    'name': 'owner',
+                    'value': participant1.address
+                },
+                {
+                    'name': 'amount',
+                    'value': 150
+                }
+            ]
+        }
+
+        transfer_event = {
+            'name': 'Transfer',
+            'address': 'not needed',
+            'params': [
+                {
+                    'name': 'from',
+                    'value': participant1.address
+                },
+                {
+                    'name': 'to',
+                    'value': participant2.address
+                },
+                {
+                    'name': 'value',
+                    'value': 15
+                    }
+                ]
+            }
+
+        # Save event
+        TournamentTokenReceiver().save(participant1_issuance_event)
+        TournamentTokenReceiver().save(transfer_event)
+        self.assertEqual(TournamentParticipantBalance.objects.get(participant=participant1.address).balance.__float__(),
+                         float(participant_balance1.balance + 150 - 15))
+        self.assertEqual(TournamentParticipantBalance.objects.get(participant=participant2.address).balance.__float__(),
+                         float(participant_balance2.balance + 15))
+
+        TournamentTokenReceiver().rollback(transfer_event)
+        self.assertEqual(TournamentParticipantBalance.objects.get(participant=participant1.address).balance.__float__(),
+                         float(participant_balance1.balance + 150))
+        self.assertEqual(TournamentParticipantBalance.objects.get(participant=participant2.address).balance.__float__(),
+                         float(participant_balance2.balance))
+
+        # Transfer with only one
+        participant2.delete()
+        instance = TournamentTokenReceiver().save(transfer_event)
+        self.assertIsNotNone(instance)
+        self.assertEqual(TournamentParticipantBalance.objects.get(participant=participant1.address).balance.__float__(),
+                         float(participant_balance1.balance + 150 - 15))
+
+        TournamentTokenReceiver().rollback(transfer_event)
+        self.assertEqual(TournamentParticipantBalance.objects.get(participant=participant1.address).balance.__float__(),
+                         float(participant_balance1.balance + 150))
+
+        participant1.delete()
+        TournamentTokenReceiver().rollback(transfer_event)
+
+    def test_winnings_redemption_rollback(self):
+        event = CategoricalEventFactory(redeemed_winnings=100)
+        address = event.address[0:-4] + 'user'
+
         winnings_event = {
             'name': 'WinningsRedemption',
-            'address': event_factory.address,
+            'address': event.address,
             'params': [
                 {
                     'name': 'receiver',
@@ -528,11 +666,14 @@ class TestRollabck(TestCase):
             ]
         }
 
+        block = {
+            'number': 1,
+            'timestamp': self.to_timestamp(datetime.now())
+        }
+
         EventInstanceReceiver().save(winnings_event, block)
-        event_before_rollback = CategoricalEvent.objects.get(address=event_factory.address)
-        self.assertEquals(event_before_rollback.redeemed_winnings, event_factory.redeemed_winnings+10)
+        event_before_rollback = CategoricalEvent.objects.get(address=event.address)
+        self.assertEqual(event_before_rollback.redeemed_winnings, event.redeemed_winnings+10)
         EventInstanceReceiver().rollback(winnings_event, block)
-        event_after_rollback = CategoricalEvent.objects.get(address=event_factory.address)
-        self.assertEquals(event_after_rollback.redeemed_winnings, event_factory.redeemed_winnings)
-
-
+        event_after_rollback = CategoricalEvent.objects.get(address=event.address)
+        self.assertEqual(event_after_rollback.redeemed_winnings, event.redeemed_winnings)

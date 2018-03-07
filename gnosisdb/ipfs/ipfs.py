@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-from django.conf import settings
-from utils import singleton
 import ipfsapi
+from django.conf import settings
+
+from gnosis.utils import singleton
+
 
 @singleton
 class Ipfs(object):
@@ -29,4 +30,3 @@ class Ipfs(object):
             ipfs_hash = self.api.add_json(python_object)
 
         return ipfs_hash
-

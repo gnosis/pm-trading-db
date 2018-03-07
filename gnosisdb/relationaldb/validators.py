@@ -1,5 +1,6 @@
-from django.core.exceptions import ValidationError
 from json import loads
+
+from django.core.exceptions import ValidationError
 
 
 def validate_numeric_dictionary(value):

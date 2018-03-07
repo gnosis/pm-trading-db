@@ -1,19 +1,20 @@
 from django.conf import settings
-from django.shortcuts import get_object_or_404, get_list_or_404
+from django.shortcuts import get_list_or_404, get_object_or_404
 from rest_framework import generics
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from relationaldb.models import (
-    CentralizedOracle, Event, Market, Order, OutcomeTokenBalance
-)
-from .serializers import (
-    CentralizedOracleSerializer, EventSerializer, MarketSerializer,
-    MarketTradesSerializer, OutcomeTokenBalanceSerializer, MarketParticipantTradesSerializer
-)
-from .filters import (
-    CentralizedOracleFilter, EventFilter, MarketFilter, DefaultPagination,
-    MarketTradesFilter
-)
+
+from gnosisdb.relationaldb.models import (CentralizedOracle, Event, Market,
+                                          Order, OutcomeTokenBalance,
+                                          TournamentParticipant,
+                                          TournamentWhitelistedCreator)
+
+from .filters import (CentralizedOracleFilter, DefaultPagination, EventFilter,
+                      MarketFilter, MarketTradesFilter)
+from .serializers import (CentralizedOracleSerializer, EventSerializer,
+                          MarketParticipantTradesSerializer, MarketSerializer,
+                          MarketTradesSerializer, OlympiaScoreboardSerializer,
+                          OutcomeTokenBalanceSerializer)
 
 
 class CentralizedOracleListView(generics.ListAPIView):
@@ -203,6 +204,7 @@ class MarketTradesView(generics.ListAPIView):
         # return trades
         return Order.objects.filter(
             market=self.kwargs['market_address'],
+        ).order_by('creation_block'
         ).select_related(
             'outcome_token',
             'outcome_token__event',
@@ -255,3 +257,24 @@ class AccountSharesView(generics.ListAPIView):
             'outcome_token__event__oracle__centralizedoracle__event_description__categoricaleventdescription',
             'outcome_token__event__oracle__centralizedoracle__event_description__scalareventdescription',
         ).prefetch_related('outcome_token__event__markets')
+
+
+# ========================================================
+#                 Olympia
+# ========================================================
+
+class ScoreboardView(generics.ListAPIView):
+    """Olympia tournament scoreboard view"""
+    serializer_class = OlympiaScoreboardSerializer
+    pagination_class = DefaultPagination
+    queryset = TournamentParticipant.objects.all().order_by('current_rank').exclude(
+        address__in=TournamentWhitelistedCreator.objects.all().values_list('address', flat=True)
+    ).select_related('tournament_balance')
+
+
+class ScoreboardUserView(generics.RetrieveAPIView):
+    """Olympia tournament scoreboard view of a given account"""
+    serializer_class = OlympiaScoreboardSerializer
+
+    def get_object(self):
+        return get_object_or_404(TournamentParticipant, address=self.kwargs['account_address'])

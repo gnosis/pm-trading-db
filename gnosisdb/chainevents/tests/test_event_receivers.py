@@ -1,26 +1,33 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-from django.test import TestCase
-from django.conf import settings
-from chainevents.event_receivers import (
-    CentralizedOracleFactoryReceiver, EventFactoryReceiver, MarketFactoryReceiver,
-    CentralizedOracleInstanceReceiver, EventInstanceReceiver, OutcomeTokenInstanceReceiver,
-    MarketInstanceReceiver
-)
-
-from relationaldb.models import (
-    CentralizedOracle, ScalarEvent, CategoricalEvent, Market, OutcomeToken,
-    Event, BuyOrder, SellOrder, OutcomeTokenBalance
-)
-
-from relationaldb.tests.factories import (
-    CentralizedOracleFactory, ScalarEventFactory, OracleFactory,
-    MarketFactory, OutcomeTokenFactory, CategoricalEventFactory
-)
 from datetime import datetime
-from time import mktime
-from ipfs.ipfs import Ipfs
 from decimal import Decimal
+from time import mktime
+
+from django.conf import settings
+from django.test import TestCase
+
+from gnosisdb.relationaldb.models import (BuyOrder, CategoricalEvent,
+                                          CentralizedOracle, Event, Market,
+                                          OutcomeToken, OutcomeTokenBalance,
+                                          ScalarEvent, SellOrder,
+                                          TournamentParticipant,
+                                          TournamentParticipantBalance)
+from gnosisdb.relationaldb.tests.factories import (CategoricalEventFactory,
+                                                   CentralizedOracleFactory,
+                                                   MarketFactory,
+                                                   OracleFactory,
+                                                   OutcomeTokenFactory,
+                                                   ScalarEventFactory,
+                                                   TournamentParticipantBalanceFactory)
+from ipfs.ipfs import Ipfs
+
+from ..event_receivers import (CentralizedOracleFactoryReceiver,
+                               CentralizedOracleInstanceReceiver,
+                               EventFactoryReceiver, EventInstanceReceiver,
+                               MarketFactoryReceiver, MarketInstanceReceiver,
+                               OutcomeTokenInstanceReceiver,
+                               TournamentTokenReceiver,
+                               UportIdentityManagerReceiver)
 
 
 class TestEventReceiver(TestCase):
@@ -231,8 +238,8 @@ class TestEventReceiver(TestCase):
         MarketFactoryReceiver().save(market_dict, block)
         saved_market = Market.objects.get(event=event_address)
         self.assertIsNotNone(saved_market.pk)
-        self.assertEquals(len(market.net_outcome_tokens_sold), 2)
-        self.assertEquals(len(saved_market.net_outcome_tokens_sold), 3)
+        self.assertEqual(len(market.net_outcome_tokens_sold), 2)
+        self.assertEqual(len(saved_market.net_outcome_tokens_sold), 3)
 
     #
     # contract instances
@@ -330,7 +337,7 @@ class TestEventReceiver(TestCase):
         OutcomeTokenInstanceReceiver().save(event)
         outcome_token_saved = OutcomeToken.objects.get(address=outcome_token.address)
         self.assertIsNotNone(outcome_token_saved.pk)
-        self.assertEquals(outcome_token.total_supply + 1000, outcome_token_saved.total_supply)
+        self.assertEqual(outcome_token.total_supply + 1000, outcome_token_saved.total_supply)
         outcome_token_balance = OutcomeTokenBalance.objects.get(owner=outcome_token.event.creator)
         self.assertIsNotNone(outcome_token_balance.pk)
         self.assertEqual(outcome_token_balance.balance, 1000)
@@ -361,7 +368,7 @@ class TestEventReceiver(TestCase):
         OutcomeTokenInstanceReceiver().save(revocation_event)
         outcome_token_saved = OutcomeToken.objects.get(address= outcome_token.address)
         self.assertIsNotNone(outcome_token_saved.pk)
-        self.assertEquals(outcome_token.total_supply, outcome_token_saved.total_supply)
+        self.assertEqual(outcome_token.total_supply, outcome_token_saved.total_supply)
 
     def test_event_instance_outcome_assignment_receiver(self):
         event = CategoricalEventFactory()
@@ -397,7 +404,7 @@ class TestEventReceiver(TestCase):
 
         EventInstanceReceiver().save(redemption_event)
         saved_event = Event.objects.get(address=event.address)
-        self.assertEquals(saved_event.redeemed_winnings, event.redeemed_winnings + 1)
+        self.assertEqual(saved_event.redeemed_winnings, event.redeemed_winnings + 1)
 
     def test_centralized_oracle_instance_owner_replacement_receiver(self):
         oracle0 = CentralizedOracleFactory()
@@ -416,7 +423,7 @@ class TestEventReceiver(TestCase):
 
         CentralizedOracleInstanceReceiver().save(change_owner_event)
         saved_oracle = CentralizedOracle.objects.get(address=oracle0.address)
-        self.assertEquals(saved_oracle.owner, new_owner)
+        self.assertEqual(saved_oracle.owner, new_owner)
 
     def test_centralized_oracle_instance_outcome_assignment_receiver(self):
         oracle = CentralizedOracleFactory()
@@ -449,8 +456,8 @@ class TestEventReceiver(TestCase):
 
         MarketInstanceReceiver().save(funding_event)
         saved_market = Market.objects.get(address=market.address)
-        self.assertEquals(saved_market.stage, 1)
-        self.assertEquals(saved_market.funding, 100)
+        self.assertEqual(saved_market.stage, 1)
+        self.assertEqual(saved_market.funding, 100)
 
     def test_market_closing_receiver(self):
         market = MarketFactory()
@@ -462,7 +469,7 @@ class TestEventReceiver(TestCase):
 
         MarketInstanceReceiver().save(closing_event)
         saved_market = Market.objects.get(address=market.address)
-        self.assertEquals(saved_market.stage, 2)
+        self.assertEqual(saved_market.stage, 2)
 
     def test_market_fee_withdrawal_receiver(self):
         market = MarketFactory()
@@ -479,8 +486,8 @@ class TestEventReceiver(TestCase):
 
         MarketInstanceReceiver().save(withdraw_event)
         saved_market = Market.objects.get(address=market.address)
-        # self.assertEquals(market.stage, 3)
-        self.assertEquals(saved_market.withdrawn_fees, market.withdrawn_fees+10)
+        # self.assertEqual(market.stage, 3)
+        self.assertEqual(saved_market.withdrawn_fees, market.withdrawn_fees+10)
 
     def test_outcome_token_purchase(self):
         categorical_event = CategoricalEventFactory()
@@ -505,11 +512,11 @@ class TestEventReceiver(TestCase):
             'timestamp': self.to_timestamp(datetime.now())
         }
 
-        self.assertEquals(BuyOrder.objects.all().count(), 0)
+        self.assertEqual(BuyOrder.objects.all().count(), 0)
         MarketInstanceReceiver().save(outcome_token_purchase_event, block)
         buy_orders = BuyOrder.objects.all()
-        self.assertEquals(buy_orders.count(), 1)
-        self.assertEquals(buy_orders[0].cost, 110) # outcomeTokenCost+fee
+        self.assertEqual(buy_orders.count(), 1)
+        self.assertEqual(buy_orders[0].cost, 110) # outcomeTokenCost+fee
 
     def test_outcome_token_purchase_marginal_price(self):
         categorical_event = CategoricalEventFactory()
@@ -535,10 +542,10 @@ class TestEventReceiver(TestCase):
             'timestamp': self.to_timestamp(datetime.now())
         }
 
-        self.assertEquals(BuyOrder.objects.all().count(), 0)
+        self.assertEqual(BuyOrder.objects.all().count(), 0)
         MarketInstanceReceiver().save(outcome_token_purchase_event, block)
         buy_orders = BuyOrder.objects.all()
-        self.assertEquals(buy_orders.count(), 1)
+        self.assertEqual(buy_orders.count(), 1)
         self.assertListEqual(buy_orders[0].marginal_prices, [Decimal(0.7500), Decimal(0.2500)])  # outcomeTokenCost+fee
 
     def test_outcome_token_sell(self):
@@ -564,11 +571,11 @@ class TestEventReceiver(TestCase):
             'timestamp': self.to_timestamp(datetime.now())
         }
 
-        self.assertEquals(SellOrder.objects.all().count(), 0)
+        self.assertEqual(SellOrder.objects.all().count(), 0)
         MarketInstanceReceiver().save(outcome_token_sell_event, block)
         sell_orders = SellOrder.objects.all()
-        self.assertEquals(sell_orders.count(), 1)
-        self.assertEquals(sell_orders[0].profit, 90) # outcomeTokenProfit-fee
+        self.assertEqual(sell_orders.count(), 1)
+        self.assertEqual(sell_orders[0].profit, 90) # outcomeTokenProfit-fee
 
     def test_collected_fees(self):
         categorical_event = CategoricalEventFactory()
@@ -598,9 +605,218 @@ class TestEventReceiver(TestCase):
         MarketInstanceReceiver().save(outcome_token_purchase_event, block)
         # Check that collected fees was incremented
         market_check = Market.objects.get(address=market.address)
-        self.assertEquals(market_check.collected_fees, market.collected_fees+fees)
+        self.assertEqual(market_check.collected_fees, market.collected_fees+fees)
 
         block.update({'number': 2})
         MarketInstanceReceiver().save(outcome_token_purchase_event, block)
         market_check = Market.objects.get(address=market.address)
-        self.assertEquals(market_check.collected_fees, market.collected_fees+fees+fees)
+        self.assertEqual(market_check.collected_fees, market.collected_fees+fees+fees)
+
+    def test_create_tournament_participant(self):
+        identity = 'ebe4dd7a4a9e712e742862719aa04709cc6d80a6'
+        participant_event = {
+            'name': 'IdentityCreated',
+            'address': 'abbcd5b340c80b5f1c0545c04c987b87310296ae',
+            'params': [
+                {
+                    'name': 'identity',
+                    'value': identity
+                },
+                {
+                    'name': 'creator',
+                    'value': '50858f2c7873fac9398ed9c195d185089caa7967'
+                },
+                {
+                    'name': 'owner',
+                    'value': '8f357b2c8071c2254afbc65907997f9adea6cc78',
+                },
+                {
+                    'name': 'recoveryKey',
+                    'value': 'b67c2d2fcfa3e918e3f9a5218025ebdd12d26212'
+                }
+            ]
+        }
+
+        block = {
+            'number': 1,
+            'timestamp': self.to_timestamp(datetime.now())
+        }
+
+        self.assertEqual(TournamentParticipant.objects.all().count(), 0)
+        # Save event
+        UportIdentityManagerReceiver().save(participant_event, block)
+        # Check that collected fees was incremented
+        self.assertEqual(TournamentParticipant.objects.all().count(), 1)
+
+    def test_issue_tournament_tokens(self):
+        participant_balance = TournamentParticipantBalanceFactory()
+        participant = participant_balance.participant
+        amount_to_add = 150
+        participant_event = {
+            'name': 'Issuance',
+            'address': 'not needed',
+            'params': [
+                {
+                    'name': 'owner',
+                    'value': participant.address
+                },
+                {
+                    'name': 'amount',
+                    'value': amount_to_add
+                }
+            ]
+        }
+
+        self.assertEqual(TournamentParticipantBalance.objects.get(participant=participant.address).balance, participant_balance.balance)
+        # Save event
+        TournamentTokenReceiver().save(participant_event)
+        self.assertEqual(TournamentParticipantBalance.objects.get(participant=participant.address).balance, participant_balance.balance+amount_to_add)
+
+    def test_issue_non_participant(self):
+        # should not break, just don't save anything
+        participant_balance = TournamentParticipantBalanceFactory()
+        participant = participant_balance.participant
+        participant_event = {
+            'name': 'Issuance',
+            'address': 'not needed',
+            'params': [
+                {
+                    'name': 'owner',
+                    'value': participant.address
+                },
+                {
+                    'name': 'amount',
+                    'value': 123
+                }
+            ]
+        }
+
+        participant.delete()
+        # Save event
+        TournamentTokenReceiver().save(participant_event)
+        self.assertEqual(TournamentParticipant.objects.all().count(), 0)
+        self.assertIsNone(participant.pk)
+
+    def test_transfer_tournament_tokens(self):
+        participant_balance1 = TournamentParticipantBalanceFactory()
+        participant1 = participant_balance1.participant
+        participant_balance2 = TournamentParticipantBalanceFactory()
+        participant2 = participant_balance2.participant
+
+        participant1_issuance_event = {
+            'name': 'Issuance',
+            'address': 'not needed',
+            'params': [
+                {
+                    'name': 'owner',
+                    'value': participant1.address
+                },
+                {
+                    'name': 'amount',
+                    'value': 150
+                }
+            ]
+        }
+
+        transfer_event = {
+            'name': 'Transfer',
+            'address': 'not needed',
+            'params': [
+                {
+                    'name': 'from',
+                    'value': participant1.address
+                },
+                {
+                    'name': 'to',
+                    'value': participant2.address
+                },
+                {
+                    'name': 'value',
+                    'value': 15
+                }
+            ]
+        }
+
+        # Save event
+        TournamentTokenReceiver().save(participant1_issuance_event)
+        TournamentTokenReceiver().save(transfer_event)
+        self.assertEqual(TournamentParticipantBalance.objects.get(participant=participant1.address).balance.__float__(), float(participant_balance1.balance+150-15))
+        self.assertEqual(TournamentParticipantBalance.objects.get(participant=participant2.address).balance.__float__(), float(participant_balance2.balance+15))
+
+    def test_transfer_tournament_tokens_non_to_participants(self):
+        participant_balance1 = TournamentParticipantBalanceFactory()
+        participant1 = participant_balance1.participant
+        participant_balance2 = TournamentParticipantBalanceFactory()
+        participant2 = participant_balance2.participant
+        participant1_issuance_event = {
+            'name': 'Issuance',
+            'address': 'not needed',
+            'params': [
+                {
+                    'name': 'owner',
+                    'value': participant1.address
+                },
+                {
+                    'name': 'amount',
+                    'value': 150
+                }
+            ]
+        }
+
+        transfer_event = {
+            'name': 'Transfer',
+            'address': 'not needed',
+            'params': [
+                {
+                    'name': 'from',
+                    'value': participant1.address
+                },
+                {
+                    'name': 'to',
+                    'value': participant2.address
+                },
+                {
+                    'name': 'value',
+                    'value': 15
+                }
+            ]
+        }
+
+        participant2.delete()
+
+        # Save event
+        TournamentTokenReceiver().save(participant1_issuance_event)
+        TournamentTokenReceiver().save(transfer_event)
+        self.assertEqual(TournamentParticipantBalance.objects.get(participant=participant1.address).balance.__float__(), float(participant_balance1.balance+150-15))
+        self.assertEqual(TournamentParticipant.objects.filter(address=participant2.address).count(), 0)
+
+    def test_transfer_tournament_tokens_non_from_participant(self):
+        participant1 = TournamentParticipantBalanceFactory().participant
+        participant_balance2 = TournamentParticipantBalanceFactory()
+        participant2 = participant_balance2.participant
+
+        transfer_event = {
+            'name': 'Transfer',
+            'address': 'not needed',
+            'params': [
+                {
+                    'name': 'from',
+                    'value': participant1.address
+                },
+                {
+                    'name': 'to',
+                    'value': participant2.address
+                },
+                {
+                    'name': 'value',
+                    'value': 15
+                }
+            ]
+        }
+
+        participant1.delete()
+
+        # Save event
+        TournamentTokenReceiver().save(transfer_event)
+        self.assertEqual(TournamentParticipant.objects.filter(address=participant1.address).count(), 0)
+        self.assertEqual(TournamentParticipantBalance.objects.get(participant=participant2.address).balance.__float__(), float(participant_balance2.balance+15))
