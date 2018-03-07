@@ -163,4 +163,3 @@ ETH_EVENTS = [
         'NAME': 'Centralized Oracle Instances'
     }
 ]
-
