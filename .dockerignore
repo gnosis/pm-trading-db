@@ -1,4 +1,14 @@
 .git
+
+# Python
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+.python-version
+*.egg-info
+
 # Logs
 logs
 *.log
@@ -62,6 +72,3 @@ typings/
 .idea/
 *.pyc
 *~
-
-.python-version
-*.egg-info
