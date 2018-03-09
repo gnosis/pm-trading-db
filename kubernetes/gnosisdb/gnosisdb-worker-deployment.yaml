@@ -1,0 +1,175 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: gnosisdb-worker
+  labels:
+    app: gnosisdb-worker
+spec:
+  replicas: 1
+  strategy:
+    type: "Recreate"
+  selector:
+    matchLabels:
+      app: gnosisdb-worker
+  template:
+    metadata:
+      labels:
+        app: gnosisdb-worker
+    spec:
+      containers:
+      - name: worker
+        image: gnosispm/gnosisdb:develop # Set gnosisdb version (It must be the same as web and scheduler deployments)
+        imagePullPolicy: Always
+        args: ["scripts/run_celery_worker.sh"]
+        resources:
+          requests:
+            memory: "1000Mi"
+            cpu: "300m"
+          limits:
+            memory: "2000Mi"
+            cpu: "1000m"
+        livenessProbe:
+          exec:
+            command:
+              - pgrep
+              - "-f"
+              - "(celery).+(worker)"
+          initialDelaySeconds: 45
+          periodSeconds: 5
+        readinessProbe:
+          exec:
+            command:
+              - pgrep
+              - "-f"
+              - "(celery).+(worker)"
+          initialDelaySeconds: 45
+          periodSeconds: 5
+        volumeMounts:
+          - name: geth-ipc-volume
+            mountPath: /ethereum-ipc
+        env:
+          - name: ETH_PROCESS_BLOCKS
+            value: "1000"
+          - name: PYTHONPATH
+            value: "/gnosisdb/gnosisdb"
+          - name: DJANGO_SETTINGS_MODULE
+            value: "config.settings.production"
+          - name: ALLOWED_HOSTS # Domains which you want to allow separated by commas. Example: '127.0.0.1, localhost, .amazonaws.com'
+            value: '*'
+          - name: C_FORCE_ROOT # Celery must be root
+            value: "false"
+          - name: DATABASE_HOST
+            valueFrom:
+              secretKeyRef:
+                name: gnosisdb-database
+                key: host
+          - name: DATABASE_NAME
+            valueFrom:
+              secretKeyRef:
+                name: gnosisdb-database
+                key: name
+          - name: DATABASE_USER
+            valueFrom:
+              secretKeyRef:
+                name: gnosisdb-database
+                key: user
+          - name: DATABASE_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: gnosisdb-database
+                key: password
+          - name: DATABASE_PORT
+            valueFrom:
+              secretKeyRef:
+                name: gnosisdb-database
+                key: port
+          - name: DEFAULT_FROM_EMAIL
+            value: ""
+          - name: EMAIL_HOST_PASSWORD
+            value: ""
+          - name: EMAIL_HOST
+            value: ""
+          - name: EMAIL_HOST_USER
+            value: ""
+          - name: EMAIL_PORT
+            value: ""
+          - name: EMAIL_SUBJECT_PREFIX
+            value: "[GnosisDB]"
+          - name: EMAIL_USE_TLS
+            value: ""
+          - name: ETHEREUM_IPC_PATH
+            value: "/ethereum-ipc/geth.ipc"
+          - name: ETHEREUM_NODE_HOST # It could be: domain or IP (Don't put the protocol)
+            value: "localhost"
+          - name: ETHEREUM_NODE_PORT
+            value: "8545"
+          - name: ETHEREUM_NODE_SSL # O -> HTTP, 1 -> HTTPS
+            value: "0"
+          - name: ETHEREUM_DEFAULT_ACCOUNT
+            value: ""
+          - name: ETHEREUM_PRIVATE_KEY
+            value: ""
+          - name: IPFS_HOST
+            value: "https://ipfs.infura.io"
+          - name: IPFS_PORT
+            value: "5001"
+          - name: RABBIT_HOSTNAME # IP of your rabbit service
+            value: "[IP]"  # CUSTOM
+          - name: RABBIT_USER
+            value: gnosisdb
+          - name: RABBIT_PASSWORD
+            value: gnosisdb
+          - name: RABBIT_PORT
+            value: "5672"
+          - name: RABBIT_QUEUE
+            value: ""
+          - name: SECRET_KEY # Django secret key
+            value: "[DJANGO_SECRET_KEY]" # CUSTOM
+          - name: CENTRALIZED_ORACLE_FACTORY
+            value: "b3289eaac0fe3ed15df177f925c6f8ceeb908b8f"
+          - name: EVENT_FACTORY
+            value: "0f60faf69f3ac146e1e557247583bc0c84f9f086"
+          - name: LMSR_MARKET_MAKER
+            value: "11b5257396f156027b9232da7220bd7447282db6"
+          - name: MARKET_FACTORY
+            value: "eaa325bacae405fd5b45e9cf695d391f1c624a2f"
+          - name: STANDARD_MARKET_FACTORY
+            value: "5acfa40d828f2d3a88b49ff4da31b868380ce414"
+          - name: TOURNAMENT_TOKEN
+            value: "a0c107db0e9194c18359d3265289239453b56cf2"
+          - name: ULTIMATE_ORACLE_FACTORY
+            value: "679ef161af4bb37b14a6d06d2e2a991d3650005c"
+          - name: UPORT_IDENTITY_MANAGER
+            value: "abbcd5b340c80b5f1c0545c04c987b87310296ae"
+      - name: geth
+        image: ethereum/client-go:v1.8.1
+        ports:
+          - containerPort: 8545
+          - containerPort: 30301
+          - containerPort: 30303
+        volumeMounts:
+          - name: ethereum-data
+            mountPath: /mnt/ethereum
+          - name: geth-ipc-volume
+            mountPath: /ethereum-ipc
+        env:
+          - name: POD_IP
+            valueFrom:
+              fieldRef:
+                fieldPath: status.podIP
+          - name: CHAIN
+            value: "rinkeby"
+        args: [
+          "--datadir=/mnt/ethereum/.rinkeby",
+          "--rinkeby",
+          "--syncmode=fast",
+          "--ipcpath=/ethereum-ipc/geth.ipc"
+          ]
+      volumes:
+        - name: ethereum-data # CUSTOM. Create persistent volume to store blockchain
+          # AWS volume example:
+          # awsElasticBlockStore:
+          #   volumeID: "vol-0ec2fe354c627e6f4"
+          #   fsType: ext4
+        - name: geth-ipc-volume
+          emptyDir: {}

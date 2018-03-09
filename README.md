@@ -300,12 +300,77 @@ Then we must force the daemon to resync everything again:
 
 `python manage.py resync_daemon`
 
+
 BACKUP DATABASE
 ----------------
 If you use `python manage.py db_dump` you will get a backup of the database on the mail (it will be generated in _/tmp_ folder of the machine),
 using custom Postgres format (as recommended on the docs). If you want to convert it to standard SQL:
 
 `pg_restore -f mydatabase.sqlc mydatabase.dump`
+
+
+GNOSISDB DEPLOYMENT IN KUBERNETES
+----------------------------------
+
+### Requirements
+
+There are a few necessary requirements:
+  - Minimum Kubernetes version:  **1.9**
+  - Ethereum network: **Rinkeby** (in the example)  
+    - If you want another network you must change the address:
+      - Download https://github.com/gnosis/gnosis-contracts
+      - Execute `truffle networks`
+      - Replace the example addresses with this new ones in `gnosisdb-web-deployment.yaml`, `gnosisdb-worker-deployment.yaml` and `gnosisdb-scheduler-deployment.yaml` files
+
+### Database
+   ##### Database creation
+   It is necessary to create a database so that GnosisDB could index blockchain events.
+   ##### Database secret creation
+   Set your database params.
+  ```
+  kubectl create secret generic gnosisdb-database \
+  --from-literal host='[DATABASE_HOST]' \
+  --from-literal name=[DATABASE_NAME] \
+  --from-literal user=[DATABASE_USER] \
+  --from-literal password='[DATABASE_PASSWORD]' \
+  --from-literal port=[DATABASE_PORT]
+  ```
+
+### Persistent volume creation
+It will be used for storing blockchain data of Geth node.
+
+### Rabbit service
+It is necessary for sending messages between gnosisdb scheduler and worker. Run rabbit service:
+  ```
+  kubectl apply -f rabbitmq-gnosisdb
+  ```
+
+### Gnosisdb services
+##### Web
+Set your custom environment variables in `gnosisdb-web-deployment.yaml`. You **only** have to set environment variables which have the `# CUSTOM` annotation.
+
+##### Scheduler
+Set your custom environment variables in `gnosisdb-scheduler-deployment.yaml`. You **only** have to set environment variables which have the `# CUSTOM` annotation.
+
+##### Worker
+  - Set your custom environment variables in `gnosisdb-worker-deployment.yaml`. You **only** have to set environment variables which have the `# CUSTOM` annotation.
+  - Set persistent volume which was created in a previous step. Geth node uses it.
+
+##### RUN services
+After setting custom environments in the previous steps, application can be started. Apply to the folder `gnosisdb` the following command:
+```
+kubectl apply -f gnosisdb
+```
+
+### Celery task configuration
+  - Create an admin user to access the /admin interface.
+  ```
+    kubectl exec -it [GNOSISDB_WEB_POD_NAME] -c web bash
+    python manage.py createsuperuser
+  ```
+  - Login into the admin /interface with your admin user
+  - Create celery periodic task (follow the paragraph where It is explained).
+
 
 Contributors
 ------------
