@@ -7,6 +7,7 @@ from gnosisdb.chainevents.abis import abi_file_path, load_json_file
 
 TIME_ZONE = 'UTC'
 LANGUAGE_CODE = 'en-us'
+USE_TZ = True
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#site-id
 # SITE_ID = 1
