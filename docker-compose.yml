@@ -2,7 +2,7 @@ version: '3'
 
 services:
   nginx:
-    image: nginx:1.13.8
+    image: nginx:1.13
     hostname: nginx
     ports:
       - "8000:8000"
