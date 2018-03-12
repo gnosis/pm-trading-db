@@ -29,7 +29,7 @@ spec:
           - name: gunicorn-volume
             mountPath: /gnosis-nginx
       - name: web
-        image: gnosispm/gnosisdb:v1.0.0 # Set gnosisdb version (It must be the same as scheduler and worker deployments)
+        image: gnosispm/gnosisdb:v1.0.2 # Set gnosisdb version (It must be the same as scheduler and worker deployments)
         imagePullPolicy: Always
         args: ["/bin/sh", "scripts/run_web.sh"]
         resources:
