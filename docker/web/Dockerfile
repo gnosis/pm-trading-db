@@ -12,7 +12,7 @@ ENV BUILD_DEP build-essential pkg-config libssl-dev libsecp256k1-dev
 ENV POSTGRES_DEP wget gnupg
 
 RUN apt-get update && \
-    apt-get install -yq --no-install-recommends $POSTGRES_DEP
+    apt-get install -yq --no-install-recommends $POSTGRES_DEP procps
 
 RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ stretch-pgdg main" > /etc/apt/sources.list.d/pgdg.list && wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
 # Remove secp256k1 when it gets supported in debian stretch
