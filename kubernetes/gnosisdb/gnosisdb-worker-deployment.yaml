@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
       - name: worker
-        image: gnosispm/gnosisdb:develop # Set gnosisdb version (It must be the same as web and scheduler deployments)
+        image: gnosispm/gnosisdb:v1.0.0 # Set gnosisdb version (It must be the same as web and scheduler deployments)
         imagePullPolicy: Always
         args: ["scripts/run_celery_worker.sh"]
         resources:
