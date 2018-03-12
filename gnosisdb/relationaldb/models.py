@@ -58,6 +58,7 @@ class Event(ContractCreatedByFactory):
     """Parent class of the event's classes."""
     oracle = models.ForeignKey(Oracle,
                                related_name='event_oracle',
+                               db_column='oracle_address',
                                on_delete=models.CASCADE)  # Reference to the Oracle contract
     collateral_token = models.CharField(max_length=40, db_index=True)  # The ERC20 token address used in the event to exchange outcome token shares
     is_winning_outcome_set = models.BooleanField(default=False)
@@ -70,6 +71,12 @@ class Event(ContractCreatedByFactory):
             return "{} and outcome {}".format(base, self.outcome)
         else:
             return base
+
+    def is_categorical(self):
+        return hasattr(self, 'categoricalevent')
+
+    def is_scalar(self):
+        return hasattr(self, 'scalarevent')
 
 
 class ScalarEvent(Event):
@@ -94,6 +101,7 @@ class OutcomeToken(Contract):
     This token is created by the Event smart contract letting the event to control supply."""
     event = models.ForeignKey(Event,
                               related_name='outcome_tokens',
+                              db_column='event_address',
                               on_delete=models.CASCADE)  # The outcome token related event
     # index:
     # outcome position in the event's outcomes array (Categorical Event)
@@ -112,7 +120,9 @@ class OutcomeToken(Contract):
 class OutcomeTokenBalance(models.Model):
     """Outcome token balance owned by an ethereum address owner"""
     owner = models.CharField(max_length=40)
-    outcome_token = models.ForeignKey(OutcomeToken, on_delete=models.CASCADE)
+    outcome_token = models.ForeignKey(OutcomeToken,
+                                      db_column='outcome_token_address',
+                                      on_delete=models.CASCADE)
     balance = models.DecimalField(max_digits=80, decimal_places=0, default=0)
 
     def __str__(self):
@@ -181,6 +191,7 @@ class Market(ContractCreatedByFactory):
 
     event = models.ForeignKey(Event,
                               related_name='markets',
+                              db_column='event_address',
                               on_delete=models.CASCADE)
     market_maker = models.CharField(max_length=40, db_index=True)  # the address of the market maker
     fee = models.PositiveIntegerField()
@@ -196,18 +207,20 @@ class Market(ContractCreatedByFactory):
     trading_volume = models.DecimalField(max_digits=80, decimal_places=0)
 
     def __str__(self):
-        return '{} - Maker {}'.format(self.stages_dict.get(self.stage, 'INVALID STAGE'),
-                                      self.market_maker)
+        return 'Market {} - {}'.format(self.address,
+                                       self.stages_dict.get(self.stage, 'INVALID STAGE'))
 
 
 class Order(BlockTimeStamped):
     """Parent class defining a market related order"""
     market = models.ForeignKey(Market,
                                related_name='orders',
+                               db_column='market_address',
                                on_delete=models.CASCADE)
     sender = models.CharField(max_length=40, db_index=True)
     outcome_token = models.ForeignKey(OutcomeToken,
                                       to_field='address',
+                                      db_column='outcome_token_address',
                                       null=True,
                                       on_delete=models.CASCADE)
     outcome_token_count = models.DecimalField(max_digits=80, decimal_places=0)  # the amount of outcome tokens bought or sold
@@ -215,7 +228,7 @@ class Order(BlockTimeStamped):
     marginal_prices = ArrayField(models.DecimalField(max_digits=5, decimal_places=4))  # represent the marginal price of each outcome at the time of the market order
 
     def __str__(self):
-        return 'Market {}'.format(self.market.market_maker)
+        return 'Sender {} - Market {}'.format(self.sender, self.market_id)
 
 
 class BuyOrder(Order):
@@ -244,14 +257,15 @@ class SellOrder(Order):
 
 class ShortSellOrder(Order):
     cost = models.DecimalField(max_digits=80, decimal_places=0)
+
     def __str__(self):
         base = super(ShortSellOrder, self).__str__()
         return '{} - Cost {}'.format(base, self.cost)
 
+
 # ==================================
 #      Tournament classes
 # ==================================
-
 class TournamentParticipant(ContractCreatedByFactory, TimeStampedModel):
     """Tournament participant"""
     current_rank = models.IntegerField()  # current rank position
@@ -268,6 +282,7 @@ class TournamentParticipantBalance(models.Model):
     balance = models.DecimalField(max_digits=80, decimal_places=0, default=0)
     participant = models.OneToOneField(TournamentParticipant,
                                        to_field='address',
+                                       db_column='participant_address',
                                        related_name='tournament_balance',
                                        on_delete=models.CASCADE)
 
