@@ -28,7 +28,7 @@ setup(
                                     "tests"]),
     include_package_data=True,
     install_requires=requirements,
-    license='BSD License',  # example license
+    license='MIT License',
     description='The Gnosisdb django app',
     url='https://github.com/gnosis/gnosisdb',
     author='Gnosis Inc.',
@@ -38,7 +38,7 @@ setup(
         'Framework :: Django',
         'Framework :: Django :: X.Y',  # replace "X.Y" as appropriate
         'Intended Audience :: Developers',
-        'License :: OSI Approved :: BSD License',  # example license
+        'License :: OSI Approved :: MIT License',
         'Operating System :: OS Independent',
         'Programming Language :: Python',
         # Replace these appropriately if you are stuck on Python 2.
@@ -47,4 +47,5 @@ setup(
         'Topic :: Internet :: WWW/HTTP',
         'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
     ],
+    data_files=[("", ["LICENSE"])],
 )
