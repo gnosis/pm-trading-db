@@ -325,6 +325,8 @@ There are a few necessary requirements:
 ### Database
    ##### Database creation
    It is necessary to create a database so that GnosisDB could index blockchain events.
+
+   GnosisDB is tested with **Postgres** database, if you want to use another database you will have to change the connection driver.
    ##### Database secret creation
    Set your database params.
   ```
@@ -341,6 +343,7 @@ It will be used for storing blockchain data of Geth node.
 
 ### Rabbit service
 It is necessary for sending messages between gnosisdb scheduler and worker. Run rabbit service:
+
   ```
   kubectl apply -f rabbitmq-gnosisdb
   ```
@@ -349,10 +352,10 @@ It is necessary for sending messages between gnosisdb scheduler and worker. Run 
 ##### Web
 Set your custom environment variables in `gnosisdb-web-deployment.yaml`. You **only** have to set environment variables which have the `# CUSTOM` annotation.
 
-##### Scheduler
+##### Celery Scheduler
 Set your custom environment variables in `gnosisdb-scheduler-deployment.yaml`. You **only** have to set environment variables which have the `# CUSTOM` annotation.
 
-##### Worker
+##### Celery Worker
   - Set your custom environment variables in `gnosisdb-worker-deployment.yaml`. You **only** have to set environment variables which have the `# CUSTOM` annotation.
   - Set persistent volume which was created in a previous step. Geth node uses it.
 
