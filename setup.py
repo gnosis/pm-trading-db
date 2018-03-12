@@ -21,7 +21,7 @@ requirements = [
 
 setup(
     name='django_gnosisdb',
-    version='1.0.1',
+    version='1.0.2',
     packages=find_packages(exclude=["*.tests",
                                     "*.tests.*",
                                     "tests.*",
