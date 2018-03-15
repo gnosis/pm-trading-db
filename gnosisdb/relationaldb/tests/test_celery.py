@@ -2,6 +2,7 @@
 from django.core import mail
 from django.test import TestCase
 from django.test.utils import override_settings
+
 from django_eth_events.factories import DaemonFactory
 
 from ..tasks import db_dump

@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand
 from django_celery_beat.models import IntervalSchedule, PeriodicTask
-from django_eth_events.models import Block, Daemon
 
+from django_eth_events.models import Block, Daemon
 from gnosisdb.relationaldb.models import EventDescription
 
 
