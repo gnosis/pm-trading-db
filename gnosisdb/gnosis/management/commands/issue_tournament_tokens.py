@@ -30,8 +30,8 @@ class Command(BaseCommand):
                 settings.ETHEREUM_NODE_HOST,
                 settings.ETHEREUM_NODE_PORT,
             )
-            rpc_provider = HTTPProvider(provider_uri)
-            self.web3 = Web3(rpc_provider)
+            http_provider = HTTPProvider(provider_uri)
+            self.web3 = Web3(http_provider)
             abi = load_json_file(abi_file_path('TournamentToken.json'))
             token = self.web3.eth.contract(abi=abi, address=settings.TOURNAMENT_TOKEN)
             tx = token.transact(
