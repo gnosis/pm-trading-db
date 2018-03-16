@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-from datetime import datetime
 from decimal import Decimal
 from time import mktime
 
 from django.conf import settings
 from django.test import TestCase
+from django.utils import timezone
 
 from gnosisdb.relationaldb.models import (BuyOrder, CategoricalEvent,
                                           CentralizedOracle, Event, Market,
@@ -509,7 +509,7 @@ class TestEventReceiver(TestCase):
 
         block = {
             'number': 1,
-            'timestamp': self.to_timestamp(datetime.now())
+            'timestamp': self.to_timestamp(timezone.now())
         }
 
         self.assertEqual(BuyOrder.objects.all().count(), 0)
@@ -539,7 +539,7 @@ class TestEventReceiver(TestCase):
 
         block = {
             'number': 1,
-            'timestamp': self.to_timestamp(datetime.now())
+            'timestamp': self.to_timestamp(timezone.now())
         }
 
         self.assertEqual(BuyOrder.objects.all().count(), 0)
@@ -568,7 +568,7 @@ class TestEventReceiver(TestCase):
 
         block = {
             'number': 1,
-            'timestamp': self.to_timestamp(datetime.now())
+            'timestamp': self.to_timestamp(timezone.now())
         }
 
         self.assertEqual(SellOrder.objects.all().count(), 0)
@@ -598,7 +598,7 @@ class TestEventReceiver(TestCase):
 
         block = {
             'number': 1,
-            'timestamp': self.to_timestamp(datetime.now())
+            'timestamp': self.to_timestamp(timezone.now())
         }
 
         # Save event
@@ -639,7 +639,7 @@ class TestEventReceiver(TestCase):
 
         block = {
             'number': 1,
-            'timestamp': self.to_timestamp(datetime.now())
+            'timestamp': self.to_timestamp(timezone.now())
         }
 
         self.assertEqual(TournamentParticipant.objects.all().count(), 0)

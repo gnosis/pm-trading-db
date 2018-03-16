@@ -184,7 +184,9 @@ REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
 }
 
-
+# ------------------------------------------------------------------------------
+# RABBIT MQ
+# ------------------------------------------------------------------------------
 RABBIT_HOSTNAME = 'rabbit'
 RABBIT_USER = 'gnosisdb'
 RABBIT_PASSWORD = 'gnosisdb'
@@ -199,7 +201,6 @@ BROKER_URL = 'amqp://{user}:{password}@{hostname}:{port}'.format(
 BROKER_POOL_LIMIT = 1
 BROKER_CONNECTION_TIMEOUT = 10
 
-# Celery configuration
 CELERY_RESULT_SERIALIZER = 'json'
 # configure queues, currently we have only one
 CELERY_DEFAULT_QUEUE = 'default'
@@ -224,20 +225,28 @@ CELERYD_PREFETCH_MULTIPLIER = 1
 CELERYD_MAX_TASKS_PER_CHILD = 10
 CELERY_LOCK_EXPIRE = 60
 
+# ------------------------------------------------------------------------------
 # ETHEREUM
+# ------------------------------------------------------------------------------
 ETHEREUM_NODE_HOST = '172.17.0.1'
 ETHEREUM_NODE_PORT = 8545
 ETHEREUM_NODE_SSL = 0
 
+# ------------------------------------------------------------------------------
 # IPFS
+# ------------------------------------------------------------------------------
 IPFS_HOST = 'http://ipfs'  # 'ipfs'
 IPFS_PORT = 5001
 
-# LMSR Market Maker Address
+# ------------------------------------------------------------------------------
+# LMSR MARKET MAKER Address
+# ------------------------------------------------------------------------------
 LMSR_MARKET_MAKER = '9561c133dd8580860b6b7e504bc5aa500f0f06a7'
 
 
+# ------------------------------------------------------------------------------
 # GnosisDB Contract Addresses
+# ------------------------------------------------------------------------------
 ETH_EVENTS = [
     {
         'ADDRESSES': ['cfeb869f69431e42cdb54a4f4f105c19c080a601'],

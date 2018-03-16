@@ -13,10 +13,10 @@ os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
 requirements = [
     'djangorestframework',
-    'django-eth-events==2.0.6',
+    'django-eth-events==2.0.9',
     'ethereum==1.6.1',
     'eth-abi==1.0.0',
-    'eth-utils==0.7.4'
+    'eth-utils==1.0.1'
 ]
 
 setup(

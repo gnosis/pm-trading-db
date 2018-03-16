@@ -3,13 +3,11 @@ from gnosisdb.chainevents.abis import abi_file_path, load_json_file
 from .local import *
 
 # TestRPC
-# insert your rpc config here, ex. localhost - 0.0.0.0 - 192.168.0.1
-ETHEREUM_NODE_HOST= '192.168.0.5'
+ETHEREUM_NODE_HOST = '192.168.0.5'
 ETHEREUM_NODE_PORT = 8545
 ETHEREUM_NODE_SSL = 0
 
 # IPFS
-# You can choose between ipfs container address and 'https://ipfs.infura.io'
 IPFS_HOST = 'https://ipfs.infura.io'
 IPFS_PORT = 5001
 
