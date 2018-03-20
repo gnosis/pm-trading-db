@@ -2,12 +2,12 @@
 import os
 
 from django.test import TestCase
-from eth_tester import EthereumTester
-from web3.providers.eth_tester import EthereumTesterProvider
-
 from django_eth_events.event_listener import EventListener
 from django_eth_events.factories import DaemonFactory
 from django_eth_events.web3_service import Web3Service
+from eth_tester import EthereumTester
+from web3.providers.eth_tester import EthereumTesterProvider
+
 from gnosisdb.relationaldb import models
 from gnosisdb.relationaldb.tests.factories import EventDescriptionFactory
 from ipfs.ipfs import Ipfs
@@ -120,7 +120,7 @@ class TestDaemonExec(TestCase):
     def test_create_centralized_oracle(self):
         n_oracles = models.CentralizedOracle.objects.all().count()
         self.assertEqual(n_oracles, 0)
-        ipfs_hash = self.create_event_description()
+        ipfs_hash = self.create_event_description().encode()
         # Create centralized oracle
         tx_hash = self.centralized_oracle_factory.transact(self.tx_data).createCentralizedOracle(ipfs_hash)
         self.assertIsNotNone(tx_hash)

@@ -7,8 +7,8 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.db.models import Count, F
 from django.utils import timezone
-
 from django_eth_events.utils import normalize_address_without_0x
+
 from gnosisdb.relationaldb.models import (Event, Market, Order,
                                           OutcomeTokenBalance,
                                           TournamentParticipant,

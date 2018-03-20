@@ -6,6 +6,7 @@ from celery.utils.log import get_task_logger
 from django.core.mail import mail_admins
 from django.core.management import call_command, settings
 from django.db import transaction
+from django.utils import timezone
 
 from .models import TournamentParticipant
 
@@ -24,7 +25,7 @@ def send_email(message):
 def issue_tokens():
     participants = TournamentParticipant.objects.filter(
         tokens_issued=False,
-        created__lte=datetime.now() - timedelta(minutes=1)  # 1 min timeframe for avoiding twice tokens in the event of reorg
+        created__lte=timezone.now() - timedelta(minutes=1)  # 1 min timeframe for avoiding twice tokens in the event of reorg
     )[:50]
 
     if len(participants):

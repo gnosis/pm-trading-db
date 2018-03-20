@@ -1,6 +1,6 @@
 from django.core.exceptions import ObjectDoesNotExist
-
 from django_eth_events.chainevents import AbstractAddressesGetter
+
 from gnosisdb.relationaldb.models import (CentralizedOracle, Contract, Event,
                                           Market, OutcomeToken)
 
