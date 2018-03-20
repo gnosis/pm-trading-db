@@ -41,7 +41,7 @@ class Command(BaseCommand):
             token_contract = web3.eth.contract(abi=abi, address=settings.TOURNAMENT_TOKEN)
             gas_price = 50000000000
             gas = 2000000
-            if hasattr(settings, 'ETHEREUM_DEFAULT_ACCOUNT_PRIVATE_KEY'):
+            if getattr(settings, 'ETHEREUM_DEFAULT_ACCOUNT_PRIVATE_KEY'):
                 tx = token_contract.functions.issue(users, amount).buildTransaction(
                     {
                         'nonce': web3.eth.getTransactionCount(settings.ETHEREUM_DEFAULT_ACCOUNT),
