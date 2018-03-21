@@ -217,12 +217,19 @@ ETH_EVENTS = [
 ]
 ```
 As you can see, the properties that come into play are:
-* ADDRESSES, the list of contract's addresses you may want to watch and listen to
+* ADDRESSES, the list of contract's addresses you may want to watch and listen to. Four formats are accepted:
+  - 0x checksumed address, like _0x254dffcd3277C0b1660F6d42EFbB754edaBAbC2B_
+  - 0x plain address, like _0x254dffcd3277c0b1660f6d42efbb754edababc2b_
+  - Non 0x checksumed address _254dffcd3277C0b1660F6d42EFbB754edaBAbC2B_
+  - Non 0x plain address, like _254dffcd3277c0b1660f6d42efbb754edababc2b_
+* ADDRESSES_GETTER, a custom addresses getter class
 * EVENT_ABI, the contract's JSON ABI in string format
 * EVENT_DATA_RECEIVER, a custom event data receiver class
 * NAME, the contract name
 * PUBLISH, it denotes that this part of the config should have the addresses field in it published on that REST endpoint (see REST API paragraph)
-* ADDRESSES_GETTER, a custom addresses getter class
+
+*ADDRESSES_GETTER* and *EVENT_DATA_RECEIVER* will be resolved when the application starts, throwing an exception if not found.
+*ADDRESSES* will be check too, and an exception will be thrown if non valid address is found. Duplicated addresses will be removed too.
 
 ##### EVENT DATA RECEIVER
 An Event Data Receiver is responsible for storing data into a database.<br/>
