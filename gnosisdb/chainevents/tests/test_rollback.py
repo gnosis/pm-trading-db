@@ -28,7 +28,7 @@ from ..event_receivers import (CentralizedOracleFactoryReceiver,
                                UportIdentityManagerReceiver)
 
 
-class TestRollabck(TestCase):
+class TestRollback(TestCase):
 
     def setUp(self):
         self.ipfs_api = Ipfs()

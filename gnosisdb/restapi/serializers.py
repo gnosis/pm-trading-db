@@ -14,11 +14,14 @@ class ContractSerializer(serializers.BaseSerializer):
     def to_representation(self, instance):
         response = {
             'address': add_0x_prefix(instance.address),
-            'factory_address': add_0x_prefix(instance.factory),
-            'creator': add_0x_prefix(instance.creator),
             'creation_date': instance.creation_date_time,
             'creation_block': instance.creation_block
         }
+
+        if hasattr(instance, 'factory'):
+            response['factory_address'] = add_0x_prefix(instance.factory)
+        if hasattr(instance, 'creator'):
+            response['creator'] = add_0x_prefix(instance.creator)
 
         return remove_null_values(response)
 

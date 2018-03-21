@@ -27,6 +27,7 @@ from ..event_receivers import (CentralizedOracleFactoryReceiver,
                                MarketFactoryReceiver, MarketInstanceReceiver,
                                OutcomeTokenInstanceReceiver,
                                TournamentTokenReceiver,
+GenericIdentityManagerReceiver,
                                UportIdentityManagerReceiver)
 
 
@@ -613,6 +614,39 @@ class TestEventReceiver(TestCase):
         self.assertEqual(market_check.collected_fees, market.collected_fees+fees+fees)
 
     def test_create_tournament_participant(self):
+        contract_address = "d833215cbcc3f914bd1c9ece3ee7bf8b14f841bb"
+        registrant_address = "90f8bf6a479f320ead074411a4b0e7944ea8c9c1"
+        registered_mainnet_address = "ffcf8fdee72ac11b5c542428b35eef5769c409f0"
+        participant_event = {
+            "address": contract_address,
+            "name": "AddressRegistration",
+            "params": [
+                {
+                    "name": "registrant",
+                    "value": registrant_address,
+                },
+                {
+                    "name": "registeredMainnetAddress",
+                    "value": registered_mainnet_address,
+                }
+            ]
+        }
+
+        block = {
+            'number': 1,
+            'timestamp': self.to_timestamp(timezone.now())
+        }
+
+        self.assertEqual(TournamentParticipant.objects.all().count(), 0)
+        # Save event
+        GenericIdentityManagerReceiver().save(participant_event, block)
+        # Check that tournament participants were incremented
+        tournament_participant = TournamentParticipant.objects.first()
+        self.assertIsNotNone(tournament_participant)
+        self.assertEqual(tournament_participant.address, registrant_address)
+        self.assertEqual(tournament_participant.mainnet_address, registered_mainnet_address)
+
+    def test_uport_create_tournament_participant(self):
         identity = 'ebe4dd7a4a9e712e742862719aa04709cc6d80a6'
         participant_event = {
             'name': 'IdentityCreated',
@@ -645,8 +679,10 @@ class TestEventReceiver(TestCase):
         self.assertEqual(TournamentParticipant.objects.all().count(), 0)
         # Save event
         UportIdentityManagerReceiver().save(participant_event, block)
-        # Check that collected fees was incremented
-        self.assertEqual(TournamentParticipant.objects.all().count(), 1)
+
+        tournament_participant = TournamentParticipant.objects.first()
+        self.assertIsNotNone(tournament_participant)
+        self.assertEqual(tournament_participant.address, identity)
 
     def test_issue_tournament_tokens(self):
         participant_balance = TournamentParticipantBalanceFactory()
@@ -667,10 +703,12 @@ class TestEventReceiver(TestCase):
             ]
         }
 
-        self.assertEqual(TournamentParticipantBalance.objects.get(participant=participant.address).balance, participant_balance.balance)
+        self.assertEqual(TournamentParticipantBalance.objects.get(participant=participant.address).balance,
+                         participant_balance.balance)
         # Save event
         TournamentTokenReceiver().save(participant_event)
-        self.assertEqual(TournamentParticipantBalance.objects.get(participant=participant.address).balance, participant_balance.balance+amount_to_add)
+        self.assertEqual(TournamentParticipantBalance.objects.get(participant=participant.address).balance,
+                         participant_balance.balance+amount_to_add)
 
     def test_issue_non_participant(self):
         # should not break, just don't save anything
