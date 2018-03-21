@@ -1,5 +1,5 @@
 import traceback
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 from celery import shared_task
 from celery.utils.log import get_task_logger
@@ -35,7 +35,7 @@ def issue_tokens():
             # Update first
             with transaction.atomic():
                 TournamentParticipant.objects.filter(address__in=participant_addresses).update(tokens_issued=True)
-            call_command('issue_tournament_tokens', participant_addresses_string , settings.TOURNAMENT_TOKEN_ISSUANCE)
+            call_command('issue_tournament_tokens', participant_addresses_string, settings.TOURNAMENT_TOKEN_ISSUANCE)
         except Exception as err:
             logger.error(str(err))
             send_email(traceback.format_exc())
