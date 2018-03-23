@@ -24,10 +24,10 @@ from ipfs.ipfs import Ipfs
 from ..event_receivers import (CentralizedOracleFactoryReceiver,
                                CentralizedOracleInstanceReceiver,
                                EventFactoryReceiver, EventInstanceReceiver,
+                               GenericIdentityManagerReceiver,
                                MarketFactoryReceiver, MarketInstanceReceiver,
                                OutcomeTokenInstanceReceiver,
                                TournamentTokenReceiver,
-GenericIdentityManagerReceiver,
                                UportIdentityManagerReceiver)
 
 
