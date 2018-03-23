@@ -22,32 +22,9 @@ mp.pretty = True
 logger = get_task_logger(__name__)
 
 
-class ContractSerializer(serializers.BaseSerializer):
-    """
-    Serializes a Contract entity
-    """
+class BaseEventSerializer(serializers.BaseSerializer):
     class Meta:
-        fields = ('address', )
-
-    address = serializers.CharField(max_length=ADDRESS_LENGTH)
-
-
-class BlockTimestampedSerializer(serializers.BaseSerializer):
-    """
-    Serializes the block informations
-    """
-    class Meta:
-        fields = ('creation_date_time', 'creation_block', )
-
-    creation_date_time = serializers.DateTimeField(format="%Y-%m-%dT%H:%M:%S")
-    creation_block = serializers.IntegerField()
-
-
-class ContractSerializerTimestamped(BlockTimestampedSerializer):
-    class Meta:
-        fields = BlockTimestampedSerializer.Meta.fields + ('address',)
-
-    address = serializers.CharField(max_length=ADDRESS_LENGTH)
+        abstract = True
 
     def __init__(self, *args, **kwargs):
         """
@@ -59,74 +36,86 @@ class ContractSerializerTimestamped(BlockTimestampedSerializer):
         In addition, all parameters contained in kwargs['data']['params'] are re-elaborated and added to
         the final data dictionary
         """
-        self.block = kwargs.pop('block')
-        super(ContractSerializerTimestamped, self).__init__(*args, **kwargs)
-        data = kwargs.pop('data')
-        # Event params moved to root object
-        new_data = {
-            'address': data.get('address'),
+        if kwargs.get('block'):
+            self.block = kwargs.pop('block')
+
+        super().__init__(*args, **kwargs)
+
+        self.initial_data = self.parse_event_data(kwargs.pop('data'))
+
+    def parse_event_data(self, event_data):
+        """
+        Extract event_data and move event params moved to root object
+        :param event_data: dictionary
+        :return: dictionary with event params
+        """
+
+        return {param['name']: param['value'] for param in event_data.get('params')}
+
+
+class ContractSerializer(BaseEventSerializer):
+    """
+    Serializes a Contract entity
+    """
+    class Meta:
+        fields = ('address', )
+
+    address = serializers.CharField(max_length=ADDRESS_LENGTH)
+
+    def parse_event_data(self, event_data):
+        """
+        Move event params moved to root object
+        :return: dictionary with event params moved to root object
+        """
+
+        parsed_event_data = super().parse_event_data(event_data)
+        parsed_event_data.update({
+            'address': event_data.get('address'),
+        })
+        return parsed_event_data
+
+
+class BlockTimestampedSerializer(BaseEventSerializer):
+    """
+    Serializes the block informations
+    """
+    class Meta:
+        fields = ('creation_date_time', 'creation_block', )
+
+    creation_date_time = serializers.DateTimeField(format="%Y-%m-%dT%H:%M:%S")
+    creation_block = serializers.IntegerField()
+
+    def parse_event_data(self, event_data):
+        parsed_event_data = super().parse_event_data(event_data)
+        parsed_event_data.update({
             'creation_date_time': datetime.fromtimestamp(self.block.get('timestamp')),
-            'creation_block': self.block.get('number')
-        }
-
-        for param in data.get('params'):
-            new_data[param['name']] = param['value']
-
-        self.initial_data = new_data
+            'creation_block': self.block.get('number'),
+        })
+        return parsed_event_data
 
 
-class ContractCreatedByFactorySerializerTimestamped(BlockTimestampedSerializer, ContractSerializer):
+class ContractSerializerTimestamped(ContractSerializer, BlockTimestampedSerializer):
+    class Meta:
+        fields = ContractSerializer.Meta.fields + BlockTimestampedSerializer.Meta.fields
+
+
+class ContractCreatedByFactorySerializerTimestamped(ContractSerializer, BlockTimestampedSerializer):
     """
     Serializes a Contract Factory
     """
     class Meta:
-        fields = BlockTimestampedSerializer.Meta.fields + ContractSerializer.Meta.fields + ('factory', 'creator')
+        fields = ContractSerializer.Meta.fields + BlockTimestampedSerializer.Meta.fields + ('factory', 'creator')
 
     factory = serializers.CharField(max_length=ADDRESS_LENGTH)  # included prefix
     creator = serializers.CharField(max_length=ADDRESS_LENGTH)
 
-    def __init__(self, *args, **kwargs):
-        self.block = kwargs.pop('block')
-        super(ContractCreatedByFactorySerializerTimestamped, self).__init__(*args, **kwargs)
-        data = kwargs.pop('data')
-        # Event params moved to root object
-        new_data = {
-            'address': data['address'],
-            'factory': data['address'],
-            'creation_date_time': datetime.fromtimestamp(self.block.get('timestamp')),
-            'creation_block': self.block.get('number')
-        }
+    def parse_event_data(self, event_data):
+        parsed_event_data = super().parse_event_data(event_data)
+        parsed_event_data.update({
+            'factory': event_data['address'],
+        })
+        return parsed_event_data
 
-        for param in data.get('params'):
-            new_data[param['name']] = param['value']
-
-        self.initial_data = new_data
-
-
-class ContractNotTimestampted(ContractSerializer):
-    """
-    Serializes a Contract with no block information
-    """
-    class Meta:
-        fields = ContractSerializer.Meta.fields
-
-    def __init__(self, *args, **kwargs):
-        """
-        Deletes block information from kwargs
-        """
-        if kwargs.get('block'):
-            self.block = kwargs.pop('block')
-        super(ContractNotTimestampted, self).__init__(*args, **kwargs)
-        data = kwargs.pop('data')
-        # Event params moved to root object
-        new_data = {
-            'address': data.get('address')
-        }
-
-        for param in data.get('params'):
-            new_data[param['name']] = param['value']
-
-        self.initial_data = new_data
 
 
 # ========================================================
@@ -469,7 +458,7 @@ class IPFSEventDescriptionDeserializer(serializers.ModelSerializer):
 #             Contract Instance serializers
 # ========================================================
 
-class OutcomeTokenInstanceSerializer(ContractNotTimestampted, serializers.ModelSerializer):
+class OutcomeTokenInstanceSerializer(ContractSerializer, serializers.ModelSerializer):
     """
     Serializes an Outcome Token contract instance
     """
@@ -485,7 +474,7 @@ class OutcomeTokenInstanceSerializer(ContractNotTimestampted, serializers.ModelS
         self.instance.delete()
 
 
-class OutcomeTokenIssuanceSerializer(ContractNotTimestampted, serializers.ModelSerializer):
+class OutcomeTokenIssuanceSerializer(ContractSerializer, serializers.ModelSerializer):
     """
     Serializes the Outcome Token issuance event
     """
@@ -537,7 +526,7 @@ class OutcomeTokenIssuanceSerializer(ContractNotTimestampted, serializers.ModelS
             self.instance.save()
 
 
-class OutcomeTokenRevocationSerializer(ContractNotTimestampted, serializers.ModelSerializer):
+class OutcomeTokenRevocationSerializer(ContractSerializer, serializers.ModelSerializer):
     """
     Serializes the Outcome Token revocation event
     """
@@ -582,7 +571,7 @@ class OutcomeTokenRevocationSerializer(ContractNotTimestampted, serializers.Mode
         self.instance.save()
 
 
-class OutcomeAssignmentEventSerializer(ContractNotTimestampted, serializers.ModelSerializer):
+class OutcomeAssignmentEventSerializer(ContractSerializer, serializers.ModelSerializer):
     """
     Serializes the OutcomeAssignment event
     """
@@ -611,7 +600,7 @@ class OutcomeAssignmentEventSerializer(ContractNotTimestampted, serializers.Mode
         self.instance.save()
 
 
-class OutcomeTokenTransferSerializer(ContractNotTimestampted, serializers.ModelSerializer):
+class OutcomeTokenTransferSerializer(ContractSerializer, serializers.ModelSerializer):
     """
     Serializes the Outcome Token transfer event
     """
@@ -673,7 +662,7 @@ class OutcomeTokenTransferSerializer(ContractNotTimestampted, serializers.ModelS
             to_balance.save()
 
 
-class WinningsRedemptionSerializer(ContractNotTimestampted, serializers.ModelSerializer):
+class WinningsRedemptionSerializer(ContractSerializer, serializers.ModelSerializer):
     """
     Serializes the WinningsRedemption event
     """
@@ -705,7 +694,7 @@ class CentralizedOracleInstanceSerializer(CentralizedOracleSerializer):
     pass
 
 
-class OwnerReplacementSerializer(ContractNotTimestampted, serializers.ModelSerializer):
+class OwnerReplacementSerializer(ContractSerializer, serializers.ModelSerializer):
     """
     Serializes the Centralized Oracle OwnerReplacement event
     """
@@ -734,7 +723,7 @@ class OwnerReplacementSerializer(ContractNotTimestampted, serializers.ModelSeria
         return self.instance
 
 
-class OutcomeAssignmentOracleSerializer(ContractNotTimestampted, serializers.ModelSerializer):
+class OutcomeAssignmentOracleSerializer(ContractSerializer, serializers.ModelSerializer):
     """
     Serializes the OutcomeAssignment Oracle event
     """
@@ -957,7 +946,7 @@ class OutcomeTokenShortSaleOrderSerializerTimestamped(ContractSerializerTimestam
         self.instance.delete()
 
 
-class MarketFundingSerializer(ContractNotTimestampted, serializers.ModelSerializer):
+class MarketFundingSerializer(ContractSerializer, serializers.ModelSerializer):
     """
     Serializes the Market MarketFunding event
     """
@@ -985,7 +974,7 @@ class MarketFundingSerializer(ContractNotTimestampted, serializers.ModelSerializ
         return self.instance
 
 
-class MarketClosingSerializer(ContractNotTimestampted, serializers.ModelSerializer):
+class MarketClosingSerializer(ContractSerializer, serializers.ModelSerializer):
     """
     Serializes the Market MarketClosing event
     """
@@ -1010,7 +999,7 @@ class MarketClosingSerializer(ContractNotTimestampted, serializers.ModelSerializ
         return self.instance
 
 
-class FeeWithdrawalSerializer(ContractNotTimestampted, serializers.ModelSerializer):
+class FeeWithdrawalSerializer(ContractSerializer, serializers.ModelSerializer):
     """
     Serializes the Market FeeWithdrawal event
     """
@@ -1131,7 +1120,7 @@ class GenericTournamentParticipantEventSerializerTimestamped(ContractSerializerT
         self.instance.delete()
 
 
-class TournamentTokenIssuanceSerializer(ContractNotTimestampted, serializers.ModelSerializer):
+class TournamentTokenIssuanceSerializer(ContractSerializer, serializers.ModelSerializer):
     """
     Serializes the issuance of new Tournament Tokens
     """
@@ -1165,7 +1154,7 @@ class TournamentTokenIssuanceSerializer(ContractNotTimestampted, serializers.Mod
         return self.instance.save()
 
 
-class TournamentTokenTransferSerializer(ContractNotTimestampted, serializers.ModelSerializer):
+class TournamentTokenTransferSerializer(ContractSerializer, serializers.ModelSerializer):
     """
     Serializes the token transfer event
     https://github.com/gnosis/gnosis-contracts/blob/master/contracts/Tokens/Token.sol#L11
