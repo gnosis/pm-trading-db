@@ -307,7 +307,7 @@ class TournamentTokenReceiver(BaseInstanceEventReceiver):
     def rollback(self, decoded_event, block_info=None):
         event_name = decoded_event.get('name')
         if event_name == 'Issuance':
-            super(TournamentTokenReceiver, self).rollback(decoded_event, block_info)
+            super().rollback(decoded_event, block_info)
         else:
             serializer_class = self.Meta.events.get(event_name)
             if serializer_class is not None:

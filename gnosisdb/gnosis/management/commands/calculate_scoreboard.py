@@ -29,7 +29,7 @@ class Command(BaseCommand):
         )
 
     def __init__(self, *args, **kwargs):
-        super(Command, self).__init__(args, kwargs)
+        super().__init__(args, kwargs)
         # Remove comment to enable reset:
         # self.reset()
 

@@ -119,4 +119,4 @@ class MarketTradesFilter(filters.FilterSet):
             data['creation_date_time_0'] = (datetime.now() - timedelta(days=14)).strftime('%Y-%m-%d %H:%M:%S')
             data['creation_date_time_1'] = datetime.now()
 
-        super(MarketTradesFilter, self).__init__(data, *args, **kwargs)
+        super().__init__(data, *args, **kwargs)

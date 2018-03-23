@@ -16,7 +16,7 @@ class SingletonObject(object):
 
     def __new__(cls, *args, **kwargs):
         if cls._instances.get(cls, None) is None:
-            cls._instances[cls] = super(SingletonObject, cls).__new__(cls, *args, **kwargs)
+            cls._instances[cls] = super().__new__(cls, *args, **kwargs)
         return SingletonObject._instances[cls]
 
 

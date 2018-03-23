@@ -153,7 +153,7 @@ class ScalarEventDescription(EventDescription):
     decimals = models.PositiveIntegerField()  # the unit precision
 
     def __str__(self):
-        base = super(ScalarEventDescription, self).__str__()
+        base = super().__str__()
         return '{} - {}'.format(base, self.unit)
 
 
@@ -162,7 +162,7 @@ class CategoricalEventDescription(EventDescription):
     outcomes = ArrayField(models.TextField())  # List of outcomes
 
     def __str__(self):
-        base = super(CategoricalEventDescription, self).__str__()
+        base = super().__str__()
         return '{} - {}'.format(base, self.outcomes)
 
 
@@ -177,7 +177,7 @@ class CentralizedOracle(Oracle):
                                           on_delete=models.CASCADE)
 
     def __str__(self):
-        base = super(CentralizedOracle, self).__str__()
+        base = super().__str__()
         return 'Owner {} {}'.format(self.owner, base).strip()
 
 
@@ -240,7 +240,7 @@ class BuyOrder(Order):
     fees = models.DecimalField(max_digits=80, decimal_places=0)
 
     def __str__(self):
-        base = super(BuyOrder, self).__str__()
+        base = super().__str__()
         return '{} - Cost {} - Outcome Token Cost {}'.format(base,
                                                              self.cost,
                                                              self.outcome_token_cost)
@@ -252,7 +252,7 @@ class SellOrder(Order):
     fees = models.DecimalField(max_digits=80, decimal_places=0)
 
     def __str__(self):
-        base = super(SellOrder, self).__str__()
+        base = super().__str__()
         return '{} - Profit {} - Outcome Token Profit {}'.format(base,
                                                                  self.profit,
                                                                  self.outcome_token_profit)
@@ -262,7 +262,7 @@ class ShortSellOrder(Order):
     cost = models.DecimalField(max_digits=80, decimal_places=0)
 
     def __str__(self):
-        base = super(ShortSellOrder, self).__str__()
+        base = super().__str__()
         return '{} - Cost {}'.format(base, self.cost)
 
 

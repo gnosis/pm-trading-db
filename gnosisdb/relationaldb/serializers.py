@@ -125,7 +125,7 @@ class ContractCreatedByFactorySerializerTimestamped(ContractSerializer, BlockTim
 class IpfsHashField(CharField):
 
     def __init__(self, **kwargs):
-        super(IpfsHashField, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
     def get_event_description(self, ipfs_hash):
         """Returns the IPFS event_description object"""
@@ -188,7 +188,7 @@ class IpfsHashField(CharField):
 
 class OracleField(CharField):
     def __init__(self, **kwargs):
-        super(OracleField, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
     def to_internal_value(self, data):
         address_len = len(data)
@@ -209,7 +209,7 @@ class OracleField(CharField):
 
 class EventField(CharField):
     def __init__(self, **kwargs):
-        super(EventField, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
     def to_internal_value(self, data):
         event = None
@@ -282,7 +282,7 @@ class ScalarEventSerializer(EventSerializerTimestamped, serializers.ModelSeriali
     def validate(self, attrs):
         # Verify whether the attrs['oracle'] is a CentralizedOracle,
         # if so, check its event_description is a ScalarEventDescription
-        attrs = super(ScalarEventSerializer, self).validate(attrs=attrs)
+        attrs = super().validate(attrs=attrs)
         try:
             centralized_oracle = models.CentralizedOracle.objects.get(address=attrs['oracle'].address)
             description = models.ScalarEventDescription.objects.get(
@@ -312,7 +312,7 @@ class CategoricalEventSerializer(EventSerializerTimestamped, serializers.ModelSe
     def validate(self, attrs):
         # Verify whether attrs['oracle'] is a CentralizedOracle,
         # if so, check its event_description is a CategoricalEventDescription
-        attrs = super(CategoricalEventSerializer, self).validate(attrs=attrs)
+        attrs = super().validate(attrs=attrs)
         try:
             centralized_oracle = models.CentralizedOracle.objects.get(address=attrs['oracle'].address)
             description = models.CategoricalEventDescription.objects.get(ipfs_hash=centralized_oracle.event_description.ipfs_hash)
@@ -329,7 +329,7 @@ class CategoricalEventSerializer(EventSerializerTimestamped, serializers.ModelSe
 
     def create(self, validated_data):
         del validated_data['outcomeCount']
-        return super(CategoricalEventSerializer, self).create(validated_data)
+        return super().create(validated_data)
 
     def rollback(self):
         self.instance.delete()
@@ -609,7 +609,7 @@ class OutcomeTokenTransferSerializer(ContractSerializer, serializers.ModelSerial
         fields = ('from_address', 'to', 'value', 'address',)
 
     def __init__(self, *args, **kwargs):
-        super(OutcomeTokenTransferSerializer, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.initial_data['from_address'] = self.initial_data.pop('from')
 
     value = serializers.IntegerField(min_value=0)
@@ -1169,7 +1169,7 @@ class TournamentTokenTransferSerializer(ContractSerializer, serializers.ModelSer
     value = serializers.IntegerField()
 
     def __init__(self, *args, **kwargs):
-        super(TournamentTokenTransferSerializer, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.initial_data['from_participant'] = self.initial_data.pop('from')
         self.initial_data['to_participant'] = self.initial_data.pop('to')
         
@@ -1180,7 +1180,7 @@ class TournamentTokenTransferSerializer(ContractSerializer, serializers.ModelSer
         :return validated attrs
         :raise ValidationError
         """
-        super(TournamentTokenTransferSerializer, self).validate(attrs)
+        super().validate(attrs)
         error_message = ''
         try:
             models.TournamentParticipantBalance.objects.get(participant=attrs.get('from_participant'))
