@@ -133,6 +133,13 @@ ETH_EVENTS = [
         'PUBLISH': True,
     },
     {
+        'ADDRESSES': [os.environ['GENERIC_IDENTITY_MANAGER_ADDRESS']],
+        'EVENT_ABI': load_json_file(abi_file_path('AddressRegistry.json')),
+        'EVENT_DATA_RECEIVER': 'chainevents.event_receivers.GenericIdentityManagerReceiver',
+        'NAME': 'GenericIdentityManagerReceiver',
+        'PUBLISH': True,
+    },
+    {
         'ADDRESSES': [os.environ['TOURNAMENT_TOKEN']],
         'EVENT_ABI': load_json_file(abi_file_path('TournamentToken.json')),
         'EVENT_DATA_RECEIVER': 'chainevents.event_receivers.TournamentTokenReceiver',

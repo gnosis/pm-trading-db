@@ -13,10 +13,23 @@ from ipfs.ipfs import Ipfs
 
 from . import models
 
+# Ethereum addresses have 40 chars (without 0x)
+ADDRESS_LENGTH = 40
+
 mp.dps = 100
 mp.pretty = True
 
 logger = get_task_logger(__name__)
+
+
+class ContractSerializer(serializers.BaseSerializer):
+    """
+    Serializes a Contract entity
+    """
+    class Meta:
+        fields = ('address', )
+
+    address = serializers.CharField(max_length=ADDRESS_LENGTH)
 
 
 class BlockTimestampedSerializer(serializers.BaseSerializer):
@@ -30,11 +43,11 @@ class BlockTimestampedSerializer(serializers.BaseSerializer):
     creation_block = serializers.IntegerField()
 
 
-class ContractEventTimestamped(BlockTimestampedSerializer):
+class ContractSerializerTimestamped(BlockTimestampedSerializer):
     class Meta:
         fields = BlockTimestampedSerializer.Meta.fields + ('address',)
 
-    address = serializers.CharField(max_length=40)
+    address = serializers.CharField(max_length=ADDRESS_LENGTH)
 
     def __init__(self, *args, **kwargs):
         """
@@ -47,7 +60,7 @@ class ContractEventTimestamped(BlockTimestampedSerializer):
         the final data dictionary
         """
         self.block = kwargs.pop('block')
-        super(ContractEventTimestamped, self).__init__(*args, **kwargs)
+        super(ContractSerializerTimestamped, self).__init__(*args, **kwargs)
         data = kwargs.pop('data')
         # Event params moved to root object
         new_data = {
@@ -62,29 +75,19 @@ class ContractEventTimestamped(BlockTimestampedSerializer):
         self.initial_data = new_data
 
 
-class ContractSerializer(serializers.BaseSerializer):
-    """
-    Serializes a Contract entity
-    """
-    class Meta:
-        fields = ('address', )
-
-    address = serializers.CharField(max_length=40)
-
-
-class ContractCreatedByFactorySerializer(BlockTimestampedSerializer, ContractSerializer):
+class ContractCreatedByFactorySerializerTimestamped(BlockTimestampedSerializer, ContractSerializer):
     """
     Serializes a Contract Factory
     """
     class Meta:
         fields = BlockTimestampedSerializer.Meta.fields + ContractSerializer.Meta.fields + ('factory', 'creator')
 
-    factory = serializers.CharField(max_length=40)  # included prefix
-    creator = serializers.CharField(max_length=40)
+    factory = serializers.CharField(max_length=ADDRESS_LENGTH)  # included prefix
+    creator = serializers.CharField(max_length=ADDRESS_LENGTH)
 
     def __init__(self, *args, **kwargs):
         self.block = kwargs.pop('block')
-        super(ContractCreatedByFactorySerializer, self).__init__(*args, **kwargs)
+        super(ContractCreatedByFactorySerializerTimestamped, self).__init__(*args, **kwargs)
         data = kwargs.pop('data')
         # Event params moved to root object
         new_data = {
@@ -200,10 +203,12 @@ class OracleField(CharField):
 
     def to_internal_value(self, data):
         address_len = len(data)
-        if address_len > 40:
-            raise serializers.ValidationError('Maximum address length of 40 chars')
-        elif address_len < 40:
-            raise serializers.ValidationError('Address must have 40 chars')
+        if address_len > ADDRESS_LENGTH:
+            raise serializers.ValidationError('Maximum address length of {} chars, it has {}'.format(ADDRESS_LENGTH,
+                                                                                                     address_len))
+        elif address_len < ADDRESS_LENGTH:
+            raise serializers.ValidationError('Maximum address length of {} chars, it has {}'.format(ADDRESS_LENGTH,
+                                                                                                     address_len))
         else:
             # Check oracle exists or save Null
             try:
@@ -226,12 +231,12 @@ class EventField(CharField):
             raise serializers.ValidationError('eventContract address must exist')
 
 
-class OracleSerializer(ContractCreatedByFactorySerializer):
+class OracleSerializerTimestamped(ContractCreatedByFactorySerializerTimestamped):
     """
     Serializes an Oracle
     """
     class Meta:
-        fields = ContractCreatedByFactorySerializer.Meta.fields + ('is_outcome_set', 'outcome')
+        fields = ContractCreatedByFactorySerializerTimestamped.Meta.fields + ('is_outcome_set', 'outcome')
 
     is_outcome_set = serializers.BooleanField(default=False)
     outcome = serializers.IntegerField(default=0)
@@ -240,15 +245,15 @@ class OracleSerializer(ContractCreatedByFactorySerializer):
         pass
 
 
-class CentralizedOracleSerializer(OracleSerializer, serializers.ModelSerializer):
+class CentralizedOracleSerializer(OracleSerializerTimestamped, serializers.ModelSerializer):
     """
     Serializes a Centralized Oracle
     """
     class Meta:
         model = models.CentralizedOracle
-        fields = OracleSerializer.Meta.fields + ('ipfsHash', 'centralizedOracle')
+        fields = OracleSerializerTimestamped.Meta.fields + ('ipfsHash', 'centralizedOracle')
 
-    centralizedOracle = serializers.CharField(max_length=40, source='address')
+    centralizedOracle = serializers.CharField(max_length=ADDRESS_LENGTH, source='address')
     ipfsHash = IpfsHashField(source='event_description')
 
     def create(self, validated_data):
@@ -260,30 +265,30 @@ class CentralizedOracleSerializer(OracleSerializer, serializers.ModelSerializer)
         self.instance.delete()
 
 
-class EventSerializer(ContractCreatedByFactorySerializer, serializers.ModelSerializer):
+class EventSerializerTimestamped(ContractCreatedByFactorySerializerTimestamped, serializers.ModelSerializer):
     """
     Serializes an Event
     """
     class Meta:
         models = models.Event
-        fields = ContractCreatedByFactorySerializer.Meta.fields + ('collateralToken', 'creator', 'oracle',)
+        fields = ContractCreatedByFactorySerializerTimestamped.Meta.fields + ('collateralToken', 'creator', 'oracle',)
 
-    collateralToken = serializers.CharField(max_length=40, source='collateral_token')
-    creator = serializers.CharField(max_length=40)
+    collateralToken = serializers.CharField(max_length=ADDRESS_LENGTH, source='collateral_token')
+    creator = serializers.CharField(max_length=ADDRESS_LENGTH)
     oracle = OracleField()
 
 
-class ScalarEventSerializer(EventSerializer, serializers.ModelSerializer):
+class ScalarEventSerializer(EventSerializerTimestamped, serializers.ModelSerializer):
     """
     Serializes a Scalar Event
     """
     class Meta:
         model = models.ScalarEvent
-        fields = EventSerializer.Meta.fields + ('lowerBound', 'upperBound', 'scalarEvent')
+        fields = EventSerializerTimestamped.Meta.fields + ('lowerBound', 'upperBound', 'scalarEvent')
 
     lowerBound = serializers.IntegerField(source='lower_bound')
     upperBound = serializers.IntegerField(source='upper_bound')
-    scalarEvent = serializers.CharField(source='address', max_length=40)
+    scalarEvent = serializers.CharField(source='address', max_length=ADDRESS_LENGTH)
 
     def validate(self, attrs):
         # Verify whether the attrs['oracle'] is a CentralizedOracle,
@@ -304,15 +309,15 @@ class ScalarEventSerializer(EventSerializer, serializers.ModelSerializer):
         self.instance.delete()
 
 
-class CategoricalEventSerializer(EventSerializer, serializers.ModelSerializer):
+class CategoricalEventSerializer(EventSerializerTimestamped, serializers.ModelSerializer):
     """
     Serializes a Categorical Event
     """
     class Meta:
         model = models.CategoricalEvent
-        fields = EventSerializer.Meta.fields + ('categoricalEvent', 'outcomeCount',)
+        fields = EventSerializerTimestamped.Meta.fields + ('categoricalEvent', 'outcomeCount',)
 
-    categoricalEvent = serializers.CharField(source='address', max_length=40)
+    categoricalEvent = serializers.CharField(source='address', max_length=ADDRESS_LENGTH)
     outcomeCount = serializers.IntegerField()
 
     def validate(self, attrs):
@@ -341,19 +346,19 @@ class CategoricalEventSerializer(EventSerializer, serializers.ModelSerializer):
         self.instance.delete()
 
 
-class MarketSerializer(ContractCreatedByFactorySerializer, serializers.ModelSerializer):
+class MarketSerializerTimestamped(ContractCreatedByFactorySerializerTimestamped, serializers.ModelSerializer):
     """
     Serializes a Market
     """
     class Meta:
         model = models.Market
-        fields = ContractCreatedByFactorySerializer.Meta.fields + ('eventContract', 'marketMaker', 'fee',
+        fields = ContractCreatedByFactorySerializerTimestamped.Meta.fields + ('eventContract', 'marketMaker', 'fee',
                                                                    'market', 'revenue', 'collected_fees',)
 
     eventContract = EventField(source='event')
-    marketMaker = serializers.CharField(max_length=40, source='market_maker')
+    marketMaker = serializers.CharField(max_length=ADDRESS_LENGTH, source='market_maker')
     fee = serializers.IntegerField()
-    market = serializers.CharField(max_length=40, source='address')
+    market = serializers.CharField(max_length=ADDRESS_LENGTH, source='address')
     revenue = serializers.IntegerField(default=0)
     collected_fees = serializers.IntegerField(default=0)
 
@@ -473,7 +478,7 @@ class OutcomeTokenInstanceSerializer(ContractNotTimestampted, serializers.ModelS
         fields = ContractSerializer.Meta.fields + ('address', 'index', 'outcomeToken',)
 
     address = EventField(source='event')
-    outcomeToken = CharField(max_length=40, source='address')
+    outcomeToken = CharField(max_length=ADDRESS_LENGTH, source='address')
     index = serializers.IntegerField(min_value=0)
 
     def rollback(self):
@@ -488,9 +493,9 @@ class OutcomeTokenIssuanceSerializer(ContractNotTimestampted, serializers.ModelS
         model = models.OutcomeToken
         fields = ('owner', 'amount', 'address',)
 
-    owner = serializers.CharField(max_length=40)
+    owner = serializers.CharField(max_length=ADDRESS_LENGTH)
     amount = serializers.IntegerField()
-    address = serializers.CharField(max_length=40, source='outcome_token')
+    address = serializers.CharField(max_length=ADDRESS_LENGTH, source='outcome_token')
 
     def create(self, validated_data):
         # Creates or updates an outcome token balance for the given outcome_token.
@@ -540,9 +545,9 @@ class OutcomeTokenRevocationSerializer(ContractNotTimestampted, serializers.Mode
         model = models.OutcomeToken
         fields = ('owner', 'amount', 'address',)
 
-    owner = serializers.CharField(max_length=40)
+    owner = serializers.CharField(max_length=ADDRESS_LENGTH)
     amount = serializers.IntegerField()
-    address = serializers.CharField(max_length=40, source='outcome_token')
+    address = serializers.CharField(max_length=ADDRESS_LENGTH, source='outcome_token')
 
     def validate(self, attrs):
         try:
@@ -586,7 +591,7 @@ class OutcomeAssignmentEventSerializer(ContractNotTimestampted, serializers.Mode
         fields = ('outcome', 'address',)
 
     outcome = serializers.IntegerField()
-    address = serializers.CharField(max_length=40)
+    address = serializers.CharField(max_length=ADDRESS_LENGTH)
 
     def create(self, validated_data):
         # Updates the event outcome
@@ -619,9 +624,9 @@ class OutcomeTokenTransferSerializer(ContractNotTimestampted, serializers.ModelS
         self.initial_data['from_address'] = self.initial_data.pop('from')
 
     value = serializers.IntegerField(min_value=0)
-    address = serializers.CharField(max_length=40, source="outcome_token")
-    from_address = serializers.CharField(max_length=40)
-    to = serializers.CharField(max_length=40)
+    address = serializers.CharField(max_length=ADDRESS_LENGTH, source="outcome_token")
+    from_address = serializers.CharField(max_length=ADDRESS_LENGTH)
+    to = serializers.CharField(max_length=ADDRESS_LENGTH)
 
     def create(self, validated_data):
         # Substract balance from Outcome Token Balance
@@ -676,8 +681,8 @@ class WinningsRedemptionSerializer(ContractNotTimestampted, serializers.ModelSer
         model = models.Event
         fields = ('address', 'receiver', 'winnings',)
 
-    address = serializers.CharField(max_length=40)
-    receiver = serializers.CharField(max_length=40)
+    address = serializers.CharField(max_length=ADDRESS_LENGTH)
+    receiver = serializers.CharField(max_length=ADDRESS_LENGTH)
     winnings = serializers.IntegerField()
 
     def create(self, validated_data):
@@ -708,8 +713,8 @@ class OwnerReplacementSerializer(ContractNotTimestampted, serializers.ModelSeria
         model = models.CentralizedOracle
         fields = ('address', 'newOwner',)
 
-    address = serializers.CharField(max_length=40)
-    newOwner = serializers.CharField(max_length=40)
+    address = serializers.CharField(max_length=ADDRESS_LENGTH)
+    newOwner = serializers.CharField(max_length=ADDRESS_LENGTH)
 
     def create(self, validated_data):
         # Replaces the centralized oracle's owner if existing
@@ -737,7 +742,7 @@ class OutcomeAssignmentOracleSerializer(ContractNotTimestampted, serializers.Mod
         model = models.CentralizedOracle
         fields = ('address', 'outcome',)
 
-    address = serializers.CharField(max_length=40)
+    address = serializers.CharField(max_length=ADDRESS_LENGTH)
     outcome = serializers.IntegerField()
 
     def create(self, validated_data):
@@ -759,17 +764,17 @@ class OutcomeAssignmentOracleSerializer(ContractNotTimestampted, serializers.Mod
         return self.instance
 
 
-class OutcomeTokenPurchaseSerializer(ContractEventTimestamped, serializers.ModelSerializer):
+class OutcomeTokenPurchaseSerializerTimestamped(ContractSerializerTimestamped, serializers.ModelSerializer):
     """
     Serializes the Market OutcomeTokenPurchase event
     """
     class Meta:
         model = models.BuyOrder
-        fields = ContractEventTimestamped.Meta.fields + ('buyer', 'outcomeTokenIndex', 'outcomeTokenCount',
+        fields = ContractSerializerTimestamped.Meta.fields + ('buyer', 'outcomeTokenIndex', 'outcomeTokenCount',
                                                          'outcomeTokenCost', 'marketFees',)
 
-    address = serializers.CharField(max_length=40)
-    buyer = serializers.CharField(max_length=40)
+    address = serializers.CharField(max_length=ADDRESS_LENGTH)
+    buyer = serializers.CharField(max_length=ADDRESS_LENGTH)
     outcomeTokenIndex = serializers.IntegerField()
     outcomeTokenCount = serializers.IntegerField()
     outcomeTokenCost = serializers.IntegerField()
@@ -834,17 +839,17 @@ class OutcomeTokenPurchaseSerializer(ContractEventTimestamped, serializers.Model
         market.save()
 
 
-class OutcomeTokenSaleSerializer(ContractEventTimestamped, serializers.ModelSerializer):
+class OutcomeTokenSaleSerializerTimestamped(ContractSerializerTimestamped, serializers.ModelSerializer):
     """
     Serializes the Market OutcomeTokenSale event
     """
     class Meta:
         model = models.SellOrder
-        fields = ContractEventTimestamped.Meta.fields + ('seller', 'outcomeTokenIndex', 'outcomeTokenCount',
+        fields = ContractSerializerTimestamped.Meta.fields + ('seller', 'outcomeTokenIndex', 'outcomeTokenCount',
                                                          'outcomeTokenProfit', 'marketFees',)
 
-    address = serializers.CharField(max_length=40)
-    seller = serializers.CharField(max_length=40)
+    address = serializers.CharField(max_length=ADDRESS_LENGTH)
+    seller = serializers.CharField(max_length=ADDRESS_LENGTH)
     outcomeTokenIndex = serializers.IntegerField()
     outcomeTokenCount = serializers.IntegerField()
     outcomeTokenProfit = serializers.IntegerField()
@@ -908,16 +913,16 @@ class OutcomeTokenSaleSerializer(ContractEventTimestamped, serializers.ModelSeri
         market.save()
 
 
-class OutcomeTokenShortSaleOrderSerializer(ContractEventTimestamped, serializers.ModelSerializer):
+class OutcomeTokenShortSaleOrderSerializerTimestamped(ContractSerializerTimestamped, serializers.ModelSerializer):
     """
     Serializes the Market OutcomeTokenShortSale event
     """
     class Meta:
         model = models.ShortSellOrder
-        fields = ContractEventTimestamped.Meta.fields + ('buyer', 'outcomeTokenIndex', 'outcomeTokenCount', 'cost',)
+        fields = ContractSerializerTimestamped.Meta.fields + ('buyer', 'outcomeTokenIndex', 'outcomeTokenCount', 'cost',)
 
-    address = serializers.CharField(max_length=40)
-    buyer = serializers.CharField(max_length=40)
+    address = serializers.CharField(max_length=ADDRESS_LENGTH)
+    buyer = serializers.CharField(max_length=ADDRESS_LENGTH)
     outcomeTokenIndex = serializers.IntegerField()
     outcomeTokenCount = serializers.IntegerField()
     cost = serializers.IntegerField()
@@ -960,7 +965,7 @@ class MarketFundingSerializer(ContractNotTimestampted, serializers.ModelSerializ
         model = models.Market
         fields = ('address', 'funding',)
 
-    address = serializers.CharField(max_length=40)
+    address = serializers.CharField(max_length=ADDRESS_LENGTH)
     funding = serializers.IntegerField()
 
     def create(self, validated_data):
@@ -988,7 +993,7 @@ class MarketClosingSerializer(ContractNotTimestampted, serializers.ModelSerializ
         model = models.Market
         fields = ('address',)
 
-    address = serializers.CharField(max_length=40)
+    address = serializers.CharField(max_length=ADDRESS_LENGTH)
 
     def create(self, validated_data):
         try:
@@ -1013,7 +1018,7 @@ class FeeWithdrawalSerializer(ContractNotTimestampted, serializers.ModelSerializ
         model = models.Market
         fields = ('address', 'fees',)
 
-    address = serializers.CharField(max_length=40)
+    address = serializers.CharField(max_length=ADDRESS_LENGTH)
     fees = serializers.IntegerField()
 
     def create(self, validated_data):
@@ -1031,16 +1036,17 @@ class FeeWithdrawalSerializer(ContractNotTimestampted, serializers.ModelSerializ
         return self.instance
 
 
-class TournamentParticipantSerializer(ContractCreatedByFactorySerializer, serializers.ModelSerializer):
+class UportTournamentParticipantSerializerEventSerializerTimestamped(ContractSerializerTimestamped,
+                                                                     serializers.ModelSerializer):
     """
     Serializes the Uport new Identitity event
     """
     class Meta:
         model = models.TournamentParticipant
-        fields = ContractCreatedByFactorySerializer.Meta.fields + ('identity',)
+        fields = ContractSerializerTimestamped.Meta.fields + ('identity',)
 
-    identity = serializers.CharField(max_length=40, source='address')
-    address = serializers.CharField(max_length=40, source='factory')
+    identity = serializers.CharField(max_length=ADDRESS_LENGTH, source='address')
+    # address = serializers.CharField(max_length=ADDRESS_LENGTH, source='factory')
 
     def validate_identity(self, identity_address):
         """
@@ -1059,8 +1065,59 @@ class TournamentParticipantSerializer(ContractCreatedByFactorySerializer, serial
         validated_data['current_rank'] = participants_amount + 1
         validated_data['past_rank'] = participants_amount + 1
         validated_data['diff_rank'] = 0
+        # validated_data.update({
+        #     'address': validated_data.get('address').lower(),
+        # })
+
+        participant = models.TournamentParticipant.objects.create(**validated_data)
+        participant_balance = models.TournamentParticipantBalance()
+        participant_balance.balance = 0
+        participant_balance.participant = participant
+        participant_balance.save()
+        return participant
+
+    def rollback(self):
+        self.instance.delete()
+
+
+class GenericTournamentParticipantEventSerializerTimestamped(ContractSerializerTimestamped, serializers.ModelSerializer):
+    """
+    Serializes the AddressRegistry AddressRegistration event
+    event AddressRegistration(address registrant, address registeredMainnetAddress)
+    """
+    class Meta:
+        model = models.TournamentParticipant
+        fields = ContractSerializerTimestamped.Meta.fields + ('registrant', 'registeredMainnetAddress')
+
+    registrant = serializers.CharField(max_length=ADDRESS_LENGTH, source='address')
+    registeredMainnetAddress = serializers.CharField(max_length=ADDRESS_LENGTH, source='mainnet_address')
+
+    def validate_registrant(self, registrant_address):
+        if models.TournamentParticipant.objects.filter(address=registrant_address).exists():
+            raise serializers.ValidationError('Duplicated registrant {} , wont be saved'.format(registrant_address))
+        else:
+            return registrant_address
+
+    def validate_registeredMainnetAddress(self, identity_address):
+        """
+        Only not whitelisted users can be saved
+        :param identity_address: a user participant address
+        :return: validated identity address
+        """
+        whitelisted_users = models.TournamentWhitelistedCreator.objects.all().values_list('address', flat=True)
+        if identity_address in whitelisted_users:
+            raise serializers.ValidationError('Tournament participant {} is admin, wont be saved'.format(identity_address))
+        else:
+            return identity_address
+
+    def create(self, validated_data):
+        participants_amount = models.TournamentParticipant.objects.all().count()
+        validated_data['current_rank'] = participants_amount + 1
+        validated_data['past_rank'] = participants_amount + 1
+        validated_data['diff_rank'] = 0
         validated_data.update({
-            'address': validated_data.get('address').lower()
+            # 'address': validated_data.get('address').lower(),
+            'mainnet_address': validated_data.get('mainnet_address').lower(),
         })
 
         participant = models.TournamentParticipant.objects.create(**validated_data)
@@ -1083,7 +1140,7 @@ class TournamentTokenIssuanceSerializer(ContractNotTimestampted, serializers.Mod
         model = models.TournamentParticipantBalance
         fields = ('owner', 'amount',)
 
-    owner = serializers.CharField(max_length=40)
+    owner = serializers.CharField(max_length=ADDRESS_LENGTH)
     amount = serializers.IntegerField()
 
     def validate_owner(self, owner):
@@ -1118,8 +1175,8 @@ class TournamentTokenTransferSerializer(ContractNotTimestampted, serializers.Mod
         model = models.TournamentParticipantBalance
         fields = ('from_participant', 'to_participant', 'value',)
 
-    from_participant = serializers.CharField(max_length=40)
-    to_participant = serializers.CharField(max_length=40)
+    from_participant = serializers.CharField(max_length=ADDRESS_LENGTH)
+    to_participant = serializers.CharField(max_length=ADDRESS_LENGTH)
     value = serializers.IntegerField()
 
     def __init__(self, *args, **kwargs):
