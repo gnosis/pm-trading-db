@@ -1,6 +1,6 @@
 from gnosisdb.chainevents.abis import abi_file_path, load_json_file
 
-from .production import *
+from .base import *
 
 # OLYMPIA
 LMSR_MARKET_MAKER = '0x9561C133DD8580860B6b7E504bC5Aa500f0f06a7'
