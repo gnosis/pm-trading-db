@@ -7,6 +7,7 @@ from ipfsapi.exceptions import ErrorResponse
 from mpmath import mp
 from rest_framework import serializers
 from rest_framework.fields import CharField
+from web3 import Web3
 
 from gnosis.utils import calc_lmsr_marginal_price
 from ipfs.ipfs import Ipfs
@@ -351,10 +352,10 @@ class MarketSerializerTimestamped(ContractCreatedByFactorySerializerTimestamped,
     revenue = serializers.IntegerField(default=0)
     collected_fees = serializers.IntegerField(default=0)
 
-    def validate_marketMaker(self, obj):
-        if not settings.LMSR_MARKET_MAKER == obj:
-            raise serializers.ValidationError('Market Maker {} does not exist'.format(obj))
-        return obj
+    def validate_marketMaker(self, market_maker_address):
+        if not Web3.toChecksumAddress(settings.LMSR_MARKET_MAKER) == Web3.toChecksumAddress(market_maker_address):
+            raise serializers.ValidationError('Market Maker {} does not exist'.format(market_maker_address))
+        return market_maker_address
 
     def create(self, validated_data):
         # Check event type (Categorical or Scalar)

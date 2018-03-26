@@ -7,10 +7,6 @@ DEBUG = True
 MIDDLEWARE += ['debug_toolbar.middleware.DebugToolbarMiddleware', ]
 INSTALLED_APPS += ['debug_toolbar', ]
 
-TOURNAMENT_TOKEN = '0x254dffcd3277C0b1660F6d42EFbB754edaBAbC2B'
-TOURNAMENT_TOKEN_ISSUANCE = '200000000000000000000'
-ETHEREUM_PRIVATE_KEY = '4f3edf983ac636a65a842ce7c78d9aa706d3b113bce9c46f30d7d21715b23b1d'
-
 ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
 # Django Debug Toolbar config

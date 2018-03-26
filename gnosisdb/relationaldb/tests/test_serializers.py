@@ -2,6 +2,7 @@ from time import mktime
 
 from django.conf import settings
 from django.test import TestCase
+from django_eth_events.utils import normalize_address_without_0x
 
 from ipfs.ipfs import Ipfs
 
@@ -391,7 +392,7 @@ class TestSerializers(TestCase):
         self.assertFalse(s.is_valid(), s.errors)
 
         marketMaker = [x for x in market_dict.get('params') if x.get('name') == 'marketMaker'][0]
-        marketMaker.update({'value': settings.LMSR_MARKET_MAKER})
+        marketMaker.update({'value': normalize_address_without_0x(settings.LMSR_MARKET_MAKER)})
 
         s = MarketSerializerTimestamped(data=market_dict, block=block)
         self.assertTrue(s.is_valid(), s.errors)

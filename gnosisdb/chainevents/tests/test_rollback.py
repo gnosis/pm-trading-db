@@ -4,6 +4,7 @@ from time import mktime
 from django.conf import settings
 from django.test import TestCase
 from django.utils import timezone
+from django_eth_events.utils import normalize_address_without_0x
 
 from gnosisdb.relationaldb.models import (BuyOrder, CategoricalEvent,
                                           CentralizedOracle, Market,
@@ -269,7 +270,7 @@ class TestRollback(TestCase):
                 },
                 {
                     'name': 'marketMaker',
-                    'value': settings.LMSR_MARKET_MAKER
+                    'value': normalize_address_without_0x(settings.LMSR_MARKET_MAKER)
                 },
                 {
                     'name': 'fee',

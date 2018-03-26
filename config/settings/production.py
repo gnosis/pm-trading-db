@@ -35,16 +35,17 @@ CACHES = {
 # ------------------------------------------------------------------------------
 # EMAIL CONFIGURATION
 # ------------------------------------------------------------------------------
-EMAIL_HOST = os.environ['EMAIL_HOST']
-EMAIL_HOST_PASSWORD = os.environ['EMAIL_HOST_PASSWORD']
-EMAIL_HOST_USER = os.environ['EMAIL_HOST_USER']
-EMAIL_PORT = os.environ['EMAIL_PORT']
-EMAIL_USE_TLS = True
-EMAIL_SUBJECT_PREFIX = os.environ['EMAIL_SUBJECT_PREFIX']
-DEFAULT_FROM_EMAIL = os.environ['DEFAULT_FROM_EMAIL']
-SERVER_EMAIL = DEFAULT_FROM_EMAIL
-EMAIL_LOG_BACKEND = 'email_log.backends.EmailBackend'
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+if 'EMAIL_HOST' in os.environ:
+    EMAIL_HOST = os.environ['EMAIL_HOST']
+    EMAIL_HOST_PASSWORD = os.environ['EMAIL_HOST_PASSWORD']
+    EMAIL_HOST_USER = os.environ['EMAIL_HOST_USER']
+    EMAIL_PORT = os.environ['EMAIL_PORT']
+    EMAIL_USE_TLS = True
+    EMAIL_SUBJECT_PREFIX = os.environ['EMAIL_SUBJECT_PREFIX']
+    DEFAULT_FROM_EMAIL = os.environ['DEFAULT_FROM_EMAIL']
+    SERVER_EMAIL = DEFAULT_FROM_EMAIL
+    EMAIL_LOG_BACKEND = 'email_log.backends.EmailBackend'
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
 ADMINS = (
     ('Giacomo', 'giacomo.licari@gnosis.pm'),
@@ -72,10 +73,12 @@ BROKER_URL = 'amqp://{user}:{password}@{hostname}:{port}/{queue}'.format(
 # ETHEREUM
 # ------------------------------------------------------------------------------
 ETH_PROCESS_BLOCKS = os.environ.get('ETH_PROCESS_BLOCKS', '100')
-ETHEREUM_IPC_PATH = os.environ.get('ETHEREUM_IPC_PATH')
-ETHEREUM_NODE_HOST = os.environ['ETHEREUM_NODE_HOST']
-ETHEREUM_NODE_PORT = os.environ['ETHEREUM_NODE_PORT']
-ETHEREUM_NODE_SSL = bool(int(os.environ['ETHEREUM_NODE_SSL']))
+if 'ETHEREUM_IPC_PATH' in os.environ:
+    ETHEREUM_IPC_PATH = os.environ['ETHEREUM_IPC_PATH']
+else:
+    ETHEREUM_NODE_HOST = os.environ['ETHEREUM_NODE_HOST']
+    ETHEREUM_NODE_PORT = os.environ['ETHEREUM_NODE_PORT']
+    ETHEREUM_NODE_SSL = bool(int(os.environ['ETHEREUM_NODE_SSL']))
 ETHEREUM_MAX_WORKERS = int(os.environ.get('ETHEREUM_MAX_WORKERS', '10'))
 
 # ------------------------------------------------------------------------------
@@ -84,20 +87,18 @@ ETHEREUM_MAX_WORKERS = int(os.environ.get('ETHEREUM_MAX_WORKERS', '10'))
 IPFS_HOST = os.environ['IPFS_HOST']
 IPFS_PORT = os.environ['IPFS_PORT']
 
-
-# ------------------------------------------------------------------------------
-# LMSR MARKET MAKER Address
-# ------------------------------------------------------------------------------
-LMSR_MARKET_MAKER = os.environ['LMSR_MARKET_MAKER']
-
 # ------------------------------------------------------------------------------
 # Tournament settings
 # ------------------------------------------------------------------------------
 TOURNAMENT_TOKEN = os.environ['TOURNAMENT_TOKEN']
-TOURNAMENT_TOKEN_ISSUANCE = os.environ.get('TOURNAMENT_TOKEN_ISSUANCE', '200000000000000000000')
+LMSR_MARKET_MAKER = os.environ['LMSR_MARKET_MAKER']
 
-ETHEREUM_DEFAULT_ACCOUNT = os.environ['ETHEREUM_DEFAULT_ACCOUNT']
-ETHEREUM_DEFAULT_ACCOUNT_PRIVATE_KEY = os.environ.get('ETHEREUM_DEFAULT_ACCOUNT_PRIVATE_KEY', None)
+# ------------------------------------------------------------------------------
+# Token issuance (optional)
+# ------------------------------------------------------------------------------
+ETHEREUM_DEFAULT_ACCOUNT = os.environ.get('ETHEREUM_DEFAULT_ACCOUNT')
+ETHEREUM_DEFAULT_ACCOUNT_PRIVATE_KEY = os.environ.get('ETHEREUM_DEFAULT_ACCOUNT_PRIVATE_KEY')
+TOURNAMENT_TOKEN_ISSUANCE = os.environ.get('TOURNAMENT_TOKEN_ISSUANCE', '200000000000000000000')
 
 # ------------------------------------------------------------------------------
 # GNOSIS ETHEREUM CONTRACTS

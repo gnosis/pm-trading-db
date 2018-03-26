@@ -241,29 +241,31 @@ IPFS_PORT = 5001
 # ------------------------------------------------------------------------------
 # LMSR MARKET MAKER Address
 # ------------------------------------------------------------------------------
-LMSR_MARKET_MAKER = '9561c133dd8580860b6b7e504bc5aa500f0f06a7'
+LMSR_MARKET_MAKER = '0x9561C133DD8580860B6b7E504bC5Aa500f0f06a7'
 
+TOURNAMENT_TOKEN = '0x254dffcd3277C0b1660F6d42EFbB754edaBAbC2B'
+TOURNAMENT_TOKEN_ISSUANCE = '200000000000000000000'
 
 # ------------------------------------------------------------------------------
 # GnosisDB Contract Addresses
 # ------------------------------------------------------------------------------
 ETH_EVENTS = [
     {
-        'ADDRESSES': ['cfeb869f69431e42cdb54a4f4f105c19c080a601'],
+        'ADDRESSES': ['0xCfEB869F69431e42cdB54A4F4f105C19C080A601'],
         'EVENT_ABI': load_json_file(abi_file_path('CentralizedOracleFactory.json')),
         'EVENT_DATA_RECEIVER': 'chainevents.event_receivers.CentralizedOracleFactoryReceiver',
         'NAME': 'centralizedOracleFactory',
         'PUBLISH': True,
     },
     {
-        'ADDRESSES': ['67b5656d60a809915323bf2c40a8bef15a152e3e'],
+        'ADDRESSES': ['0x67B5656d60a809915323Bf2C40A8bEF15A152e3e'],
         'EVENT_ABI': load_json_file(abi_file_path('EventFactory.json')),
         'EVENT_DATA_RECEIVER': 'chainevents.event_receivers.EventFactoryReceiver',
         'NAME': 'eventFactory',
         'PUBLISH': True,
     },
     {
-        'ADDRESSES': ['e982e462b094850f12af94d21d470e21be9d0e9c'],
+        'ADDRESSES': ['0xe982E462b094850F12AF94d21D470e21bE9D0E9C'],
         'EVENT_ABI': load_json_file(abi_file_path('StandardMarketFactory.json')),
         'EVENT_DATA_RECEIVER': 'chainevents.event_receivers.MarketFactoryReceiver',
         'NAME': 'standardMarketFactory',
