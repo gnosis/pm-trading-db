@@ -1,33 +1,33 @@
 from gnosisdb.chainevents.abis import abi_file_path, load_json_file
 
-from .testrpc import *
+from .production import *
 
-ETHEREUM_NODE_HOST = '192.168.1.48'
-ETHEREUM_DEFAULT_ACCOUNT = '90F8bf6A479f320ead074411a4B0e7944Ea8c9C1'
+# OLYMPIA
+LMSR_MARKET_MAKER = '0x9561C133DD8580860B6b7E504bC5Aa500f0f06a7'
+ETHEREUM_DEFAULT_ACCOUNT = '0x90F8bf6A479f320ead074411a4B0e7944Ea8c9C1'
 TOURNAMENT_TOKEN = '0x254dffcd3277C0b1660F6d42EFbB754edaBAbC2B'
 TOURNAMENT_TOKEN_ISSUANCE = '200000000000000000000'
 
 # ------------------------------------------------------------------------------
-# GNOSIS ETHEREUM CONTRACTS
+# GnosisDB Contract Addresses (Rinkeby)
 # ------------------------------------------------------------------------------
-
 ETH_EVENTS = [
     {
-        'ADDRESSES': ['b3289eaac0fe3ed15df177f925c6f8ceeb908b8f'],
+        'ADDRESSES': ['0xb3289eAAc0Fe3eD15Df177F925c6F8ceEB908b8f'],
         'EVENT_ABI': load_json_file(abi_file_path('CentralizedOracleFactory.json')),
         'EVENT_DATA_RECEIVER': 'chainevents.event_receivers.CentralizedOracleFactoryReceiver',
         'NAME': 'centralizedOracleFactory',
         'PUBLISH': True,
     },
     {
-        'ADDRESSES': ['0f60faf69f3ac146e1e557247583bc0c84f9f086'],
+        'ADDRESSES': ['0x0f60faf69F3Ac146e1E557247583BC0c84f9f086'],
         'EVENT_ABI': load_json_file(abi_file_path('EventFactory.json')),
         'EVENT_DATA_RECEIVER': 'chainevents.event_receivers.EventFactoryReceiver',
         'NAME': 'eventFactory',
         'PUBLISH': True,
     },
     {
-        'ADDRESSES': ['eaa325bacae405fd5b45e9cf695d391f1c624a2f'],
+        'ADDRESSES': ['0xEAA325bACAe405fd5B45E9cF695D391F1C624A2f'],
         'EVENT_ABI': load_json_file(abi_file_path('StandardMarketFactory.json')),
         'EVENT_DATA_RECEIVER': 'chainevents.event_receivers.MarketFactoryReceiver',
         'NAME': 'standardMarketFactory',
@@ -35,7 +35,7 @@ ETH_EVENTS = [
         'PUBLISH_UNDER': 'marketFactories'
     },
     {
-        'ADDRESSES': ['abbcd5b340c80b5f1c0545c04c987b87310296ae'],
+        'ADDRESSES': ['0xABBcD5B340C80B5f1C0545C04C987b87310296aE'],
         'EVENT_ABI': load_json_file(abi_file_path('UportIdentityManager.json')),
         'EVENT_DATA_RECEIVER': 'chainevents.event_receivers.UportIdentityManagerReceiver',
         'NAME': 'UportIdentityManagerInstanceReceiver',

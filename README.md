@@ -152,7 +152,6 @@ IPFS_PORT = os.environ['IPFS_PORT']
 ##### RABBIT MQ
 RabbitMQ is the default Celery's messaging broker, other brokers are Redis and Amazon SQS.<br/>
 More info about Celery's brokers at [this link](http://docs.celeryproject.org/en/latest/getting-started/brokers/index.html).<br/>
-If you're willing to run RabbitMQ in a Dokku/Docker container, please read out [this link](https://github.com/dokku/dokku-rabbitmq).
 
 ```
 RABBIT_HOSTNAME = os.environ['RABBIT_HOSTNAME']

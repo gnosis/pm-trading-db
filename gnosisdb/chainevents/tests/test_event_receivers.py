@@ -5,6 +5,7 @@ from time import mktime
 from django.conf import settings
 from django.test import TestCase
 from django.utils import timezone
+from django_eth_events.utils import normalize_address_without_0x
 
 from gnosisdb.relationaldb.models import (BuyOrder, CategoricalEvent,
                                           CentralizedOracle, Event, Market,
@@ -235,7 +236,7 @@ class TestEventReceiver(TestCase):
         with self.assertRaises(Market.DoesNotExist):
             Market.objects.get(event=event_address)
 
-        market_dict.get('params')[2].update({'value': settings.LMSR_MARKET_MAKER})
+        market_dict.get('params')[2].update({'value': normalize_address_without_0x(settings.LMSR_MARKET_MAKER)})
         MarketFactoryReceiver().save(market_dict, block)
         saved_market = Market.objects.get(event=event_address)
         self.assertIsNotNone(saved_market.pk)
