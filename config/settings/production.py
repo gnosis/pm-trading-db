@@ -3,6 +3,7 @@ import os
 from gnosisdb.chainevents.abis import abi_file_path, load_json_file
 
 from .base import *
+from .events.olympia import ETH_EVENTS
 
 CELERY_SEND_TASK_ERROR_EMAILS = False
 
@@ -99,76 +100,3 @@ LMSR_MARKET_MAKER = os.environ['LMSR_MARKET_MAKER']
 ETHEREUM_DEFAULT_ACCOUNT = os.environ.get('ETHEREUM_DEFAULT_ACCOUNT')
 ETHEREUM_DEFAULT_ACCOUNT_PRIVATE_KEY = os.environ.get('ETHEREUM_DEFAULT_ACCOUNT_PRIVATE_KEY')
 TOURNAMENT_TOKEN_ISSUANCE = os.environ.get('TOURNAMENT_TOKEN_ISSUANCE', '200000000000000000000')
-
-# ------------------------------------------------------------------------------
-# GNOSIS ETHEREUM CONTRACTS
-# ------------------------------------------------------------------------------
-ETH_EVENTS = [
-    {
-        'ADDRESSES': [os.environ['CENTRALIZED_ORACLE_FACTORY']],
-        'EVENT_ABI': load_json_file(abi_file_path('CentralizedOracleFactory.json')),
-        'EVENT_DATA_RECEIVER': 'chainevents.event_receivers.CentralizedOracleFactoryReceiver',
-        'NAME': 'centralizedOracleFactory',
-        'PUBLISH': True,
-    },
-    {
-        'ADDRESSES': [os.environ['EVENT_FACTORY']],
-        'EVENT_ABI': load_json_file(abi_file_path('EventFactory.json')),
-        'EVENT_DATA_RECEIVER': 'chainevents.event_receivers.EventFactoryReceiver',
-        'NAME': 'eventFactory',
-        'PUBLISH': True,
-    },
-    {
-        'ADDRESSES': [os.environ['MARKET_FACTORY']],
-        'EVENT_ABI': load_json_file(abi_file_path('StandardMarketFactory.json')),
-        'EVENT_DATA_RECEIVER': 'chainevents.event_receivers.MarketFactoryReceiver',
-        'NAME': 'standardMarketFactory',
-        'PUBLISH': True,
-        'PUBLISH_UNDER': 'marketFactories'
-    },
-    {
-        'ADDRESSES': [os.environ['UPORT_IDENTITY_MANAGER']],
-        'EVENT_ABI': load_json_file(abi_file_path('UportIdentityManager.json')),
-        'EVENT_DATA_RECEIVER': 'chainevents.event_receivers.UportIdentityManagerReceiver',
-        'NAME': 'UportIdentityManagerInstanceReceiver',
-        'PUBLISH': True,
-    },
-    {
-        'ADDRESSES': [os.environ['GENERIC_IDENTITY_MANAGER_ADDRESS']],
-        'EVENT_ABI': load_json_file(abi_file_path('AddressRegistry.json')),
-        'EVENT_DATA_RECEIVER': 'chainevents.event_receivers.GenericIdentityManagerReceiver',
-        'NAME': 'GenericIdentityManagerReceiver',
-        'PUBLISH': True,
-    },
-    {
-        'ADDRESSES': [os.environ['TOURNAMENT_TOKEN']],
-        'EVENT_ABI': load_json_file(abi_file_path('TournamentToken.json')),
-        'EVENT_DATA_RECEIVER': 'chainevents.event_receivers.TournamentTokenReceiver',
-        'NAME': 'OlympiaToken',
-        'PUBLISH': True,
-    },
-    {
-        'ADDRESSES_GETTER': 'chainevents.address_getters.MarketAddressGetter',
-        'EVENT_ABI': load_json_file(abi_file_path('StandardMarket.json')),
-        'EVENT_DATA_RECEIVER': 'chainevents.event_receivers.MarketInstanceReceiver',
-        'NAME': 'Standard Markets Buy/Sell/Short Receiver'
-    },
-    {
-        'ADDRESSES_GETTER': 'chainevents.address_getters.EventAddressGetter',
-        'EVENT_ABI': load_json_file(abi_file_path('AbstractEvent.json')),
-        'EVENT_DATA_RECEIVER': 'chainevents.event_receivers.EventInstanceReceiver',
-        'NAME': 'Event Instances'
-    },
-    {
-        'ADDRESSES_GETTER': 'chainevents.address_getters.OutcomeTokenGetter',
-        'EVENT_ABI': load_json_file(abi_file_path('OutcomeToken.json')),
-        'EVENT_DATA_RECEIVER': 'chainevents.event_receivers.OutcomeTokenInstanceReceiver',
-        'NAME': 'Outcome Token Instances'
-    },
-    {
-        'ADDRESSES_GETTER': 'chainevents.address_getters.CentralizedOracleGetter',
-        'EVENT_ABI': load_json_file(abi_file_path('CentralizedOracle.json')),
-        'EVENT_DATA_RECEIVER': 'chainevents.event_receivers.CentralizedOracleInstanceReceiver',
-        'NAME': 'Centralized Oracle Instances'
-    }
-]
