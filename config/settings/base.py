@@ -1,5 +1,4 @@
 import os
-import sys
 
 import environ
 
@@ -73,32 +72,37 @@ MIDDLEWARE = [
 
 LOGGING = {
     'version': 1,
-    # 'disable_existing_loggers': False,
+    # 'disable_existing_loggers': False,  # For Sentry
     # 'formatters': {
     #    'verbose': {
     #        'format': '%(levelname)s %(asctime)s %(module)s '
     #                  '%(process)d %(thread)d %(message)s'
     #    },
     # },
+    'filters': {
+        'require_debug_false': {
+            '()': 'django.utils.log.RequireDebugFalse'
+        }
+    },
     'handlers': {
         'console': {
             'class': 'logging.StreamHandler',
-            'stream': sys.stdout,
         },
         'mail_admins': {
             'level': 'ERROR',
+            'filters': ['require_debug_false'],
             'class': 'django.utils.log.AdminEmailHandler',
         }
     },
-    'root': {
-        'handlers': ['console'],
-        'level': 'INFO'
-    },
     'loggers': {
+        '': {
+            'handlers': ['console'],
+            'level': 'INFO',
+        },
         'django': {
             'handlers': ['console', 'mail_admins'],
             'propagate': True,
-            'level': 'ERROR'
+            'level': 'ERROR',
         }
     }
 }
