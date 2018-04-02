@@ -3,6 +3,7 @@ from decimal import Decimal
 
 from celery.utils.log import get_task_logger
 from django.conf import settings
+from django_eth_events.utils import normalize_address_without_0x
 from ipfsapi.exceptions import ErrorResponse
 from mpmath import mp
 from rest_framework import serializers
@@ -118,11 +119,9 @@ class ContractCreatedByFactorySerializerTimestamped(ContractSerializer, BlockTim
         return parsed_event_data
 
 
-
 # ========================================================
 #                 Custom Fields
 # ========================================================
-
 class IpfsHashField(CharField):
 
     def __init__(self, **kwargs):
@@ -133,8 +132,6 @@ class IpfsHashField(CharField):
         return Ipfs().get(ipfs_hash)
 
     def to_internal_value(self, data):
-        event_description = None
-        event_description_json = None
         # Ipfs hash is returned as bytes
         data = data.decode() if isinstance(data, bytes) else data
         try:
@@ -213,7 +210,6 @@ class EventField(CharField):
         super().__init__(**kwargs)
 
     def to_internal_value(self, data):
-        event = None
         try:
             event = models.Event.objects.get(address=data)
             return event
@@ -286,8 +282,7 @@ class ScalarEventSerializer(EventSerializerTimestamped, serializers.ModelSeriali
         attrs = super().validate(attrs=attrs)
         try:
             centralized_oracle = models.CentralizedOracle.objects.get(address=attrs['oracle'].address)
-            description = models.ScalarEventDescription.objects.get(
-                ipfs_hash=centralized_oracle.event_description.ipfs_hash)
+            models.ScalarEventDescription.objects.get(ipfs_hash=centralized_oracle.event_description.ipfs_hash)
         except models.ScalarEventDescription.DoesNotExist:
             raise serializers.ValidationError("Not existing ScalarEventDescription with oracle {}".format(attrs['oracle'].address))
         except models.CentralizedOracle.DoesNotExist:
@@ -361,10 +356,9 @@ class MarketSerializerTimestamped(ContractCreatedByFactorySerializerTimestamped,
         # Check event type (Categorical or Scalar)
         try:
             categorical_event = models.CategoricalEvent.objects.get(address=validated_data.get('event').address)
-            event = validated_data.get('event')
             n_outcome_tokens = len(categorical_event.oracle.centralizedoracle.event_description.categoricaleventdescription.outcomes)
             net_outcome_tokens_sold = [0] * n_outcome_tokens
-            marginal_prices = [str(1.0 / n_outcome_tokens) for x in range(0, n_outcome_tokens)]
+            marginal_prices = [str(1.0 / n_outcome_tokens) for _ in range(0, n_outcome_tokens)]
         except models.CategoricalEvent.DoesNotExist:
             scalar_event = models.ScalarEvent.objects.get(address=validated_data.get('event').address)
             # scalar, creating an array of size 2
@@ -416,7 +410,6 @@ class IPFSEventDescriptionDeserializer(serializers.ModelSerializer):
         fields = ('ipfs_hash',)
 
     def validate(self, data):
-        json_obj = None
         try:
             json_obj = Ipfs().get(data['ipfs_hash'])
             json_obj['ipfs_hash'] = data['ipfs_hash']
@@ -441,15 +434,15 @@ class IPFSEventDescriptionDeserializer(serializers.ModelSerializer):
     def create(self, validated_data):
         if 'unit' in validated_data and 'decimals' in validated_data:
             fields = self.scalar_fields
-            Serializer = ScalarEventDescriptionSerializer
+            event_description_serializer = ScalarEventDescriptionSerializer
         elif 'outcomes' in validated_data:
             fields = self.categorical_fields
-            Serializer = CategoricalEventDescriptionSerializer
+            event_description_serializer = CategoricalEventDescriptionSerializer
         else:
             # Should not be reachable if validate_ipfs_hash() is correct.
             raise serializers.ValidationError('Incomplete event description.')
         extracted = dict((key, validated_data[key]) for key in fields)
-        instance = Serializer(data=extracted)
+        instance = event_description_serializer(data=extracted)
         instance.is_valid(raise_exception=True)
         result = instance.save()
         return result
@@ -490,8 +483,6 @@ class OutcomeTokenIssuanceSerializer(ContractSerializer, serializers.ModelSerial
     def create(self, validated_data):
         # Creates or updates an outcome token balance for the given outcome_token.
         # Returns the outcome_token
-        outcome_token = None
-        outcome_token_balance = None
         try:
             outcome_token_balance = models.OutcomeTokenBalance.objects.get(owner=validated_data.get('owner'),
                                                                            outcome_token__address=validated_data.get('outcome_token'))
@@ -541,8 +532,8 @@ class OutcomeTokenRevocationSerializer(ContractSerializer, serializers.ModelSeri
 
     def validate(self, attrs):
         try:
-            outcome_token_balance = models.OutcomeTokenBalance.objects.get(owner=attrs.get('owner'),
-                                                                           outcome_token__address=attrs.get('outcome_token'))
+            models.OutcomeTokenBalance.objects.get(owner=attrs.get('owner'),
+                                                   outcome_token__address=attrs.get('outcome_token'))
             return attrs
         except models.OutcomeTokenBalance.DoesNotExist:
             raise serializers.ValidationError('OutcomeTokenBalance {} for owner {} doesn\'t exist'.format(
@@ -619,14 +610,13 @@ class OutcomeTokenTransferSerializer(ContractSerializer, serializers.ModelSerial
     to = serializers.CharField(max_length=ADDRESS_LENGTH)
 
     def create(self, validated_data):
-        # Substract balance from Outcome Token Balance
+        # Subtract balance from Outcome Token Balance
         from_balance = models.OutcomeTokenBalance.objects.get(owner=validated_data.get('from_address'),
                                                               outcome_token__address=validated_data.get('outcome_token'))
         from_balance.balance -= validated_data.get('value')
         from_balance.save()
 
         # Add balance to receiver
-        to_balance = None
         try:
             to_balance = models.OutcomeTokenBalance.objects.get(owner=validated_data.get('to'),
                                                                 outcome_token__address=validated_data.get('outcome_token'))
@@ -644,7 +634,6 @@ class OutcomeTokenTransferSerializer(ContractSerializer, serializers.ModelSerial
         self.instance.save()
 
         # Add balance to receiver
-        to_balance = None
         try:
             to_balance = models.OutcomeTokenBalance.objects.get(
                 owner=self.validated_data.get('to'),
@@ -677,7 +666,6 @@ class WinningsRedemptionSerializer(ContractSerializer, serializers.ModelSerializ
 
     def create(self, validated_data):
         # Sums the given winnings to the event redeemed_winnings
-        event = None
         try:
             event = models.Event.objects.get(address=validated_data.get('address'))
             event.redeemed_winnings += validated_data.get('winnings')
@@ -708,7 +696,6 @@ class OwnerReplacementSerializer(ContractSerializer, serializers.ModelSerializer
 
     def create(self, validated_data):
         # Replaces the centralized oracle's owner if existing
-        centralized_oracle = None
         try:
             centralized_oracle = models.CentralizedOracle.objects.get(address=validated_data.get('address'))
             centralized_oracle.old_owner = centralized_oracle.owner
@@ -737,7 +724,6 @@ class OutcomeAssignmentOracleSerializer(ContractSerializer, serializers.ModelSer
 
     def create(self, validated_data):
         # Updates the centralized_oracle outcome
-        centralized_oracle = None
         try:
             centralized_oracle = models.CentralizedOracle.objects.get(address=validated_data.get('address'))
             centralized_oracle.is_outcome_set = True
@@ -792,7 +778,8 @@ class OutcomeTokenPurchaseSerializerTimestamped(ContractSerializerTimestamped, s
             order.outcome_token_cost = validated_data.get('outcomeTokenCost')
             order.fees = validated_data.get('marketFees')
             order.net_outcome_tokens_sold = market.net_outcome_tokens_sold
-            # calculate current marginal price
+
+            # Calculate current marginal price
             order.marginal_prices = list(map(
                 lambda index_: Decimal(calc_lmsr_marginal_price(int(index_[0]),
                                                                 [int(x) for x in market.net_outcome_tokens_sold],
@@ -800,6 +787,7 @@ class OutcomeTokenPurchaseSerializerTimestamped(ContractSerializerTimestamped, s
                                        ),
                 enumerate(market.net_outcome_tokens_sold)
             ))
+
             # Save order successfully, save market changes, then save the share entry
             order.save()
             market.trading_volume += order.cost
@@ -836,7 +824,7 @@ class OutcomeTokenSaleSerializerTimestamped(ContractSerializerTimestamped, seria
     class Meta:
         model = models.SellOrder
         fields = ContractSerializerTimestamped.Meta.fields + ('seller', 'outcomeTokenIndex', 'outcomeTokenCount',
-                                                         'outcomeTokenProfit', 'marketFees',)
+                                                              'outcomeTokenProfit', 'marketFees',)
 
     address = serializers.CharField(max_length=ADDRESS_LENGTH)
     seller = serializers.CharField(max_length=ADDRESS_LENGTH)
@@ -852,7 +840,8 @@ class OutcomeTokenSaleSerializerTimestamped(ContractSerializerTimestamped, seria
             token_count = validated_data.get('outcomeTokenCount')
             market.net_outcome_tokens_sold[token_index] -= token_count
             market.collected_fees += validated_data.get('marketFees')
-            # get outcome token
+
+            # Get outcome token
             outcome_token = market.event.outcome_tokens.get(index=token_index)
 
             # Create Order
@@ -883,7 +872,6 @@ class OutcomeTokenSaleSerializerTimestamped(ContractSerializerTimestamped, seria
             raise serializers.ValidationError('Market with address {} does not exist.' % validated_data.get('address'))
 
     def rollback(self):
-
         token_index = self.validated_data.get('outcomeTokenIndex')
         token_count = self.validated_data.get('outcomeTokenCount')
         market = models.Market.objects.get(address=self.validated_data.get('address'))
@@ -934,7 +922,7 @@ class OutcomeTokenShortSaleOrderSerializerTimestamped(ContractSerializerTimestam
                 order.outcome_token_count = validated_data.get('outcomeTokenCount')
                 order.cost = validated_data.get('cost')
                 order.net_outcome_tokens_sold = market.net_outcome_tokens_sold
-                # save order
+                # Save order
                 order.save()
                 return order
             except models.OutcomeToken.DoesNotExist:
@@ -1055,9 +1043,9 @@ class UportTournamentParticipantSerializerEventSerializerTimestamped(ContractSer
         validated_data['current_rank'] = participants_amount + 1
         validated_data['past_rank'] = participants_amount + 1
         validated_data['diff_rank'] = 0
-        # validated_data.update({
-        #     'address': validated_data.get('address').lower(),
-        # })
+        validated_data.update({
+            'address': normalize_address_without_0x(validated_data.get('address')),
+        })
 
         participant = models.TournamentParticipant.objects.create(**validated_data)
         participant_balance = models.TournamentParticipantBalance()
@@ -1106,8 +1094,8 @@ class GenericTournamentParticipantEventSerializerTimestamped(ContractSerializerT
         validated_data['past_rank'] = participants_amount + 1
         validated_data['diff_rank'] = 0
         validated_data.update({
-            # 'address': validated_data.get('address').lower(),
-            'mainnet_address': validated_data.get('mainnet_address').lower(),
+            'address': normalize_address_without_0x(validated_data.get('address')),
+            'mainnet_address': normalize_address_without_0x(validated_data.get('mainnet_address')),
         })
 
         participant = models.TournamentParticipant.objects.create(**validated_data)

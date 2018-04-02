@@ -1,12 +1,12 @@
 import os
 import time
-from datetime import datetime
 from subprocess import PIPE, Popen
 
 from django.conf import settings
 from django.core.mail.message import EmailMultiAlternatives
 from django.core.management.base import BaseCommand
 from django.db import transaction
+from django.utils import timezone
 from django_eth_events.models import Daemon
 
 
@@ -59,7 +59,7 @@ class Command(BaseCommand):
             db_user = os.environ.get('DATABASE_USER', 'postgres')
             db_host = os.environ.get('DATABASE_HOST', 'localhost')
             db_password = os.environ.get('DATABASE_PASSWORD', None)
-            filename = self.dump_path + "{}_{}_dump-{}.sqlc".format(db_name, db_user, datetime.now().strftime('%Y-%m-%d_%H:%M:%S'))
+            filename = self.dump_path + "{}_{}_dump-{}.sqlc".format(db_name, db_user, timezone.now().strftime('%Y-%m-%d_%H:%M:%S'))
 
             for _ in range(self.n_retries):
                 locked = self.get_lock()
