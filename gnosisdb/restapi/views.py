@@ -1,9 +1,11 @@
 from django.conf import settings
+from django.http import JsonResponse
 from django.shortcuts import get_list_or_404, get_object_or_404
 from rest_framework import generics
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
+from gnosisdb import __git_info__, __version__
 from gnosisdb.relationaldb.models import (CentralizedOracle, Event, Market,
                                           Order, OutcomeTokenBalance,
                                           TournamentParticipant,
@@ -15,6 +17,13 @@ from .serializers import (CentralizedOracleSerializer, EventSerializer,
                           MarketParticipantTradesSerializer, MarketSerializer,
                           MarketTradesSerializer, OlympiaScoreboardSerializer,
                           OutcomeTokenBalanceSerializer)
+
+
+def about_view(_):
+    return JsonResponse({
+        'git': __git_info__,
+        'version': __version__,
+    })
 
 
 class CentralizedOracleListView(generics.ListAPIView):
