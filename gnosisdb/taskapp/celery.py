@@ -1,6 +1,7 @@
 import os
 
 from celery import Celery
+from celery.signals import setup_logging
 from django.apps import AppConfig, apps
 from django.conf import settings
 
@@ -15,6 +16,11 @@ app = Celery('gnosisdb')
 class CeleryConfig(AppConfig):
     name = 'gnosisdb.taskapp'
     verbose_name = 'Celery Config'
+
+    # Use Django logging instead of celery logger
+    @setup_logging.connect
+    def on_celery_setup_logging(**kwargs):
+        pass
 
     def ready(self):
         # Using a string here means the worker will not have to
