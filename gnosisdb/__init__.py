@@ -4,7 +4,10 @@ __version_info__ = tuple([int(num) if num.isdigit() else num for num in __versio
 try:
     import git
     git_repo = git.Repo(search_parent_directories=True)
-    __git_branch__ = str(git_repo.active_branch)
+    try:
+        __git_branch__ = str(git_repo.active_branch)
+    except Exception:
+        __git_branch__ = ''
     __git_author__ = str(git_repo.head.commit.author)
     __git_message__ = git_repo.head.commit.message.strip()
     __git_head_hash__ = git_repo.head.object.hexsha
