@@ -1,4 +1,5 @@
 import os
+from distutils.util import convert_path
 
 from setuptools import find_packages, setup
 
@@ -11,6 +12,16 @@ os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 # install_reqs = parse_requirements('requirements.txt', session='hack')
 # reqs = [str(ir.req) for ir in install_reqs]
 
+
+def read_version():
+    main_ns = {}
+    ver_path = convert_path('gnosisdb/__init__.py')
+    with open(ver_path) as ver_file:
+        exec(ver_file.read(), main_ns)
+    return main_ns['__version__']
+
+version = read_version()
+
 requirements = [
     'djangorestframework',
     'django-eth-events==2.0.9',
@@ -21,7 +32,7 @@ requirements = [
 
 setup(
     name='django_gnosisdb',
-    version='1.0.3',
+    version=version,
     packages=find_packages(exclude=["*.tests",
                                     "*.tests.*",
                                     "tests.*",
