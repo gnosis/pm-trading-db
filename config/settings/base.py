@@ -73,12 +73,11 @@ MIDDLEWARE = [
 LOGGING = {
     'version': 1,
     # 'disable_existing_loggers': False,  # For Sentry
-    # 'formatters': {
-    #    'verbose': {
-    #        'format': '%(levelname)s %(asctime)s %(module)s '
-    #                  '%(process)d %(thread)d %(message)s'
-    #    },
-    # },
+    'formatters': {
+        'verbose': {
+            'format': '%(asctime)s [%(levelname)s] [%(processName)s] %(message)s',
+        },
+    },
     'filters': {
         'require_debug_false': {
             '()': 'django.utils.log.RequireDebugFalse'
@@ -87,6 +86,7 @@ LOGGING = {
     'handlers': {
         'console': {
             'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
         },
         'mail_admins': {
             'level': 'ERROR',
@@ -103,7 +103,7 @@ LOGGING = {
             'handlers': ['console', 'mail_admins'],
             'propagate': True,
             'level': 'ERROR',
-        }
+        },
     }
 }
 
