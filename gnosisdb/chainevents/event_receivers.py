@@ -7,23 +7,24 @@ from django_eth_events.utils import JsonBytesEncoder
 from gnosisdb.relationaldb.serializers import (CategoricalEventSerializer,
                                                CentralizedOracleSerializer,
                                                FeeWithdrawalSerializer,
+                                               GenericTournamentParticipantEventSerializerTimestamped,
                                                MarketClosingSerializer,
                                                MarketFundingSerializer,
-                                               MarketSerializer,
+                                               MarketSerializerTimestamped,
                                                OutcomeAssignmentEventSerializer,
                                                OutcomeAssignmentOracleSerializer,
                                                OutcomeTokenInstanceSerializer,
                                                OutcomeTokenIssuanceSerializer,
-                                               OutcomeTokenPurchaseSerializer,
+                                               OutcomeTokenPurchaseSerializerTimestamped,
                                                OutcomeTokenRevocationSerializer,
-                                               OutcomeTokenSaleSerializer,
-                                               OutcomeTokenShortSaleOrderSerializer,
+                                               OutcomeTokenSaleSerializerTimestamped,
+                                               OutcomeTokenShortSaleOrderSerializerTimestamped,
                                                OutcomeTokenTransferSerializer,
                                                OwnerReplacementSerializer,
                                                ScalarEventSerializer,
-                                               TournamentParticipantSerializer,
                                                TournamentTokenIssuanceSerializer,
                                                TournamentTokenTransferSerializer,
+                                               UportTournamentParticipantSerializerEventSerializerTimestamped,
                                                WinningsRedemptionSerializer)
 
 logger = get_task_logger(__name__)
@@ -122,7 +123,7 @@ class MarketFactoryReceiver(SerializerEventReceiver):
 
     class Meta:
         events = {
-            'StandardMarketCreation': MarketSerializer
+            'StandardMarketCreation': MarketSerializerTimestamped
         }
         primary_key_name = 'market'
 
@@ -134,8 +135,8 @@ class MarketFactoryReceiver(SerializerEventReceiver):
 
 class BaseInstanceEventReceiver(SerializerEventReceiver):
     """
-    Instance Event receivers get the model instance in a different way, info is in the root object sometimes and others
-    In the parameters, we overwrite this function
+    Instance Event receivers get the model instance in a different way, info can be in the root object
+    sometimes or in the parameters, we override this function
     """
     class Meta:
         events = {}
@@ -190,9 +191,9 @@ class MarketInstanceReceiver(BaseInstanceEventReceiver):
 
     class Meta:
         events = {
-            'OutcomeTokenPurchase': OutcomeTokenPurchaseSerializer,
-            'OutcomeTokenSale': OutcomeTokenSaleSerializer,
-            'OutcomeTokenShortSale': OutcomeTokenShortSaleOrderSerializer,
+            'OutcomeTokenPurchase': OutcomeTokenPurchaseSerializerTimestamped,
+            'OutcomeTokenSale': OutcomeTokenSaleSerializerTimestamped,
+            'OutcomeTokenShortSale': OutcomeTokenShortSaleOrderSerializerTimestamped,
             'MarketFunding': MarketFundingSerializer,
             'MarketClosing': MarketClosingSerializer,
             'FeeWithdrawal': FeeWithdrawalSerializer
@@ -254,7 +255,7 @@ class OutcomeTokenInstanceReceiver(BaseInstanceEventReceiver):
         events = {
             'Issuance': OutcomeTokenIssuanceSerializer,  # sum to totalSupply, update data
             'Revocation': OutcomeTokenRevocationSerializer,  # subtract from total Supply, update data,
-            'Transfer': OutcomeTokenTransferSerializer # moves balance between owners
+            'Transfer': OutcomeTokenTransferSerializer  # moves balance between owners
         }
         primary_key_name = {
             'Issuance': 'address',
@@ -267,17 +268,27 @@ class OutcomeTokenInstanceReceiver(BaseInstanceEventReceiver):
 
 
 # ============================== #
-#     Uport event receivers
+#     Tournament event receivers
 # ============================== #
 
 
 class UportIdentityManagerReceiver(SerializerEventReceiver):
     class Meta:
         events = {
-            'IdentityCreated': TournamentParticipantSerializer,
+            'IdentityCreated': UportTournamentParticipantSerializerEventSerializerTimestamped,
         }
         primary_key_name = {
             'IdentityCreated': 'identity'
+        }
+
+
+class GenericIdentityManagerReceiver(SerializerEventReceiver):
+    class Meta:
+        events = {
+            'AddressRegistration': GenericTournamentParticipantEventSerializerTimestamped,
+        }
+        primary_key_name = {
+            'AddressRegistration': 'registrant'
         }
 
 
@@ -296,7 +307,7 @@ class TournamentTokenReceiver(BaseInstanceEventReceiver):
     def rollback(self, decoded_event, block_info=None):
         event_name = decoded_event.get('name')
         if event_name == 'Issuance':
-            super(TournamentTokenReceiver, self).rollback(decoded_event, block_info)
+            super().rollback(decoded_event, block_info)
         else:
             serializer_class = self.Meta.events.get(event_name)
             if serializer_class is not None:

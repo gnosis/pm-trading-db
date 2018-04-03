@@ -14,11 +14,14 @@ class ContractSerializer(serializers.BaseSerializer):
     def to_representation(self, instance):
         response = {
             'address': add_0x_prefix(instance.address),
-            'factory_address': add_0x_prefix(instance.factory),
-            'creator': add_0x_prefix(instance.creator),
             'creation_date': instance.creation_date_time,
             'creation_block': instance.creation_block
         }
+
+        if hasattr(instance, 'factory'):
+            response['factory_address'] = add_0x_prefix(instance.factory)
+        if hasattr(instance, 'creator'):
+            response['creator'] = add_0x_prefix(instance.creator)
 
         return remove_null_values(response)
 
@@ -80,7 +83,7 @@ class CentralizedOracleSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         # Prepend 0x prefix to owner
         instance.owner = add_0x_prefix(instance.owner)
-        response = super(CentralizedOracleSerializer, self).to_representation(instance)
+        response = super().to_representation(instance)
         return remove_null_values(response)
 
     def get_owner(self, obj):
@@ -148,7 +151,7 @@ class MarketSerializer(serializers.ModelSerializer):
                   'stage', 'trading_volume', 'withdrawn_fees', 'collected_fees', 'marginal_prices',)
 
     def to_representation(self, instance):
-        response = super(MarketSerializer, self).to_representation(instance)
+        response = super().to_representation(instance)
         return remove_null_values(response)
 
     def get_market_maker(self, obj):
@@ -204,7 +207,7 @@ class MarketTradesSerializer(serializers.ModelSerializer):
         return add_0x_prefix(obj.sender)
 
     def to_representation(self, instance):
-        response = super(MarketTradesSerializer, self).to_representation(instance)
+        response = super().to_representation(instance)
         return remove_null_values(response)
 
 
@@ -242,7 +245,7 @@ class MarketParticipantTradesSerializer(serializers.ModelSerializer):
         return str(get_order_profit(obj))
 
     def to_representation(self, instance):
-        response = super(MarketParticipantTradesSerializer, self).to_representation(instance)
+        response = super().to_representation(instance)
         return remove_null_values(response)
 
 

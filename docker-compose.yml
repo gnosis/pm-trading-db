@@ -2,7 +2,7 @@ version: '3'
 
 services:
   nginx:
-    image: nginx:1.13
+    image: nginx:1.13-alpine
     hostname: nginx
     ports:
       - "8000:8000"
@@ -20,8 +20,8 @@ services:
       - "4001:4001"
       - "5001:5001"
   rabbit:
+    image: rabbitmq:3-alpine
     hostname: rabbit
-    image: rabbitmq:latest
     environment:
       - RABBITMQ_DEFAULT_USER=gnosisdb
       - RABBITMQ_DEFAULT_PASS=gnosisdb
@@ -29,7 +29,7 @@ services:
       - "5672:5672"
       - "15672:15672"
   db:
-    image: postgres
+    image: postgres:10-alpine
     ports:
       - "5432:5432"
   web:

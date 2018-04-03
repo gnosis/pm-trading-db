@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
-from datetime import datetime
 from time import mktime
 
 from django.conf import settings
 from django.test import TestCase
+from django.utils import timezone
+from django_eth_events.utils import normalize_address_without_0x
 
 from gnosisdb.relationaldb.models import (BuyOrder, CategoricalEvent,
                                           CentralizedOracle, Market,
@@ -28,7 +29,7 @@ from ..event_receivers import (CentralizedOracleFactoryReceiver,
                                UportIdentityManagerReceiver)
 
 
-class TestRollabck(TestCase):
+class TestRollback(TestCase):
 
     def setUp(self):
         self.ipfs_api = Ipfs()
@@ -94,7 +95,7 @@ class TestRollabck(TestCase):
         new_owner_address = oracle2.creator
         block = {
             'number': 1,
-            'timestamp': self.to_timestamp(datetime.now())
+            'timestamp': self.to_timestamp(timezone.now())
         }
         change_owner_event = {
             'name': 'OwnerReplacement',
@@ -122,7 +123,7 @@ class TestRollabck(TestCase):
         oracle_factory = CentralizedOracleFactory()
         block = {
             'number': 1,
-            'timestamp': self.to_timestamp(datetime.now())
+            'timestamp': self.to_timestamp(timezone.now())
         }
         outcome_assignment_event = {
             'name': 'OutcomeAssignment',
@@ -269,7 +270,7 @@ class TestRollabck(TestCase):
                 },
                 {
                     'name': 'marketMaker',
-                    'value': settings.LMSR_MARKET_MAKER
+                    'value': normalize_address_without_0x(settings.LMSR_MARKET_MAKER)
                 },
                 {
                     'name': 'fee',
@@ -347,7 +348,7 @@ class TestRollabck(TestCase):
 
         block = {
             'number': 1,
-            'timestamp': self.to_timestamp(datetime.now())
+            'timestamp': self.to_timestamp(timezone.now())
         }
         outcome_token_sell_event = {
             'name': 'OutcomeTokenSale',
@@ -383,7 +384,7 @@ class TestRollabck(TestCase):
         market_factory = MarketFactory()
         block = {
             'number': 1,
-            'timestamp': self.to_timestamp(datetime.now())
+            'timestamp': self.to_timestamp(timezone.now())
         }
         market_funding_event = {
             'name': 'MarketFunding',
@@ -410,7 +411,7 @@ class TestRollabck(TestCase):
         market_factory = MarketFactory()
         block = {
             'number': 1,
-            'timestamp': self.to_timestamp(datetime.now())
+            'timestamp': self.to_timestamp(timezone.now())
         }
         market_closing_event = {
             'name': 'MarketClosing',
@@ -430,7 +431,7 @@ class TestRollabck(TestCase):
         market_factory = MarketFactory()
         block = {
             'number': 1,
-            'timestamp': self.to_timestamp(datetime.now())
+            'timestamp': self.to_timestamp(timezone.now())
         }
         market_withdraw_event = {
             'name': 'FeeWithdrawal',
@@ -457,7 +458,7 @@ class TestRollabck(TestCase):
         owner_two = outcome_token_factory.address[0:-2] + 'to'
         block = {
             'number': 1,
-            'timestamp': self.to_timestamp(datetime.now())
+            'timestamp': self.to_timestamp(timezone.now())
         }
         issuance_event = {
             'name': 'Issuance',
@@ -539,7 +540,7 @@ class TestRollabck(TestCase):
 
         block = {
             'number': 1,
-            'timestamp': self.to_timestamp(datetime.now())
+            'timestamp': self.to_timestamp(timezone.now())
         }
 
         self.assertEqual(TournamentParticipant.objects.all().count(), 0)
@@ -668,7 +669,7 @@ class TestRollabck(TestCase):
 
         block = {
             'number': 1,
-            'timestamp': self.to_timestamp(datetime.now())
+            'timestamp': self.to_timestamp(timezone.now())
         }
 
         EventInstanceReceiver().save(winnings_event, block)

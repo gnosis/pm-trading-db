@@ -2,6 +2,7 @@ from time import mktime
 
 from django.conf import settings
 from django.test import TestCase
+from django_eth_events.utils import normalize_address_without_0x
 
 from ipfs.ipfs import Ipfs
 
@@ -11,15 +12,17 @@ from ..models import (OutcomeToken, OutcomeTokenBalance,
 from ..serializers import (CategoricalEventSerializer,
                            CentralizedOracleInstanceSerializer,
                            CentralizedOracleSerializer,
-                           IPFSEventDescriptionDeserializer, MarketSerializer,
+                           GenericTournamentParticipantEventSerializerTimestamped,
+                           IPFSEventDescriptionDeserializer,
+                           MarketSerializerTimestamped,
                            OutcomeTokenInstanceSerializer,
                            OutcomeTokenIssuanceSerializer,
                            OutcomeTokenRevocationSerializer,
                            OutcomeTokenTransferSerializer,
                            ScalarEventSerializer,
-                           TournamentParticipantSerializer,
                            TournamentTokenIssuanceSerializer,
-                           TournamentTokenTransferSerializer)
+                           TournamentTokenTransferSerializer,
+                           UportTournamentParticipantSerializerEventSerializerTimestamped)
 from .factories import (CategoricalEventDescriptionFactory,
                         CategoricalEventFactory, CentralizedOracleFactory,
                         EventFactory, MarketFactory,
@@ -367,7 +370,7 @@ class TestSerializers(TestCase):
         }
         market.delete()
 
-        s = MarketSerializer(data=market_dict, block=block)
+        s = MarketSerializerTimestamped(data=market_dict, block=block)
         self.assertFalse(s.is_valid(), s.errors)
 
         market_dict.get('params').append({
@@ -380,18 +383,18 @@ class TestSerializers(TestCase):
             'value': market.fee
         })
 
-        s = MarketSerializer(data=market_dict, block=block)
+        s = MarketSerializerTimestamped(data=market_dict, block=block)
         self.assertFalse(s.is_valid(), s.errors)
 
         market_dict.get('params')[-2]['value'] = event.address
 
-        s = MarketSerializer(data=market_dict, block=block)
+        s = MarketSerializerTimestamped(data=market_dict, block=block)
         self.assertFalse(s.is_valid(), s.errors)
 
         marketMaker = [x for x in market_dict.get('params') if x.get('name') == 'marketMaker'][0]
-        marketMaker.update({'value': settings.LMSR_MARKET_MAKER})
+        marketMaker.update({'value': normalize_address_without_0x(settings.LMSR_MARKET_MAKER)})
 
-        s = MarketSerializer(data=market_dict, block=block)
+        s = MarketSerializerTimestamped(data=market_dict, block=block)
         self.assertTrue(s.is_valid(), s.errors)
         instance = s.save()
         self.assertIsNotNone(instance)
@@ -582,13 +585,48 @@ class TestSerializers(TestCase):
         self.assertEqual(instance.owner, event.address)
         self.assertEqual(instance.balance, 20)
 
-    def test_save_tournament_participant(self):
-        identity = 'ebe4dd7a4a9e712e742862719aa04709cc6d80a6'
+    def test_save_generic_tournament_participant(self):
         oracle = CentralizedOracleFactory()
         block = {
             'number': oracle.creation_block,
             'timestamp': mktime(oracle.creation_date_time.timetuple())
         }
+
+        contract_address = "d833215cbcc3f914bd1c9ece3ee7bf8b14f841bb"
+        registrant_address = "90f8bf6a479f320ead074411a4b0e7944ea8c9c1"
+        registered_mainnet_address = "ffcf8fdee72ac11b5c542428b35eef5769c409f0"
+        participant_event = {
+            "address": contract_address,
+            "name": "AddressRegistration",
+            "params": [
+                {
+                    "name": "registrant",
+                    "value": registrant_address,
+                },
+                {
+                    "name": "registeredMainnetAddress",
+                    "value": registered_mainnet_address,
+                }
+            ]
+        }
+        s = GenericTournamentParticipantEventSerializerTimestamped(data=participant_event, block=block)
+        self.assertTrue(s.is_valid(), s.errors)
+        self.assertEqual(TournamentParticipant.objects.all().count(), 0)
+        instance = s.save()
+
+        self.assertEqual(TournamentParticipant.objects.all().count(), 1)
+        self.assertIsNotNone(instance)
+        self.assertEqual(instance.address, registrant_address)
+        self.assertEqual(instance.mainnet_address, registered_mainnet_address)
+
+    def test_save_uport_tournament_participant(self):
+        oracle = CentralizedOracleFactory()
+        block = {
+            'number': oracle.creation_block,
+            'timestamp': mktime(oracle.creation_date_time.timetuple())
+        }
+
+        identity = 'ebe4dd7a4a9e712e742862719aa04709cc6d80a6'
 
         participant_event = {
             'name': 'IdentityCreated',
@@ -613,7 +651,7 @@ class TestSerializers(TestCase):
             ]
         }
 
-        s = TournamentParticipantSerializer(data=participant_event, block=block)
+        s = UportTournamentParticipantSerializerEventSerializerTimestamped(data=participant_event, block=block)
         self.assertTrue(s.is_valid(), s.errors)
         self.assertEqual(TournamentParticipant.objects.all().count(), 0)
         instance = s.save()
@@ -621,7 +659,6 @@ class TestSerializers(TestCase):
         self.assertEqual(TournamentParticipant.objects.all().count(), 1)
         self.assertIsNotNone(instance)
         self.assertEqual(instance.address, identity)
-
 
     def test_tournament_issuance(self):
         participant_balance = TournamentParticipantBalanceFactory()

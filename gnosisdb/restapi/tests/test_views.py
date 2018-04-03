@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 import json
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 from django.urls import reverse
+from django.utils import timezone
 from rest_framework import status
 from rest_framework.test import APITestCase
 
@@ -96,7 +97,7 @@ class TestViews(APITestCase):
         oracle = CentralizedOracleFactory()
         event = CategoricalEventFactory(oracle=oracle)
         market = MarketFactory(event=event)
-        from_date = (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d %H:%M:%S')
+        from_date = (timezone.now() - timedelta(days=1)).strftime('%Y-%m-%d %H:%M:%S')
 
         url = reverse('api:markets') + '?resolution_date_time_0=' + from_date
         correct_date_time_range_response = self.client.get(url, content_type='application/json')
@@ -213,7 +214,7 @@ class TestViews(APITestCase):
         event = outcome_token.event
         oracle = event.oracle
         market = MarketFactory(event=event)
-        creation_date_time = datetime.now()
+        creation_date_time = timezone.now()
 
         # Create Order
         order = ShortSellOrder()
@@ -274,9 +275,7 @@ class TestViews(APITestCase):
     def test_market_participant_history(self):
         outcome_token = OutcomeTokenFactory()
         event = outcome_token.event
-        oracle = event.oracle
         market = MarketFactory(event=event)
-        creation_date_time = datetime.now()
         sender_address = '{:040d}'.format(100)
 
         response = self.client.get(

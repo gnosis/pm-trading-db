@@ -3,15 +3,20 @@ from decimal import Decimal
 
 from celery.utils.log import get_task_logger
 from django.conf import settings
+from django_eth_events.utils import normalize_address_without_0x
 from ipfsapi.exceptions import ErrorResponse
 from mpmath import mp
 from rest_framework import serializers
 from rest_framework.fields import CharField
+from web3 import Web3
 
 from gnosis.utils import calc_lmsr_marginal_price
 from ipfs.ipfs import Ipfs
 
 from . import models
+
+# Ethereum addresses have 40 chars (without 0x)
+ADDRESS_LENGTH = 40
 
 mp.dps = 100
 mp.pretty = True
@@ -19,22 +24,9 @@ mp.pretty = True
 logger = get_task_logger(__name__)
 
 
-class BlockTimestampedSerializer(serializers.BaseSerializer):
-    """
-    Serializes the block informations
-    """
+class BaseEventSerializer(serializers.BaseSerializer):
     class Meta:
-        fields = ('creation_date_time', 'creation_block', )
-
-    creation_date_time = serializers.DateTimeField(format="%Y-%m-%dT%H:%M:%S")
-    creation_block = serializers.IntegerField()
-
-
-class ContractEventTimestamped(BlockTimestampedSerializer):
-    class Meta:
-        fields = BlockTimestampedSerializer.Meta.fields + ('address',)
-
-    address = serializers.CharField(max_length=40)
+        abstract = True
 
     def __init__(self, *args, **kwargs):
         """
@@ -46,102 +38,100 @@ class ContractEventTimestamped(BlockTimestampedSerializer):
         In addition, all parameters contained in kwargs['data']['params'] are re-elaborated and added to
         the final data dictionary
         """
-        self.block = kwargs.pop('block')
-        super(ContractEventTimestamped, self).__init__(*args, **kwargs)
-        data = kwargs.pop('data')
-        # Event params moved to root object
-        new_data = {
-            'address': data.get('address'),
-            'creation_date_time': datetime.fromtimestamp(self.block.get('timestamp')),
-            'creation_block': self.block.get('number')
-        }
+        if kwargs.get('block'):
+            self.block = kwargs.pop('block')
 
-        for param in data.get('params'):
-            new_data[param['name']] = param['value']
+        super().__init__(*args, **kwargs)
 
-        self.initial_data = new_data
+        self.initial_data = self.parse_event_data(kwargs.pop('data'))
+
+    def parse_event_data(self, event_data):
+        """
+        Extract event_data and move event params moved to root object
+        :param event_data: dictionary
+        :return: dictionary with event params
+        """
+
+        return {param['name']: param['value'] for param in event_data.get('params')}
 
 
-class ContractSerializer(serializers.BaseSerializer):
+class ContractSerializer(BaseEventSerializer):
     """
     Serializes a Contract entity
     """
     class Meta:
         fields = ('address', )
 
-    address = serializers.CharField(max_length=40)
+    address = serializers.CharField(max_length=ADDRESS_LENGTH)
+
+    def parse_event_data(self, event_data):
+        """
+        Move event params moved to root object
+        :return: dictionary with event params moved to root object
+        """
+
+        parsed_event_data = super().parse_event_data(event_data)
+        parsed_event_data.update({
+            'address': event_data.get('address'),
+        })
+        return parsed_event_data
 
 
-class ContractCreatedByFactorySerializer(BlockTimestampedSerializer, ContractSerializer):
+class BlockTimestampedSerializer(BaseEventSerializer):
+    """
+    Serializes the block informations
+    """
+    class Meta:
+        fields = ('creation_date_time', 'creation_block', )
+
+    creation_date_time = serializers.DateTimeField(format="%Y-%m-%dT%H:%M:%S")
+    creation_block = serializers.IntegerField()
+
+    def parse_event_data(self, event_data):
+        parsed_event_data = super().parse_event_data(event_data)
+        parsed_event_data.update({
+            'creation_date_time': datetime.fromtimestamp(self.block.get('timestamp')),
+            'creation_block': self.block.get('number'),
+        })
+        return parsed_event_data
+
+
+class ContractSerializerTimestamped(ContractSerializer, BlockTimestampedSerializer):
+    class Meta:
+        fields = ContractSerializer.Meta.fields + BlockTimestampedSerializer.Meta.fields
+
+
+class ContractCreatedByFactorySerializerTimestamped(ContractSerializer, BlockTimestampedSerializer):
     """
     Serializes a Contract Factory
     """
     class Meta:
-        fields = BlockTimestampedSerializer.Meta.fields + ContractSerializer.Meta.fields + ('factory', 'creator')
+        fields = ContractSerializer.Meta.fields + BlockTimestampedSerializer.Meta.fields + ('factory', 'creator')
 
-    factory = serializers.CharField(max_length=40)  # included prefix
-    creator = serializers.CharField(max_length=40)
+    factory = serializers.CharField(max_length=ADDRESS_LENGTH)  # included prefix
+    creator = serializers.CharField(max_length=ADDRESS_LENGTH)
 
-    def __init__(self, *args, **kwargs):
-        self.block = kwargs.pop('block')
-        super(ContractCreatedByFactorySerializer, self).__init__(*args, **kwargs)
-        data = kwargs.pop('data')
-        # Event params moved to root object
-        new_data = {
-            'address': data['address'],
-            'factory': data['address'],
-            'creation_date_time': datetime.fromtimestamp(self.block.get('timestamp')),
-            'creation_block': self.block.get('number')
-        }
-
-        for param in data.get('params'):
-            new_data[param['name']] = param['value']
-
-        self.initial_data = new_data
-
-
-class ContractNotTimestampted(ContractSerializer):
-    """
-    Serializes a Contract with no block information
-    """
-    class Meta:
-        fields = ContractSerializer.Meta.fields
-
-    def __init__(self, *args, **kwargs):
-        """
-        Deletes block information from kwargs
-        """
-        if kwargs.get('block'):
-            self.block = kwargs.pop('block')
-        super(ContractNotTimestampted, self).__init__(*args, **kwargs)
-        data = kwargs.pop('data')
-        # Event params moved to root object
-        new_data = {
-            'address': data.get('address')
-        }
-
-        for param in data.get('params'):
-            new_data[param['name']] = param['value']
-
-        self.initial_data = new_data
+    def parse_event_data(self, event_data):
+        parsed_event_data = super().parse_event_data(event_data)
+        parsed_event_data.update({
+            'factory': event_data['address'],
+        })
+        return parsed_event_data
 
 
 # ========================================================
 #                 Custom Fields
 # ========================================================
-
 class IpfsHashField(CharField):
 
     def __init__(self, **kwargs):
-        super(IpfsHashField, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
     def get_event_description(self, ipfs_hash):
         """Returns the IPFS event_description object"""
         return Ipfs().get(ipfs_hash)
 
     def to_internal_value(self, data):
-        event_description = None
-        event_description_json = None
         # Ipfs hash is returned as bytes
         data = data.decode() if isinstance(data, bytes) else data
         try:
@@ -196,14 +186,16 @@ class IpfsHashField(CharField):
 
 class OracleField(CharField):
     def __init__(self, **kwargs):
-        super(OracleField, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
     def to_internal_value(self, data):
         address_len = len(data)
-        if address_len > 40:
-            raise serializers.ValidationError('Maximum address length of 40 chars')
-        elif address_len < 40:
-            raise serializers.ValidationError('Address must have 40 chars')
+        if address_len > ADDRESS_LENGTH:
+            raise serializers.ValidationError('Maximum address length of {} chars, it has {}'.format(ADDRESS_LENGTH,
+                                                                                                     address_len))
+        elif address_len < ADDRESS_LENGTH:
+            raise serializers.ValidationError('Maximum address length of {} chars, it has {}'.format(ADDRESS_LENGTH,
+                                                                                                     address_len))
         else:
             # Check oracle exists or save Null
             try:
@@ -215,10 +207,9 @@ class OracleField(CharField):
 
 class EventField(CharField):
     def __init__(self, **kwargs):
-        super(EventField, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
     def to_internal_value(self, data):
-        event = None
         try:
             event = models.Event.objects.get(address=data)
             return event
@@ -226,12 +217,12 @@ class EventField(CharField):
             raise serializers.ValidationError('eventContract address must exist')
 
 
-class OracleSerializer(ContractCreatedByFactorySerializer):
+class OracleSerializerTimestamped(ContractCreatedByFactorySerializerTimestamped):
     """
     Serializes an Oracle
     """
     class Meta:
-        fields = ContractCreatedByFactorySerializer.Meta.fields + ('is_outcome_set', 'outcome')
+        fields = ContractCreatedByFactorySerializerTimestamped.Meta.fields + ('is_outcome_set', 'outcome')
 
     is_outcome_set = serializers.BooleanField(default=False)
     outcome = serializers.IntegerField(default=0)
@@ -240,15 +231,15 @@ class OracleSerializer(ContractCreatedByFactorySerializer):
         pass
 
 
-class CentralizedOracleSerializer(OracleSerializer, serializers.ModelSerializer):
+class CentralizedOracleSerializer(OracleSerializerTimestamped, serializers.ModelSerializer):
     """
     Serializes a Centralized Oracle
     """
     class Meta:
         model = models.CentralizedOracle
-        fields = OracleSerializer.Meta.fields + ('ipfsHash', 'centralizedOracle')
+        fields = OracleSerializerTimestamped.Meta.fields + ('ipfsHash', 'centralizedOracle')
 
-    centralizedOracle = serializers.CharField(max_length=40, source='address')
+    centralizedOracle = serializers.CharField(max_length=ADDRESS_LENGTH, source='address')
     ipfsHash = IpfsHashField(source='event_description')
 
     def create(self, validated_data):
@@ -260,39 +251,38 @@ class CentralizedOracleSerializer(OracleSerializer, serializers.ModelSerializer)
         self.instance.delete()
 
 
-class EventSerializer(ContractCreatedByFactorySerializer, serializers.ModelSerializer):
+class EventSerializerTimestamped(ContractCreatedByFactorySerializerTimestamped, serializers.ModelSerializer):
     """
     Serializes an Event
     """
     class Meta:
         models = models.Event
-        fields = ContractCreatedByFactorySerializer.Meta.fields + ('collateralToken', 'creator', 'oracle',)
+        fields = ContractCreatedByFactorySerializerTimestamped.Meta.fields + ('collateralToken', 'creator', 'oracle',)
 
-    collateralToken = serializers.CharField(max_length=40, source='collateral_token')
-    creator = serializers.CharField(max_length=40)
+    collateralToken = serializers.CharField(max_length=ADDRESS_LENGTH, source='collateral_token')
+    creator = serializers.CharField(max_length=ADDRESS_LENGTH)
     oracle = OracleField()
 
 
-class ScalarEventSerializer(EventSerializer, serializers.ModelSerializer):
+class ScalarEventSerializer(EventSerializerTimestamped, serializers.ModelSerializer):
     """
     Serializes a Scalar Event
     """
     class Meta:
         model = models.ScalarEvent
-        fields = EventSerializer.Meta.fields + ('lowerBound', 'upperBound', 'scalarEvent')
+        fields = EventSerializerTimestamped.Meta.fields + ('lowerBound', 'upperBound', 'scalarEvent')
 
     lowerBound = serializers.IntegerField(source='lower_bound')
     upperBound = serializers.IntegerField(source='upper_bound')
-    scalarEvent = serializers.CharField(source='address', max_length=40)
+    scalarEvent = serializers.CharField(source='address', max_length=ADDRESS_LENGTH)
 
     def validate(self, attrs):
         # Verify whether the attrs['oracle'] is a CentralizedOracle,
         # if so, check its event_description is a ScalarEventDescription
-        attrs = super(ScalarEventSerializer, self).validate(attrs=attrs)
+        attrs = super().validate(attrs=attrs)
         try:
             centralized_oracle = models.CentralizedOracle.objects.get(address=attrs['oracle'].address)
-            description = models.ScalarEventDescription.objects.get(
-                ipfs_hash=centralized_oracle.event_description.ipfs_hash)
+            models.ScalarEventDescription.objects.get(ipfs_hash=centralized_oracle.event_description.ipfs_hash)
         except models.ScalarEventDescription.DoesNotExist:
             raise serializers.ValidationError("Not existing ScalarEventDescription with oracle {}".format(attrs['oracle'].address))
         except models.CentralizedOracle.DoesNotExist:
@@ -304,21 +294,21 @@ class ScalarEventSerializer(EventSerializer, serializers.ModelSerializer):
         self.instance.delete()
 
 
-class CategoricalEventSerializer(EventSerializer, serializers.ModelSerializer):
+class CategoricalEventSerializer(EventSerializerTimestamped, serializers.ModelSerializer):
     """
     Serializes a Categorical Event
     """
     class Meta:
         model = models.CategoricalEvent
-        fields = EventSerializer.Meta.fields + ('categoricalEvent', 'outcomeCount',)
+        fields = EventSerializerTimestamped.Meta.fields + ('categoricalEvent', 'outcomeCount',)
 
-    categoricalEvent = serializers.CharField(source='address', max_length=40)
+    categoricalEvent = serializers.CharField(source='address', max_length=ADDRESS_LENGTH)
     outcomeCount = serializers.IntegerField()
 
     def validate(self, attrs):
         # Verify whether attrs['oracle'] is a CentralizedOracle,
         # if so, check its event_description is a CategoricalEventDescription
-        attrs = super(CategoricalEventSerializer, self).validate(attrs=attrs)
+        attrs = super().validate(attrs=attrs)
         try:
             centralized_oracle = models.CentralizedOracle.objects.get(address=attrs['oracle'].address)
             description = models.CategoricalEventDescription.objects.get(ipfs_hash=centralized_oracle.event_description.ipfs_hash)
@@ -335,41 +325,40 @@ class CategoricalEventSerializer(EventSerializer, serializers.ModelSerializer):
 
     def create(self, validated_data):
         del validated_data['outcomeCount']
-        return super(CategoricalEventSerializer, self).create(validated_data)
+        return super().create(validated_data)
 
     def rollback(self):
         self.instance.delete()
 
 
-class MarketSerializer(ContractCreatedByFactorySerializer, serializers.ModelSerializer):
+class MarketSerializerTimestamped(ContractCreatedByFactorySerializerTimestamped, serializers.ModelSerializer):
     """
     Serializes a Market
     """
     class Meta:
         model = models.Market
-        fields = ContractCreatedByFactorySerializer.Meta.fields + ('eventContract', 'marketMaker', 'fee',
+        fields = ContractCreatedByFactorySerializerTimestamped.Meta.fields + ('eventContract', 'marketMaker', 'fee',
                                                                    'market', 'revenue', 'collected_fees',)
 
     eventContract = EventField(source='event')
-    marketMaker = serializers.CharField(max_length=40, source='market_maker')
+    marketMaker = serializers.CharField(max_length=ADDRESS_LENGTH, source='market_maker')
     fee = serializers.IntegerField()
-    market = serializers.CharField(max_length=40, source='address')
+    market = serializers.CharField(max_length=ADDRESS_LENGTH, source='address')
     revenue = serializers.IntegerField(default=0)
     collected_fees = serializers.IntegerField(default=0)
 
-    def validate_marketMaker(self, obj):
-        if not settings.LMSR_MARKET_MAKER == obj:
-            raise serializers.ValidationError('Market Maker {} does not exist'.format(obj))
-        return obj
+    def validate_marketMaker(self, market_maker_address):
+        if not Web3.toChecksumAddress(settings.LMSR_MARKET_MAKER) == Web3.toChecksumAddress(market_maker_address):
+            raise serializers.ValidationError('Market Maker {} does not exist'.format(market_maker_address))
+        return market_maker_address
 
     def create(self, validated_data):
         # Check event type (Categorical or Scalar)
         try:
             categorical_event = models.CategoricalEvent.objects.get(address=validated_data.get('event').address)
-            event = validated_data.get('event')
             n_outcome_tokens = len(categorical_event.oracle.centralizedoracle.event_description.categoricaleventdescription.outcomes)
             net_outcome_tokens_sold = [0] * n_outcome_tokens
-            marginal_prices = [str(1.0 / n_outcome_tokens) for x in range(0, n_outcome_tokens)]
+            marginal_prices = [str(1.0 / n_outcome_tokens) for _ in range(0, n_outcome_tokens)]
         except models.CategoricalEvent.DoesNotExist:
             scalar_event = models.ScalarEvent.objects.get(address=validated_data.get('event').address)
             # scalar, creating an array of size 2
@@ -421,7 +410,6 @@ class IPFSEventDescriptionDeserializer(serializers.ModelSerializer):
         fields = ('ipfs_hash',)
 
     def validate(self, data):
-        json_obj = None
         try:
             json_obj = Ipfs().get(data['ipfs_hash'])
             json_obj['ipfs_hash'] = data['ipfs_hash']
@@ -446,15 +434,15 @@ class IPFSEventDescriptionDeserializer(serializers.ModelSerializer):
     def create(self, validated_data):
         if 'unit' in validated_data and 'decimals' in validated_data:
             fields = self.scalar_fields
-            Serializer = ScalarEventDescriptionSerializer
+            event_description_serializer = ScalarEventDescriptionSerializer
         elif 'outcomes' in validated_data:
             fields = self.categorical_fields
-            Serializer = CategoricalEventDescriptionSerializer
+            event_description_serializer = CategoricalEventDescriptionSerializer
         else:
             # Should not be reachable if validate_ipfs_hash() is correct.
             raise serializers.ValidationError('Incomplete event description.')
         extracted = dict((key, validated_data[key]) for key in fields)
-        instance = Serializer(data=extracted)
+        instance = event_description_serializer(data=extracted)
         instance.is_valid(raise_exception=True)
         result = instance.save()
         return result
@@ -464,7 +452,7 @@ class IPFSEventDescriptionDeserializer(serializers.ModelSerializer):
 #             Contract Instance serializers
 # ========================================================
 
-class OutcomeTokenInstanceSerializer(ContractNotTimestampted, serializers.ModelSerializer):
+class OutcomeTokenInstanceSerializer(ContractSerializer, serializers.ModelSerializer):
     """
     Serializes an Outcome Token contract instance
     """
@@ -473,14 +461,14 @@ class OutcomeTokenInstanceSerializer(ContractNotTimestampted, serializers.ModelS
         fields = ContractSerializer.Meta.fields + ('address', 'index', 'outcomeToken',)
 
     address = EventField(source='event')
-    outcomeToken = CharField(max_length=40, source='address')
+    outcomeToken = CharField(max_length=ADDRESS_LENGTH, source='address')
     index = serializers.IntegerField(min_value=0)
 
     def rollback(self):
         self.instance.delete()
 
 
-class OutcomeTokenIssuanceSerializer(ContractNotTimestampted, serializers.ModelSerializer):
+class OutcomeTokenIssuanceSerializer(ContractSerializer, serializers.ModelSerializer):
     """
     Serializes the Outcome Token issuance event
     """
@@ -488,15 +476,13 @@ class OutcomeTokenIssuanceSerializer(ContractNotTimestampted, serializers.ModelS
         model = models.OutcomeToken
         fields = ('owner', 'amount', 'address',)
 
-    owner = serializers.CharField(max_length=40)
+    owner = serializers.CharField(max_length=ADDRESS_LENGTH)
     amount = serializers.IntegerField()
-    address = serializers.CharField(max_length=40, source='outcome_token')
+    address = serializers.CharField(max_length=ADDRESS_LENGTH, source='outcome_token')
 
     def create(self, validated_data):
         # Creates or updates an outcome token balance for the given outcome_token.
         # Returns the outcome_token
-        outcome_token = None
-        outcome_token_balance = None
         try:
             outcome_token_balance = models.OutcomeTokenBalance.objects.get(owner=validated_data.get('owner'),
                                                                            outcome_token__address=validated_data.get('outcome_token'))
@@ -532,7 +518,7 @@ class OutcomeTokenIssuanceSerializer(ContractNotTimestampted, serializers.ModelS
             self.instance.save()
 
 
-class OutcomeTokenRevocationSerializer(ContractNotTimestampted, serializers.ModelSerializer):
+class OutcomeTokenRevocationSerializer(ContractSerializer, serializers.ModelSerializer):
     """
     Serializes the Outcome Token revocation event
     """
@@ -540,14 +526,14 @@ class OutcomeTokenRevocationSerializer(ContractNotTimestampted, serializers.Mode
         model = models.OutcomeToken
         fields = ('owner', 'amount', 'address',)
 
-    owner = serializers.CharField(max_length=40)
+    owner = serializers.CharField(max_length=ADDRESS_LENGTH)
     amount = serializers.IntegerField()
-    address = serializers.CharField(max_length=40, source='outcome_token')
+    address = serializers.CharField(max_length=ADDRESS_LENGTH, source='outcome_token')
 
     def validate(self, attrs):
         try:
-            outcome_token_balance = models.OutcomeTokenBalance.objects.get(owner=attrs.get('owner'),
-                                                                           outcome_token__address=attrs.get('outcome_token'))
+            models.OutcomeTokenBalance.objects.get(owner=attrs.get('owner'),
+                                                   outcome_token__address=attrs.get('outcome_token'))
             return attrs
         except models.OutcomeTokenBalance.DoesNotExist:
             raise serializers.ValidationError('OutcomeTokenBalance {} for owner {} doesn\'t exist'.format(
@@ -577,7 +563,7 @@ class OutcomeTokenRevocationSerializer(ContractNotTimestampted, serializers.Mode
         self.instance.save()
 
 
-class OutcomeAssignmentEventSerializer(ContractNotTimestampted, serializers.ModelSerializer):
+class OutcomeAssignmentEventSerializer(ContractSerializer, serializers.ModelSerializer):
     """
     Serializes the OutcomeAssignment event
     """
@@ -586,7 +572,7 @@ class OutcomeAssignmentEventSerializer(ContractNotTimestampted, serializers.Mode
         fields = ('outcome', 'address',)
 
     outcome = serializers.IntegerField()
-    address = serializers.CharField(max_length=40)
+    address = serializers.CharField(max_length=ADDRESS_LENGTH)
 
     def create(self, validated_data):
         # Updates the event outcome
@@ -606,7 +592,7 @@ class OutcomeAssignmentEventSerializer(ContractNotTimestampted, serializers.Mode
         self.instance.save()
 
 
-class OutcomeTokenTransferSerializer(ContractNotTimestampted, serializers.ModelSerializer):
+class OutcomeTokenTransferSerializer(ContractSerializer, serializers.ModelSerializer):
     """
     Serializes the Outcome Token transfer event
     """
@@ -615,23 +601,22 @@ class OutcomeTokenTransferSerializer(ContractNotTimestampted, serializers.ModelS
         fields = ('from_address', 'to', 'value', 'address',)
 
     def __init__(self, *args, **kwargs):
-        super(OutcomeTokenTransferSerializer, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.initial_data['from_address'] = self.initial_data.pop('from')
 
     value = serializers.IntegerField(min_value=0)
-    address = serializers.CharField(max_length=40, source="outcome_token")
-    from_address = serializers.CharField(max_length=40)
-    to = serializers.CharField(max_length=40)
+    address = serializers.CharField(max_length=ADDRESS_LENGTH, source="outcome_token")
+    from_address = serializers.CharField(max_length=ADDRESS_LENGTH)
+    to = serializers.CharField(max_length=ADDRESS_LENGTH)
 
     def create(self, validated_data):
-        # Substract balance from Outcome Token Balance
+        # Subtract balance from Outcome Token Balance
         from_balance = models.OutcomeTokenBalance.objects.get(owner=validated_data.get('from_address'),
                                                               outcome_token__address=validated_data.get('outcome_token'))
         from_balance.balance -= validated_data.get('value')
         from_balance.save()
 
         # Add balance to receiver
-        to_balance = None
         try:
             to_balance = models.OutcomeTokenBalance.objects.get(owner=validated_data.get('to'),
                                                                 outcome_token__address=validated_data.get('outcome_token'))
@@ -649,7 +634,6 @@ class OutcomeTokenTransferSerializer(ContractNotTimestampted, serializers.ModelS
         self.instance.save()
 
         # Add balance to receiver
-        to_balance = None
         try:
             to_balance = models.OutcomeTokenBalance.objects.get(
                 owner=self.validated_data.get('to'),
@@ -668,7 +652,7 @@ class OutcomeTokenTransferSerializer(ContractNotTimestampted, serializers.ModelS
             to_balance.save()
 
 
-class WinningsRedemptionSerializer(ContractNotTimestampted, serializers.ModelSerializer):
+class WinningsRedemptionSerializer(ContractSerializer, serializers.ModelSerializer):
     """
     Serializes the WinningsRedemption event
     """
@@ -676,13 +660,12 @@ class WinningsRedemptionSerializer(ContractNotTimestampted, serializers.ModelSer
         model = models.Event
         fields = ('address', 'receiver', 'winnings',)
 
-    address = serializers.CharField(max_length=40)
-    receiver = serializers.CharField(max_length=40)
+    address = serializers.CharField(max_length=ADDRESS_LENGTH)
+    receiver = serializers.CharField(max_length=ADDRESS_LENGTH)
     winnings = serializers.IntegerField()
 
     def create(self, validated_data):
         # Sums the given winnings to the event redeemed_winnings
-        event = None
         try:
             event = models.Event.objects.get(address=validated_data.get('address'))
             event.redeemed_winnings += validated_data.get('winnings')
@@ -700,7 +683,7 @@ class CentralizedOracleInstanceSerializer(CentralizedOracleSerializer):
     pass
 
 
-class OwnerReplacementSerializer(ContractNotTimestampted, serializers.ModelSerializer):
+class OwnerReplacementSerializer(ContractSerializer, serializers.ModelSerializer):
     """
     Serializes the Centralized Oracle OwnerReplacement event
     """
@@ -708,12 +691,11 @@ class OwnerReplacementSerializer(ContractNotTimestampted, serializers.ModelSeria
         model = models.CentralizedOracle
         fields = ('address', 'newOwner',)
 
-    address = serializers.CharField(max_length=40)
-    newOwner = serializers.CharField(max_length=40)
+    address = serializers.CharField(max_length=ADDRESS_LENGTH)
+    newOwner = serializers.CharField(max_length=ADDRESS_LENGTH)
 
     def create(self, validated_data):
         # Replaces the centralized oracle's owner if existing
-        centralized_oracle = None
         try:
             centralized_oracle = models.CentralizedOracle.objects.get(address=validated_data.get('address'))
             centralized_oracle.old_owner = centralized_oracle.owner
@@ -729,7 +711,7 @@ class OwnerReplacementSerializer(ContractNotTimestampted, serializers.ModelSeria
         return self.instance
 
 
-class OutcomeAssignmentOracleSerializer(ContractNotTimestampted, serializers.ModelSerializer):
+class OutcomeAssignmentOracleSerializer(ContractSerializer, serializers.ModelSerializer):
     """
     Serializes the OutcomeAssignment Oracle event
     """
@@ -737,12 +719,11 @@ class OutcomeAssignmentOracleSerializer(ContractNotTimestampted, serializers.Mod
         model = models.CentralizedOracle
         fields = ('address', 'outcome',)
 
-    address = serializers.CharField(max_length=40)
+    address = serializers.CharField(max_length=ADDRESS_LENGTH)
     outcome = serializers.IntegerField()
 
     def create(self, validated_data):
         # Updates the centralized_oracle outcome
-        centralized_oracle = None
         try:
             centralized_oracle = models.CentralizedOracle.objects.get(address=validated_data.get('address'))
             centralized_oracle.is_outcome_set = True
@@ -759,17 +740,17 @@ class OutcomeAssignmentOracleSerializer(ContractNotTimestampted, serializers.Mod
         return self.instance
 
 
-class OutcomeTokenPurchaseSerializer(ContractEventTimestamped, serializers.ModelSerializer):
+class OutcomeTokenPurchaseSerializerTimestamped(ContractSerializerTimestamped, serializers.ModelSerializer):
     """
     Serializes the Market OutcomeTokenPurchase event
     """
     class Meta:
         model = models.BuyOrder
-        fields = ContractEventTimestamped.Meta.fields + ('buyer', 'outcomeTokenIndex', 'outcomeTokenCount',
+        fields = ContractSerializerTimestamped.Meta.fields + ('buyer', 'outcomeTokenIndex', 'outcomeTokenCount',
                                                          'outcomeTokenCost', 'marketFees',)
 
-    address = serializers.CharField(max_length=40)
-    buyer = serializers.CharField(max_length=40)
+    address = serializers.CharField(max_length=ADDRESS_LENGTH)
+    buyer = serializers.CharField(max_length=ADDRESS_LENGTH)
     outcomeTokenIndex = serializers.IntegerField()
     outcomeTokenCount = serializers.IntegerField()
     outcomeTokenCost = serializers.IntegerField()
@@ -797,7 +778,8 @@ class OutcomeTokenPurchaseSerializer(ContractEventTimestamped, serializers.Model
             order.outcome_token_cost = validated_data.get('outcomeTokenCost')
             order.fees = validated_data.get('marketFees')
             order.net_outcome_tokens_sold = market.net_outcome_tokens_sold
-            # calculate current marginal price
+
+            # Calculate current marginal price
             order.marginal_prices = list(map(
                 lambda index_: Decimal(calc_lmsr_marginal_price(int(index_[0]),
                                                                 [int(x) for x in market.net_outcome_tokens_sold],
@@ -805,6 +787,7 @@ class OutcomeTokenPurchaseSerializer(ContractEventTimestamped, serializers.Model
                                        ),
                 enumerate(market.net_outcome_tokens_sold)
             ))
+
             # Save order successfully, save market changes, then save the share entry
             order.save()
             market.trading_volume += order.cost
@@ -834,17 +817,17 @@ class OutcomeTokenPurchaseSerializer(ContractEventTimestamped, serializers.Model
         market.save()
 
 
-class OutcomeTokenSaleSerializer(ContractEventTimestamped, serializers.ModelSerializer):
+class OutcomeTokenSaleSerializerTimestamped(ContractSerializerTimestamped, serializers.ModelSerializer):
     """
     Serializes the Market OutcomeTokenSale event
     """
     class Meta:
         model = models.SellOrder
-        fields = ContractEventTimestamped.Meta.fields + ('seller', 'outcomeTokenIndex', 'outcomeTokenCount',
-                                                         'outcomeTokenProfit', 'marketFees',)
+        fields = ContractSerializerTimestamped.Meta.fields + ('seller', 'outcomeTokenIndex', 'outcomeTokenCount',
+                                                              'outcomeTokenProfit', 'marketFees',)
 
-    address = serializers.CharField(max_length=40)
-    seller = serializers.CharField(max_length=40)
+    address = serializers.CharField(max_length=ADDRESS_LENGTH)
+    seller = serializers.CharField(max_length=ADDRESS_LENGTH)
     outcomeTokenIndex = serializers.IntegerField()
     outcomeTokenCount = serializers.IntegerField()
     outcomeTokenProfit = serializers.IntegerField()
@@ -857,7 +840,8 @@ class OutcomeTokenSaleSerializer(ContractEventTimestamped, serializers.ModelSeri
             token_count = validated_data.get('outcomeTokenCount')
             market.net_outcome_tokens_sold[token_index] -= token_count
             market.collected_fees += validated_data.get('marketFees')
-            # get outcome token
+
+            # Get outcome token
             outcome_token = market.event.outcome_tokens.get(index=token_index)
 
             # Create Order
@@ -888,7 +872,6 @@ class OutcomeTokenSaleSerializer(ContractEventTimestamped, serializers.ModelSeri
             raise serializers.ValidationError('Market with address {} does not exist.' % validated_data.get('address'))
 
     def rollback(self):
-
         token_index = self.validated_data.get('outcomeTokenIndex')
         token_count = self.validated_data.get('outcomeTokenCount')
         market = models.Market.objects.get(address=self.validated_data.get('address'))
@@ -908,16 +891,16 @@ class OutcomeTokenSaleSerializer(ContractEventTimestamped, serializers.ModelSeri
         market.save()
 
 
-class OutcomeTokenShortSaleOrderSerializer(ContractEventTimestamped, serializers.ModelSerializer):
+class OutcomeTokenShortSaleOrderSerializerTimestamped(ContractSerializerTimestamped, serializers.ModelSerializer):
     """
     Serializes the Market OutcomeTokenShortSale event
     """
     class Meta:
         model = models.ShortSellOrder
-        fields = ContractEventTimestamped.Meta.fields + ('buyer', 'outcomeTokenIndex', 'outcomeTokenCount', 'cost',)
+        fields = ContractSerializerTimestamped.Meta.fields + ('buyer', 'outcomeTokenIndex', 'outcomeTokenCount', 'cost',)
 
-    address = serializers.CharField(max_length=40)
-    buyer = serializers.CharField(max_length=40)
+    address = serializers.CharField(max_length=ADDRESS_LENGTH)
+    buyer = serializers.CharField(max_length=ADDRESS_LENGTH)
     outcomeTokenIndex = serializers.IntegerField()
     outcomeTokenCount = serializers.IntegerField()
     cost = serializers.IntegerField()
@@ -939,7 +922,7 @@ class OutcomeTokenShortSaleOrderSerializer(ContractEventTimestamped, serializers
                 order.outcome_token_count = validated_data.get('outcomeTokenCount')
                 order.cost = validated_data.get('cost')
                 order.net_outcome_tokens_sold = market.net_outcome_tokens_sold
-                # save order
+                # Save order
                 order.save()
                 return order
             except models.OutcomeToken.DoesNotExist:
@@ -952,7 +935,7 @@ class OutcomeTokenShortSaleOrderSerializer(ContractEventTimestamped, serializers
         self.instance.delete()
 
 
-class MarketFundingSerializer(ContractNotTimestampted, serializers.ModelSerializer):
+class MarketFundingSerializer(ContractSerializer, serializers.ModelSerializer):
     """
     Serializes the Market MarketFunding event
     """
@@ -960,7 +943,7 @@ class MarketFundingSerializer(ContractNotTimestampted, serializers.ModelSerializ
         model = models.Market
         fields = ('address', 'funding',)
 
-    address = serializers.CharField(max_length=40)
+    address = serializers.CharField(max_length=ADDRESS_LENGTH)
     funding = serializers.IntegerField()
 
     def create(self, validated_data):
@@ -980,7 +963,7 @@ class MarketFundingSerializer(ContractNotTimestampted, serializers.ModelSerializ
         return self.instance
 
 
-class MarketClosingSerializer(ContractNotTimestampted, serializers.ModelSerializer):
+class MarketClosingSerializer(ContractSerializer, serializers.ModelSerializer):
     """
     Serializes the Market MarketClosing event
     """
@@ -988,7 +971,7 @@ class MarketClosingSerializer(ContractNotTimestampted, serializers.ModelSerializ
         model = models.Market
         fields = ('address',)
 
-    address = serializers.CharField(max_length=40)
+    address = serializers.CharField(max_length=ADDRESS_LENGTH)
 
     def create(self, validated_data):
         try:
@@ -1005,7 +988,7 @@ class MarketClosingSerializer(ContractNotTimestampted, serializers.ModelSerializ
         return self.instance
 
 
-class FeeWithdrawalSerializer(ContractNotTimestampted, serializers.ModelSerializer):
+class FeeWithdrawalSerializer(ContractSerializer, serializers.ModelSerializer):
     """
     Serializes the Market FeeWithdrawal event
     """
@@ -1013,7 +996,7 @@ class FeeWithdrawalSerializer(ContractNotTimestampted, serializers.ModelSerializ
         model = models.Market
         fields = ('address', 'fees',)
 
-    address = serializers.CharField(max_length=40)
+    address = serializers.CharField(max_length=ADDRESS_LENGTH)
     fees = serializers.IntegerField()
 
     def create(self, validated_data):
@@ -1031,16 +1014,17 @@ class FeeWithdrawalSerializer(ContractNotTimestampted, serializers.ModelSerializ
         return self.instance
 
 
-class TournamentParticipantSerializer(ContractCreatedByFactorySerializer, serializers.ModelSerializer):
+class UportTournamentParticipantSerializerEventSerializerTimestamped(ContractSerializerTimestamped,
+                                                                     serializers.ModelSerializer):
     """
     Serializes the Uport new Identitity event
     """
     class Meta:
         model = models.TournamentParticipant
-        fields = ContractCreatedByFactorySerializer.Meta.fields + ('identity',)
+        fields = ContractSerializerTimestamped.Meta.fields + ('identity',)
 
-    identity = serializers.CharField(max_length=40, source='address')
-    address = serializers.CharField(max_length=40, source='factory')
+    identity = serializers.CharField(max_length=ADDRESS_LENGTH, source='address')
+    # address = serializers.CharField(max_length=ADDRESS_LENGTH, source='factory')
 
     def validate_identity(self, identity_address):
         """
@@ -1060,7 +1044,7 @@ class TournamentParticipantSerializer(ContractCreatedByFactorySerializer, serial
         validated_data['past_rank'] = participants_amount + 1
         validated_data['diff_rank'] = 0
         validated_data.update({
-            'address': validated_data.get('address').lower()
+            'address': normalize_address_without_0x(validated_data.get('address')),
         })
 
         participant = models.TournamentParticipant.objects.create(**validated_data)
@@ -1074,7 +1058,58 @@ class TournamentParticipantSerializer(ContractCreatedByFactorySerializer, serial
         self.instance.delete()
 
 
-class TournamentTokenIssuanceSerializer(ContractNotTimestampted, serializers.ModelSerializer):
+class GenericTournamentParticipantEventSerializerTimestamped(ContractSerializerTimestamped, serializers.ModelSerializer):
+    """
+    Serializes the AddressRegistry AddressRegistration event
+    event AddressRegistration(address registrant, address registeredMainnetAddress)
+    """
+    class Meta:
+        model = models.TournamentParticipant
+        fields = ContractSerializerTimestamped.Meta.fields + ('registrant', 'registeredMainnetAddress')
+
+    registrant = serializers.CharField(max_length=ADDRESS_LENGTH, source='address')
+    registeredMainnetAddress = serializers.CharField(max_length=ADDRESS_LENGTH, source='mainnet_address')
+
+    def validate_registrant(self, registrant_address):
+        if models.TournamentParticipant.objects.filter(address=registrant_address).exists():
+            raise serializers.ValidationError('Duplicated registrant {} , wont be saved'.format(registrant_address))
+        else:
+            return registrant_address
+
+    def validate_registeredMainnetAddress(self, identity_address):
+        """
+        Only not whitelisted users can be saved
+        :param identity_address: a user participant address
+        :return: validated identity address
+        """
+        whitelisted_users = models.TournamentWhitelistedCreator.objects.all().values_list('address', flat=True)
+        if identity_address in whitelisted_users:
+            raise serializers.ValidationError('Tournament participant {} is admin, wont be saved'.format(identity_address))
+        else:
+            return identity_address
+
+    def create(self, validated_data):
+        participants_amount = models.TournamentParticipant.objects.all().count()
+        validated_data['current_rank'] = participants_amount + 1
+        validated_data['past_rank'] = participants_amount + 1
+        validated_data['diff_rank'] = 0
+        validated_data.update({
+            'address': normalize_address_without_0x(validated_data.get('address')),
+            'mainnet_address': normalize_address_without_0x(validated_data.get('mainnet_address')),
+        })
+
+        participant = models.TournamentParticipant.objects.create(**validated_data)
+        participant_balance = models.TournamentParticipantBalance()
+        participant_balance.balance = 0
+        participant_balance.participant = participant
+        participant_balance.save()
+        return participant
+
+    def rollback(self):
+        self.instance.delete()
+
+
+class TournamentTokenIssuanceSerializer(ContractSerializer, serializers.ModelSerializer):
     """
     Serializes the issuance of new Tournament Tokens
     """
@@ -1083,7 +1118,7 @@ class TournamentTokenIssuanceSerializer(ContractNotTimestampted, serializers.Mod
         model = models.TournamentParticipantBalance
         fields = ('owner', 'amount',)
 
-    owner = serializers.CharField(max_length=40)
+    owner = serializers.CharField(max_length=ADDRESS_LENGTH)
     amount = serializers.IntegerField()
 
     def validate_owner(self, owner):
@@ -1108,7 +1143,7 @@ class TournamentTokenIssuanceSerializer(ContractNotTimestampted, serializers.Mod
         return self.instance.save()
 
 
-class TournamentTokenTransferSerializer(ContractNotTimestampted, serializers.ModelSerializer):
+class TournamentTokenTransferSerializer(ContractSerializer, serializers.ModelSerializer):
     """
     Serializes the token transfer event
     https://github.com/gnosis/gnosis-contracts/blob/master/contracts/Tokens/Token.sol#L11
@@ -1118,12 +1153,12 @@ class TournamentTokenTransferSerializer(ContractNotTimestampted, serializers.Mod
         model = models.TournamentParticipantBalance
         fields = ('from_participant', 'to_participant', 'value',)
 
-    from_participant = serializers.CharField(max_length=40)
-    to_participant = serializers.CharField(max_length=40)
+    from_participant = serializers.CharField(max_length=ADDRESS_LENGTH)
+    to_participant = serializers.CharField(max_length=ADDRESS_LENGTH)
     value = serializers.IntegerField()
 
     def __init__(self, *args, **kwargs):
-        super(TournamentTokenTransferSerializer, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.initial_data['from_participant'] = self.initial_data.pop('from')
         self.initial_data['to_participant'] = self.initial_data.pop('to')
         
@@ -1134,7 +1169,7 @@ class TournamentTokenTransferSerializer(ContractNotTimestampted, serializers.Mod
         :return validated attrs
         :raise ValidationError
         """
-        super(TournamentTokenTransferSerializer, self).validate(attrs)
+        super().validate(attrs)
         error_message = ''
         try:
             models.TournamentParticipantBalance.objects.get(participant=attrs.get('from_participant'))

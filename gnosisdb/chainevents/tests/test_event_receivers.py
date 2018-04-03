@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
-from datetime import datetime
 from decimal import Decimal
 from time import mktime
 
 from django.conf import settings
 from django.test import TestCase
+from django.utils import timezone
+from django_eth_events.utils import normalize_address_without_0x
 
 from gnosisdb.relationaldb.models import (BuyOrder, CategoricalEvent,
                                           CentralizedOracle, Event, Market,
@@ -24,6 +25,7 @@ from ipfs.ipfs import Ipfs
 from ..event_receivers import (CentralizedOracleFactoryReceiver,
                                CentralizedOracleInstanceReceiver,
                                EventFactoryReceiver, EventInstanceReceiver,
+                               GenericIdentityManagerReceiver,
                                MarketFactoryReceiver, MarketInstanceReceiver,
                                OutcomeTokenInstanceReceiver,
                                TournamentTokenReceiver,
@@ -234,7 +236,7 @@ class TestEventReceiver(TestCase):
         with self.assertRaises(Market.DoesNotExist):
             Market.objects.get(event=event_address)
 
-        market_dict.get('params')[2].update({'value': settings.LMSR_MARKET_MAKER})
+        market_dict.get('params')[2].update({'value': normalize_address_without_0x(settings.LMSR_MARKET_MAKER)})
         MarketFactoryReceiver().save(market_dict, block)
         saved_market = Market.objects.get(event=event_address)
         self.assertIsNotNone(saved_market.pk)
@@ -509,7 +511,7 @@ class TestEventReceiver(TestCase):
 
         block = {
             'number': 1,
-            'timestamp': self.to_timestamp(datetime.now())
+            'timestamp': self.to_timestamp(timezone.now())
         }
 
         self.assertEqual(BuyOrder.objects.all().count(), 0)
@@ -539,7 +541,7 @@ class TestEventReceiver(TestCase):
 
         block = {
             'number': 1,
-            'timestamp': self.to_timestamp(datetime.now())
+            'timestamp': self.to_timestamp(timezone.now())
         }
 
         self.assertEqual(BuyOrder.objects.all().count(), 0)
@@ -568,7 +570,7 @@ class TestEventReceiver(TestCase):
 
         block = {
             'number': 1,
-            'timestamp': self.to_timestamp(datetime.now())
+            'timestamp': self.to_timestamp(timezone.now())
         }
 
         self.assertEqual(SellOrder.objects.all().count(), 0)
@@ -598,7 +600,7 @@ class TestEventReceiver(TestCase):
 
         block = {
             'number': 1,
-            'timestamp': self.to_timestamp(datetime.now())
+            'timestamp': self.to_timestamp(timezone.now())
         }
 
         # Save event
@@ -613,6 +615,39 @@ class TestEventReceiver(TestCase):
         self.assertEqual(market_check.collected_fees, market.collected_fees+fees+fees)
 
     def test_create_tournament_participant(self):
+        contract_address = "d833215cbcc3f914bd1c9ece3ee7bf8b14f841bb"
+        registrant_address = "90f8bf6a479f320ead074411a4b0e7944ea8c9c1"
+        registered_mainnet_address = "ffcf8fdee72ac11b5c542428b35eef5769c409f0"
+        participant_event = {
+            "address": contract_address,
+            "name": "AddressRegistration",
+            "params": [
+                {
+                    "name": "registrant",
+                    "value": registrant_address,
+                },
+                {
+                    "name": "registeredMainnetAddress",
+                    "value": registered_mainnet_address,
+                }
+            ]
+        }
+
+        block = {
+            'number': 1,
+            'timestamp': self.to_timestamp(timezone.now())
+        }
+
+        self.assertEqual(TournamentParticipant.objects.all().count(), 0)
+        # Save event
+        GenericIdentityManagerReceiver().save(participant_event, block)
+        # Check that tournament participants were incremented
+        tournament_participant = TournamentParticipant.objects.first()
+        self.assertIsNotNone(tournament_participant)
+        self.assertEqual(tournament_participant.address, registrant_address)
+        self.assertEqual(tournament_participant.mainnet_address, registered_mainnet_address)
+
+    def test_uport_create_tournament_participant(self):
         identity = 'ebe4dd7a4a9e712e742862719aa04709cc6d80a6'
         participant_event = {
             'name': 'IdentityCreated',
@@ -639,14 +674,16 @@ class TestEventReceiver(TestCase):
 
         block = {
             'number': 1,
-            'timestamp': self.to_timestamp(datetime.now())
+            'timestamp': self.to_timestamp(timezone.now())
         }
 
         self.assertEqual(TournamentParticipant.objects.all().count(), 0)
         # Save event
         UportIdentityManagerReceiver().save(participant_event, block)
-        # Check that collected fees was incremented
-        self.assertEqual(TournamentParticipant.objects.all().count(), 1)
+
+        tournament_participant = TournamentParticipant.objects.first()
+        self.assertIsNotNone(tournament_participant)
+        self.assertEqual(tournament_participant.address, identity)
 
     def test_issue_tournament_tokens(self):
         participant_balance = TournamentParticipantBalanceFactory()
@@ -667,10 +704,12 @@ class TestEventReceiver(TestCase):
             ]
         }
 
-        self.assertEqual(TournamentParticipantBalance.objects.get(participant=participant.address).balance, participant_balance.balance)
+        self.assertEqual(TournamentParticipantBalance.objects.get(participant=participant.address).balance,
+                         participant_balance.balance)
         # Save event
         TournamentTokenReceiver().save(participant_event)
-        self.assertEqual(TournamentParticipantBalance.objects.get(participant=participant.address).balance, participant_balance.balance+amount_to_add)
+        self.assertEqual(TournamentParticipantBalance.objects.get(participant=participant.address).balance,
+                         participant_balance.balance+amount_to_add)
 
     def test_issue_non_participant(self):
         # should not break, just don't save anything

@@ -120,7 +120,7 @@ class TestDaemonExec(TestCase):
     def test_create_centralized_oracle(self):
         n_oracles = models.CentralizedOracle.objects.all().count()
         self.assertEqual(n_oracles, 0)
-        ipfs_hash = self.create_event_description()
+        ipfs_hash = self.create_event_description().encode()
         # Create centralized oracle
         tx_hash = self.centralized_oracle_factory.transact(self.tx_data).createCentralizedOracle(ipfs_hash)
         self.assertIsNotNone(tx_hash)

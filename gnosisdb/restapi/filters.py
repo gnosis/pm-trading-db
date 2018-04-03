@@ -1,5 +1,6 @@
-from datetime import datetime, timedelta
+from datetime import timedelta
 
+from django.utils import timezone
 from django_filters import rest_framework as filters
 from rest_framework.pagination import LimitOffsetPagination
 
@@ -116,7 +117,7 @@ class MarketTradesFilter(filters.FilterSet):
         # if filterset is bound, use initial values as defaults
         if data is not None and not 'creation_date_time_0' in data and not 'creation_date_time_1' in data:
             data = data.copy()
-            data['creation_date_time_0'] = (datetime.now() - timedelta(days=14)).strftime('%Y-%m-%d %H:%M:%S')
-            data['creation_date_time_1'] = datetime.now()
+            data['creation_date_time_0'] = (timezone.now() - timedelta(days=14)).strftime('%Y-%m-%d %H:%M:%S')
+            data['creation_date_time_1'] = timezone.now()
 
-        super(MarketTradesFilter, self).__init__(data, *args, **kwargs)
+        super().__init__(data, *args, **kwargs)

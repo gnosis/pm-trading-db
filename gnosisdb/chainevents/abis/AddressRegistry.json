@@ -1,0 +1,50 @@
+[
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "mainnetAddressFor",
+    "outputs": [
+      {
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "mainnetAddress",
+        "type": "address"
+      }
+    ],
+    "name": "register",
+    "outputs": [],
+    "payable": false,
+    "type": "function"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "name": "registrant",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "name": "registeredMainnetAddress",
+        "type": "address"
+      }
+    ],
+    "name": "AddressRegistration",
+    "type": "event"
+  }
+]

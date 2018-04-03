@@ -176,7 +176,7 @@ class SellOrderFactory(OrderFactory):
     fees = 0
 
 
-class TournamentParticipantFactory(ContractCreatedByFactory):
+class TournamentParticipantFactory(ContractFactory, BlockTimestampedFactory):
     class Meta:
         model = models.TournamentParticipant
 

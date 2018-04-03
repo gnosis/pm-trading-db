@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
       - name: worker
-        image: gnosispm/gnosisdb:v1.0.0 # Set gnosisdb version (It must be the same as web and scheduler deployments)
+        image: gnosispm/gnosisdb:v1.0.2 # Set gnosisdb version (It must be the same as web and scheduler deployments)
         imagePullPolicy: Always
         args: ["scripts/run_celery_worker.sh"]
         resources:
@@ -126,21 +126,19 @@ spec:
           - name: SECRET_KEY # Django secret key
             value: "[DJANGO_SECRET_KEY]" # CUSTOM
           - name: CENTRALIZED_ORACLE_FACTORY
-            value: "b3289eaac0fe3ed15df177f925c6f8ceeb908b8f"
+            value: "0xb3289eAAc0Fe3eD15Df177F925c6F8ceEB908b8f"
           - name: EVENT_FACTORY
-            value: "0f60faf69f3ac146e1e557247583bc0c84f9f086"
+            value: "0x0f60faf69F3Ac146e1E557247583BC0c84f9f086"
           - name: LMSR_MARKET_MAKER
-            value: "11b5257396f156027b9232da7220bd7447282db6"
+            value: "0x11B5257396f156027B9232da7220bd7447282DB6"
           - name: MARKET_FACTORY
-            value: "eaa325bacae405fd5b45e9cf695d391f1c624a2f"
+            value: "0xEAA325bACAe405fd5B45E9cF695D391F1C624A2f"
           - name: STANDARD_MARKET_FACTORY
-            value: "5acfa40d828f2d3a88b49ff4da31b868380ce414"
+            value: "0x5acFA40D828f2d3a88B49FF4dA31b868380ce414"
           - name: TOURNAMENT_TOKEN
-            value: "a0c107db0e9194c18359d3265289239453b56cf2"
-          - name: ULTIMATE_ORACLE_FACTORY
-            value: "679ef161af4bb37b14a6d06d2e2a991d3650005c"
+            value: "0xa0c107Db0e9194c18359d3265289239453b56CF2"
           - name: UPORT_IDENTITY_MANAGER
-            value: "abbcd5b340c80b5f1c0545c04c987b87310296ae"
+            value: "0xABBcD5B340C80B5f1C0545C04C987b87310296aE"
       - name: geth
         image: ethereum/client-go:v1.8.1
         ports:
