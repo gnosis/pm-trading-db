@@ -15,7 +15,7 @@ os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
 def read_version():
     main_ns = {}
-    ver_path = convert_path('gnosisdb/__init__.py')
+    ver_path = convert_path('gnosisdb/version.py')
     with open(ver_path) as ver_file:
         exec(ver_file.read(), main_ns)
     return main_ns['__version__']

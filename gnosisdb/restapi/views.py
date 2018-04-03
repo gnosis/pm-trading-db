@@ -5,7 +5,7 @@ from rest_framework import generics
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
-from gnosisdb import __git_info__, __version__
+from gnosisdb.version import __git_info__, __version__
 from gnosisdb.relationaldb.models import (CentralizedOracle, Event, Market,
                                           Order, OutcomeTokenBalance,
                                           TournamentParticipant,
