@@ -36,6 +36,8 @@ class Command(BaseCommand):
             gas = settings.ISSUANCE_GAS
             gas_price = settings.ISSUANCE_GAS_PRICE
             if getattr(settings, 'ETHEREUM_DEFAULT_ACCOUNT_PRIVATE_KEY'):
+                # https://web3py.readthedocs.io/en/stable/web3.eth.account.html?highlight=enable_unaudited_featured#not-acceptable-for-production
+                web3.eth.enable_unaudited_features()
                 tx = token_contract.functions.issue(users, amount).buildTransaction(
                     {
                         'nonce': web3.eth.getTransactionCount(settings.ETHEREUM_DEFAULT_ACCOUNT),

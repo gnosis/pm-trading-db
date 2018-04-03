@@ -19,7 +19,7 @@ INTERNAL_IPS = ['localhost', '127.0.0.1', '172.17.0.1', '172.18.0.1']
 # Tournament settings
 # ------------------------------------------------------------------------------
 TOURNAMENT_TOKEN = '0x0E696947A06550DEf604e82C26fd9E493e576337'
-os.environ['TOURNAMENT_TOKEN'] = '0x0E696947A06550DEf604e82C26fd9E493e576337'
+os.environ['TOURNAMENT_TOKEN'] = TOURNAMENT_TOKEN
 LMSR_MARKET_MAKER = '0x9561C133DD8580860B6b7E504bC5Aa500f0f06a7'
 
 # ------------------------------------------------------------------------------
