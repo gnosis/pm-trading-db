@@ -48,13 +48,14 @@ class Command(BaseCommand):
         with transaction.atomic():
             for index, user_predicted_value in enumerate(users_predicted_values):
                 try:
+                    current_rank = index + 1
                     TournamentParticipant.objects.filter(address=user_predicted_value['address']).update(
                         past_rank=F('current_rank'),
                         predicted_profit=user_predicted_value['predicted_profit'],
                         predictions=user_predicted_value['predictions'],
                         score=user_predicted_value['score'],
-                        current_rank=index + 1,
-                        diff_rank=F('past_rank') - F('current_rank'),
+                        current_rank=current_rank,
+                        diff_rank=F('current_rank') - current_rank,
                     )
                 except Exception as e:
                     self.stdout.write(self.style.ERROR('Scoreboard Error: Was not possible updating user {} due to: {}'.format(user_predicted_value['address'],
