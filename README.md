@@ -7,7 +7,7 @@
 Gnosis Core Database Layer
 
 Installation
--------
+------------
 
 ### Install Docker and Docker Compose
 * First, install docker: https://docs.docker.com/engine/installation/.
@@ -97,7 +97,7 @@ then `docker-compose up` to get GNOSISDB up and running.
 
 
 Django Settings
--------
+---------------
 
 GnosisDB comes with a production settings file that you can edit.
 
@@ -196,7 +196,7 @@ ETH_EVENTS = [
 Please read out the "How to implement your own AddressGetter and EventReceiver" paragraph for a deeper explication on how to develop your listeners.
 
 How to implement your own AddressGetter and EventReceiver
--------
+---------------------------------------------------------
 Let's consider the ETH_EVENTS settings varable:
 ```
 ETH_EVENTS = [
@@ -314,6 +314,120 @@ using custom Postgres format (as recommended on the docs). If you want to conver
 
 `pg_restore -f mydatabase.sqlc mydatabase.dump`
 
+TOURNAMENT SETUP
+----------------
+To configure a custom tournament, you need to first deploy olympia tokens, recommended is rinkeby:
+
+```sh
+git clone https://github.com/gnosis/olympia-token
+cd olympia-token
+```
+
+Create a `truffle-local` file and **configure your account** for rinkeby (recommended network) with
+12 words mnemonic:
+
+```js
+var HDWalletProvider = require("truffle-hdwallet-provider");
+var mnemonic = "void crawl erase remove sail disease step company machine crime indoor square"; // 12 word mnemonic
+var provider = new HDWalletProvider(mnemonic, "https://rinkeby.infura.io:443");
+const config = {
+  networks: {
+      rinkeby: {
+          port: 443,
+          network_id: "4",
+          provider: provider,
+          gasPrice: 50000000000
+      },
+  },
+}
+module.exports = config;
+```
+
+Then run:
+
+```sh
+npm install
+npm run compile
+npm run migrate -- --network rinkeby
+```
+
+Copy the addresses for AddressRegistry and Olympia Token, should be something like:
+
+```
+OlympiaToken: 0x2924e2338356c912634a513150e6ff5be890f7a0
+AddressRegistry: 0x12f73864dc1f603b2e62a36b210c294fd286f9fc
+```
+
+Clone gnosisdb repository:
+
+```sh
+git clone https://github.com/gnosis/gnosisdb.git
+cd gnosisdb
+```
+
+Change these lines with your custom values in **config/settings/rinkeby.py**:
+
+```
+TOURNAMENT_TOKEN = '0x2924e2338356c912634a513150e6ff5be890f7a0'
+os.environ['GENERIC_IDENTITY_MANAGER_ADDRESS'] = '0x12f73864dc1f603b2e62a36b210c294fd286f9fc'
+```
+
+Add your ethereum account too for token issuance:
+
+```
+ETHEREUM_DEFAULT_ACCOUNT = '0x847968C6407F32eb261dC19c3C558C445931C9fF'
+ETHEREUM_DEFAULT_ACCOUNT_PRIVATE_KEY = 'a3b12a165350ab3c7d1ecd3596096969db2839c7899a3b0b39dd479fdd5148c7'
+```
+
+You must have a running `Geth` or `Parity` in your machine, you can configure it on **config/settings/rinkeby.py** too:
+
+```
+ETHEREUM_NODE_HOST = '172.17.0.1'
+ETHEREUM_NODE_PORT = 8545
+ETHEREUM_NODE_SSL = 0
+```
+
+If you want to use IPC make sure is visible from the docker machine and just set:
+
+```
+ETHEREUM_IPC_PATH = '/path/to/geth/ipc.socket'
+```
+
+Edit **.env** file in the root of the project and change:
+
+`DJANGO_SETTINGS_MODULE=config.settings.local` to `DJANGO_SETTINGS_MODULE=config.settings.rinkeby`
+
+Then in *gnosisdb root folder*:
+
+```
+docker-compose build --force-rm
+docker-compose run web sh
+python manage.py migrate
+python manage.py setup_tournament
+exit
+docker-compose up
+```
+
+The command `setup_tournament` will prepare the database and set up periodic tasks:
+  - **Ethereum blockchain event listener** every 5 seconds (the main task of the application).
+  - **Scoreboard calculation** every 10 minutes.
+  - **Token issuance** every minute. Tokens will be issued in batches of 50 users (to prevent
+  exceeding the block limitation). A flag will be set to prevent users from being issued again on next
+  execution of the task.
+  - **Token issuance flag clear**. Once a day the token issuance flag will be cleared so users will
+  receive new tokens every day.
+
+All these tasks can be changed in the [application admin](http://localhost:8000/admin/django_celery_beat/periodictask/).
+You will need a superuser:
+
+```
+docker-compose run web sh
+python manage.py createsuperuser
+```
+
+You should have now the api running in http://localhost:8000. You have to be patient because the
+first synchronization of Rinkeby will last about 12 hours
+
 
 GNOSISDB DEPLOYMENT IN KUBERNETES
 ----------------------------------
@@ -322,7 +436,7 @@ GNOSISDB DEPLOYMENT IN KUBERNETES
 
 There are a few necessary requirements:
   - Minimum Kubernetes version:  **1.9**
-  - Ethereum network: **Rinkeby** (in the example)  
+  - Ethereum network: **Rinkeby** (in the example)
     - If you want another network you must change the address:
       - Download https://github.com/gnosis/gnosis-contracts
       - Execute `truffle networks`

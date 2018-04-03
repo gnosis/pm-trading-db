@@ -10,6 +10,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         PeriodicTask.objects.filter(task='django_eth_events.tasks.event_listener').delete()
+        time.sleep(5)
         call_command('cleandatabase')
         call_command('resync_daemon')
         self.stdout.write(self.style.SUCCESS('Making sure no process was running'))
@@ -26,4 +27,4 @@ class Command(BaseCommand):
                 task='django_eth_events.tasks.event_listener',
                 interval=interval
             )
-            self.stdout.write(self.style.SUCCESS('Created Periodic Task for Event Listener every 5s.'))
+            self.stdout.write(self.style.SUCCESS('Created Periodic Task for Event Listener every 5s'))
