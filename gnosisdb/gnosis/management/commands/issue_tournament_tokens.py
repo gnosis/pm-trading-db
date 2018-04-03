@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.core.management.base import BaseCommand
-from web3 import HTTPProvider, Web3
+from django_eth_events.web3_service import Web3Service
 
 from chainevents.abis import abi_file_path, load_json_file
 
@@ -29,18 +29,12 @@ class Command(BaseCommand):
                                                                                        options['users'])
                                    )
             )
-            protocol = 'https' if settings.ETHEREUM_NODE_SSL else 'http'
-            provider_uri = '{}://{}:{}'.format(
-                protocol,
-                settings.ETHEREUM_NODE_HOST,
-                settings.ETHEREUM_NODE_PORT,
-            )
-            http_provider = HTTPProvider(provider_uri)
-            web3 = Web3(http_provider)
+
+            web3 = Web3Service().web3
             abi = load_json_file(abi_file_path('TournamentToken.json'))
             token_contract = web3.eth.contract(abi=abi, address=settings.TOURNAMENT_TOKEN)
-            gas_price = 50000000000
-            gas = 2000000
+            gas = settings.ISSUANCE_GAS
+            gas_price = settings.ISSUANCE_GAS_PRICE
             if getattr(settings, 'ETHEREUM_DEFAULT_ACCOUNT_PRIVATE_KEY'):
                 tx = token_contract.functions.issue(users, amount).buildTransaction(
                     {
