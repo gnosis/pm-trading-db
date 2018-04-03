@@ -96,7 +96,7 @@ spec:
             value: "0"
           - name: ETHEREUM_DEFAULT_ACCOUNT
             value: ""
-          - name: ETHEREUM_PRIVATE_KEY
+          - name: ETHEREUM_DEFAULT_ACCOUNT_PRIVATE_KEY
             value: ""
           - name: IPFS_HOST
             value: "https://ipfs.infura.io"
