@@ -5,11 +5,11 @@ from rest_framework import generics
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
-from gnosisdb.version import __git_info__, __version__
 from gnosisdb.relationaldb.models import (CentralizedOracle, Event, Market,
                                           Order, OutcomeTokenBalance,
                                           TournamentParticipant,
                                           TournamentWhitelistedCreator)
+from gnosisdb.version import __git_info__, __version__
 
 from .filters import (CentralizedOracleFilter, DefaultPagination, EventFilter,
                       MarketFilter, MarketTradesFilter)
