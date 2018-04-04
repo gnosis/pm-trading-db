@@ -1,25 +1,25 @@
 from .base import *
 
 SECRET_KEY = 'DEPeWJKeZfFOtgfFzjk5BVn5lixq9vcfad1axbLWpuap1jyIAH'
-DEBUG = True
-
-MIDDLEWARE += ['debug_toolbar.middleware.DebugToolbarMiddleware', ]
-INSTALLED_APPS += ['debug_toolbar', ]
+DEBUG = False
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
-# Django Debug Toolbar config
-INTERNAL_IPS = ['localhost', '127.0.0.1', '172.17.0.1', '172.18.0.1']
+# ------------------------------------------------------------------------------
+# Ethereum node
+# ------------------------------------------------------------------------------
+ETHEREUM_NODE_HOST = '172.17.0.1'
+ETHEREUM_NODE_PORT = 8545
+ETHEREUM_NODE_SSL = 0
 
+ETH_PROCESS_BLOCKS = 100
 
-# Everything is a local address from gnosis.js `npm run migrate`
-# Run `ganache-cli --gasLimit 40000000 -d -h 0.0.0.0 -i 437894314312`
 # ------------------------------------------------------------------------------
 # Tournament settings
 # ------------------------------------------------------------------------------
-TOURNAMENT_TOKEN = '0x0E696947A06550DEf604e82C26fd9E493e576337'
+TOURNAMENT_TOKEN = '0xa0c107Db0e9194c18359d3265289239453b56CF2'
 os.environ['TOURNAMENT_TOKEN'] = TOURNAMENT_TOKEN
-LMSR_MARKET_MAKER = '0x9561C133DD8580860B6b7E504bC5Aa500f0f06a7'
+LMSR_MARKET_MAKER = '0x11B5257396f156027B9232da7220bd7447282DB6'
 
 # ------------------------------------------------------------------------------
 # Token issuance (optional)
@@ -30,14 +30,13 @@ TOURNAMENT_TOKEN_ISSUANCE = '200000000000000000000'
 ISSUANCE_GAS = 2000000
 ISSUANCE_GAS_PRICE = 50000000000
 
-
 # ------------------------------------------------------------------------------
 # Local settings
 # ------------------------------------------------------------------------------
-os.environ['CENTRALIZED_ORACLE_FACTORY'] = '0xCfEB869F69431e42cdB54A4F4f105C19C080A601'
-os.environ['EVENT_FACTORY'] = '0x67B5656d60a809915323Bf2C40A8bEF15A152e3e'
-os.environ['MARKET_FACTORY'] = '0xe982E462b094850F12AF94d21D470e21bE9D0E9C'
+os.environ['CENTRALIZED_ORACLE_FACTORY'] = '0xb3289eAAc0Fe3eD15Df177F925c6F8ceEB908b8f'
+os.environ['EVENT_FACTORY'] = '0x0f60faf69F3Ac146e1E557247583BC0c84f9f086'
+os.environ['MARKET_FACTORY'] = '0xEAA325bACAe405fd5B45E9cF695D391F1C624A2f'
 os.environ['UPORT_IDENTITY_MANAGER'] = '0xABBcD5B340C80B5f1C0545C04C987b87310296aE'
-os.environ['GENERIC_IDENTITY_MANAGER_ADDRESS'] = '0xA94B7f0465E98609391C623d0560C5720a3f2D33'
+os.environ['GENERIC_IDENTITY_MANAGER_ADDRESS'] = '0x79DA1C9eF6bf6bC64E66F8AbFFDDC1A093E50f13'
 
 from .events.olympia import ETH_EVENTS  # isort:skip

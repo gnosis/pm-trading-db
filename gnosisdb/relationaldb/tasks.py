@@ -25,7 +25,7 @@ def send_email(message):
 def issue_tokens():
     participants = TournamentParticipant.objects.filter(
         tokens_issued=False,
-        created__lte=timezone.now() - timedelta(minutes=1)  # 1 min timeframe for avoiding twice tokens in the event of reorg
+        created__lte=timezone.now() - timedelta(minutes=1)  # 1 min timeframe to prevent issuing tokens twice in the event of reorg
     )[:50]
 
     if len(participants):
@@ -35,12 +35,18 @@ def issue_tokens():
             # Update first
             with transaction.atomic():
                 TournamentParticipant.objects.filter(address__in=participant_addresses).update(tokens_issued=True)
-            call_command('issue_tournament_tokens', participant_addresses_string, settings.TOURNAMENT_TOKEN_ISSUANCE)
+                call_command('issue_tournament_tokens', participant_addresses_string, settings.TOURNAMENT_TOKEN_ISSUANCE)
         except Exception as err:
-            logger.error(str(err))
+            logger.error(err)
             send_email(traceback.format_exc())
     else:
         logger.info("No new tournament participants")
+
+
+@shared_task
+def clear_issued_tokens_flag():
+    TournamentParticipant.objects.filter(tokens_issued=True).update(tokens_issued=False)
+    logger.info("Cleared issued tokens flag for tournament participants")
 
 
 @shared_task
