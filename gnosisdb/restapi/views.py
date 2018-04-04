@@ -1,3 +1,4 @@
+import os
 from django.conf import settings
 from django.http import JsonResponse
 from django.shortcuts import get_list_or_404, get_object_or_404
@@ -23,6 +24,26 @@ def about_view(_):
     return JsonResponse({
         'git': __git_info__,
         'version': __version__,
+        'settings': {
+            'ethereum_node': {
+                'ETHEREUM_IPC_PATH': getattr(settings, 'ETHEREUM_IPC_PATH', ''),
+                'ETHEREUM_NODE_HOST': getattr(settings, 'ETHEREUM_NODE_HOST', ''),
+                'ETHEREUM_NODE_PORT': getattr(settings, 'ETHEREUM_NODE_PORT', ''),
+            },
+            'ipfs': {
+                'IPFS_HOST': settings.IPFS_HOST,
+                'IPFS_PORT': settings.IPFS_PORT,
+            },
+            'addresses': {
+                'CENTRALIZED_ORACLE_FACTORY': os.environ['CENTRALIZED_ORACLE_FACTORY'],
+                'EVENT_FACTORY': os.environ['EVENT_FACTORY'],
+                'MARKET_FACTORY': os.environ['MARKET_FACTORY'],
+                'TOURNAMENT_TOKEN': settings.TOURNAMENT_TOKEN,
+                'LMSR_MARKET_MAKER': settings.LMSR_MARKET_MAKER,
+                'UPORT_IDENTITY_MANAGER': os.environ['UPORT_IDENTITY_MANAGER'],
+                'GENERIC_IDENTITY_MANAGER_ADDRESS': os.environ['GENERIC_IDENTITY_MANAGER_ADDRESS'],
+            }
+        }
     })
 
 
