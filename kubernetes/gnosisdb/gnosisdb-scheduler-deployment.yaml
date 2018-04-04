@@ -126,8 +126,6 @@ spec:
             value: "0x11B5257396f156027B9232da7220bd7447282DB6"
           - name: MARKET_FACTORY
             value: "0xEAA325bACAe405fd5B45E9cF695D391F1C624A2f"
-          - name: STANDARD_MARKET_FACTORY
-            value: "0x5acFA40D828f2d3a88B49FF4dA31b868380ce414"
           - name: TOURNAMENT_TOKEN
             value: "0xa0c107Db0e9194c18359d3265289239453b56CF2"
           - name: UPORT_IDENTITY_MANAGER
