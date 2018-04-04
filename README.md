@@ -6,6 +6,18 @@
 # GnosisDB
 Gnosis Core Database Layer
 
+## Index of contents
+
+- [Installation](#installation)
+- [Django settings](#django-settings)
+- [How to implement your own AddressGetter and EventReceiver](#how-to-implement-your-own-addressgetter-and-eventreceiver)
+- [REST API](#rest-api)
+- [Resync Database](#resync-database)
+- [Backup Database](#backup-database)
+- [Tournament Setup](#tournament-setup)
+- [GnosisDB deployment with Kubernetes](#gnosisdb-deployment-in-kubernetes)
+- [Contributors](#contributors)
+
 Installation
 ------------
 
@@ -427,6 +439,19 @@ python manage.py createsuperuser
 
 You should have now the api running in http://localhost:8000. You have to be patient because the
 first synchronization of Rinkeby will last about 12 hours
+
+#### How to issue tournament tokens
+GnosisDB comes with an handful command allowing to issue new tokens.
+
+Go to gnosisdb/ root directory and execute:
+
+```python manage.py issue_tournament_tokens address1,adress2,address3 amount```
+
+as follows:
+
+```python manage.py issue_tournament_tokens 0x0...a, 0x...b,0x...c 1000000000000000000```
+
+where amount worth of 1000000000000000000 equals 1 token.
 
 
 GNOSISDB DEPLOYMENT IN KUBERNETES
