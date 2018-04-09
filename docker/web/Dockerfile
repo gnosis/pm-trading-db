@@ -1,5 +1,6 @@
 FROM python:3-slim-stretch
 
+ENV PYTHONUNBUFFERED 1
 RUN mkdir -p /root/var/run/celery
 WORKDIR /gnosisdb
 
