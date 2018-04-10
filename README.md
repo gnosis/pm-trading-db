@@ -37,12 +37,23 @@ The application is made up of several container images that are linked together 
 `docker-compose build --force-rm`
 
 ### Create a Django superuser
-Run the Web container with the following command and inside create a super user in order to access the /admin interface.
+Enter the Web container's command line with the following command:
 
 ```
 docker-compose run web bash
+```
+
+Once inside, create a super user in order to access the /admin interface.
+
+```
 python manage.py migrate
 python manage.py createsuperuser
+```
+
+You may exit the web container shell with:
+
+```
+exit
 ```
 
 ### Run application
@@ -51,6 +62,14 @@ Start the gnosisdb server simply by bringing up the set of containers:
 `sudo docker-compose up`
 
 You can access it on http://localhost:8000 and the admin is on http://localhost:8000/admin
+
+You will need to have the following ports open on your machine for this to work:
+
+- 5432: PostgreSQL
+- 4001: IPFS peering port
+- 5001: IPFS API server
+- 5672: RabbitMQ
+- 8000: NGINX serving a Django administrative app
 
 ### Populate database
 To populate database and retrieve some information, the easiest is to use [gnosis.js](https://github.com/gnosis/gnosis.js)
@@ -87,7 +106,7 @@ npm run test-gnosisdb
 The execution will furnish all the contracts' addesses in the `node_modules/@gnosis.pm/gnosis-core-contracts/build/contracts` folder as parts of the build artifacts.
 You should also see the addresses displayed in your console.
 
-You should verify that the addresses in ETH_EVENTS specified in gnosisdb/settings/base.py match what is displayed by the console for all the contracts including:
+You can verify that the addresses in ETH_EVENTS specified in `config/settings/local.py` match what is displayed by the console for all the contracts including:
 
 * Centralized Oracle Factory
 * Event Factory
@@ -182,7 +201,7 @@ BROKER_URL = 'amqp://{user}:{password}@{hostname}:{port}/{queue}'.format(
 ##### LMSR MARKET MAKER
 You need to specify the LMSR Market Maker address you have deployed previously (to discover how to do that please take a look at [gnosis-contracts](https://github.com/gnosis/gnosis-contracts):
 
-`LSRM_MARKET_MAKER = '2f2be9db638cb31d4143cbc1525b0e104f7ed597'`
+`LMSR_MARKET_MAKER = '2f2be9db638cb31d4143cbc1525b0e104f7ed597'`
 
 ##### GNOSIS ETHEREUM CONTRACTS
 The ETH_EVENTS array variable allows you to define and map a list of addressess to their related event listeners.<br/>
