@@ -6,6 +6,7 @@ from rest_framework_swagger import renderers
 from rest_framework.schemas import SchemaGenerator
 from rest_framework.renderers import CoreJSONRenderer, JSONRenderer
 from rest_framework_swagger.renderers import OpenAPICodec, OpenAPIRenderer as BaseOpenAPIRenderer
+import os
 
 
 def get_swagger_view(title=None, url=None, patterns=None, urlconf=None):
@@ -17,7 +18,9 @@ def get_swagger_view(title=None, url=None, patterns=None, urlconf=None):
             if renderer_context['response'].status_code != status.HTTP_200_OK:
                 return JSONRenderer().render(data)
 
-            self.scheme = renderer_context['request']._request._get_scheme()
+            request_scheme = renderer_context['request']._request._get_scheme()
+            scheme = os.getenv('SWAGGER_SCHEME_PROTOCOL', request_scheme)
+            self.scheme = scheme
 
             extra = self.get_customizations()
 
