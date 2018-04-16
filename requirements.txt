@@ -19,11 +19,11 @@ eth-tester==0.1.0b21
 eth-utils==1.0.2
 ethereum==1.6.1
 factory-boy==2.10.0
-faker==0.8.12
+faker==0.8.13
 gevent==1.2.2
 gunicorn==19.7.1
 ipfsapi==0.4.1
 kombu==4.1.0
 mpmath==1.0.0
 psycopg2-binary==2.7.4
-web3==4.0.0
+web3==4.1.0
