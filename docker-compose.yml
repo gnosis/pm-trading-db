@@ -1,5 +1,8 @@
 version: '3'
 
+volumes:
+  nginx-shared:
+
 services:
   nginx:
     image: nginx:1.13-alpine
@@ -11,6 +14,7 @@ services:
       - nginx-shared:/gnosis-nginx
     depends_on:
       - web
+
   ipfs:
     hostname: ipfs
     build:
@@ -19,6 +23,7 @@ services:
     ports:
       - "4001:4001"
       - "5001:5001"
+
   rabbit:
     image: rabbitmq:3-alpine
     hostname: rabbit
@@ -28,11 +33,14 @@ services:
     ports:
       - "5672:5672"
       - "15672:15672"
+
   db:
     image: postgres:10-alpine
     ports:
       - "5432:5432"
+
   web:
+    command: scripts/run_web.sh
     build:
       context: .
       dockerfile: docker/web/Dockerfile
@@ -45,25 +53,16 @@ services:
       - ipfs
       - db
     working_dir: /gnosisdb
-    command: scripts/run_web.sh
-    # Not needed, using socket through nginx-shared
-    # expose:
-    #  - "8000"
-    ports:
-      # - "8000:8000"
-      - "27017"
-      - "5432"
     volumes:
       - nginx-shared:/gnosis-nginx
-  worker:
+
+  worker: &worker
+    command: scripts/run_celery_worker.sh
     build:
       context: .
       dockerfile: docker/web/Dockerfile
-    command: scripts/run_celery_worker.sh
     env_file:
       - .env
-    volumes:
-      - .:/app
     links:
       - rabbit
     depends_on:
@@ -71,19 +70,5 @@ services:
       - rabbit
 
   scheduler:
-    build:
-      context: .
-      dockerfile: docker/web/Dockerfile
+    <<: *worker
     command: scripts/run_celery_scheduler.sh
-    env_file:
-      - .env
-    volumes:
-      - .:/app
-    links:
-      - rabbit
-    depends_on:
-      - db
-      - rabbit
-
-volumes:
-  nginx-shared:

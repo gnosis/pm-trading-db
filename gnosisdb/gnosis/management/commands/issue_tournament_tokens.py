@@ -47,7 +47,6 @@ class Command(BaseCommand):
                 tx = token_contract.functions.issue(users, amount).buildTransaction(
                     {
                         'nonce': web3.eth.getTransactionCount(ethereum_default_account),
-                        'from': ethereum_default_account,
                         'gasPrice': gas_price,
                         'gas': gas,
                     }

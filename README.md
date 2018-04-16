@@ -285,7 +285,7 @@ class CentralizedOracleFactoryReceiver(AbstractEventReceiver):
 ##### ADDRESSES GETTER
 In case you wouldn't directly declare the contract address/addresses, you should specify an Addresses Getter class instead.<br/>
 An Addresses Getter class must inherit from [**django_eth_events.chainevents.AbstractAddressesGetter**](https://github.com/gnosis/django-eth-events/blob/master/django_eth_events/chainevents.py#L5) and implement two methods:
-* get_addresses(self), returns a list of strings (addresses)
+* __get_addresses__(self), returns a list of strings (addresses)
 * __contains__(self, address), returns True if the given address is in the addresses list, False otherwise
 
 Take a look at ContractAddressGetter:
