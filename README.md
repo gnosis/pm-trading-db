@@ -347,49 +347,16 @@ using custom Postgres format (as recommended on the docs). If you want to conver
 
 TOURNAMENT SETUP
 ----------------
-To configure a custom tournament, you need to first deploy olympia tokens, recommended is rinkeby:
+To configure a custom tournament, you need to first need to [deploy the smart contracts needed on the chosen public test network](https://gnosis-apollo.readthedocs.io/en/latest/smart-contracts.html). For this setup guide, we will assume the choice of [Rinkeby](https://www.rinkeby.io/#stats).
 
-```sh
-git clone https://github.com/gnosis/olympia-token
-cd olympia-token
-```
-
-Create a `truffle-local` file and **configure your account** for rinkeby (recommended network) with
-12 words mnemonic:
-
-```js
-var HDWalletProvider = require("truffle-hdwallet-provider");
-var mnemonic = "void crawl erase remove sail disease step company machine crime indoor square"; // 12 word mnemonic
-var provider = new HDWalletProvider(mnemonic, "https://rinkeby.infura.io:443");
-const config = {
-  networks: {
-      rinkeby: {
-          port: 443,
-          network_id: "4",
-          provider: provider,
-          gasPrice: 50000000000
-      },
-  },
-}
-module.exports = config;
-```
-
-Then run:
-
-```sh
-npm install
-npm run compile
-npm run migrate -- --network rinkeby
-```
-
-Copy the addresses for AddressRegistry and Olympia Token, should be something like:
+Take note of your deployed addresses for [AddressRegistry](https://github.com/gnosis/olympia-token#addressregistry) and the [PlayToken](https://github.com/gnosis/olympia-token#playtoken). You can find them with `npm run truffle networks`. This guide will assume the following as the deployed addresses, though you will have something different:
 
 ```
 OlympiaToken: 0x2924e2338356c912634a513150e6ff5be890f7a0
 AddressRegistry: 0x12f73864dc1f603b2e62a36b210c294fd286f9fc
 ```
 
-Clone gnosisdb repository:
+Clone the `gnosisdb` repository:
 
 ```sh
 git clone https://github.com/gnosis/gnosisdb.git
@@ -410,7 +377,9 @@ ETHEREUM_DEFAULT_ACCOUNT = '0x847968C6407F32eb261dC19c3C558C445931C9fF'
 ETHEREUM_DEFAULT_ACCOUNT_PRIVATE_KEY = 'a3b12a165350ab3c7d1ecd3596096969db2839c7899a3b0b39dd479fdd5148c7'
 ```
 
-You must have a running `Geth` or `Parity` in your machine, you can configure it on **config/settings/rinkeby.py** too:
+If you don't have the private key for your account, but you do know the BIP39 mnemonic for it, you may enter your mnemonic into [Ganache](http://truffleframework.com/ganache/) to recover the private key.
+
+You must have a running `Geth` connected to [Rinkeby](https://www.rinkeby.io/#geth). Configure it on **config/settings/rinkeby.py**:
 
 ```
 ETHEREUM_NODE_HOST = '172.17.0.1'
@@ -418,10 +387,16 @@ ETHEREUM_NODE_PORT = 8545
 ETHEREUM_NODE_SSL = 0
 ```
 
-If you want to use IPC make sure is visible from the docker machine and just set:
+You will want to take note of the IPC endpoint for your Geth instance. Look for a line in the output indicating this information:
 
 ```
-ETHEREUM_IPC_PATH = '/path/to/geth/ipc.socket'
+INFO [01-01|00:00:00] IPC endpoint opened                      url=/home/user/.rinkeby/geth.ipc
+```
+
+To use IPC instead of HTTP RPC, make sure the socket file is visible from the docker machine, and just set:
+
+```
+ETHEREUM_IPC_PATH = '/path/to/geth.ipc'
 ```
 
 Edit **.env** file in the root of the project and change:
