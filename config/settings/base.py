@@ -48,10 +48,11 @@ GNOSIS_APPS = [
 ]
 
 LOCAL_APPS = [
-    'gnosisdb.chainevents',
-    'gnosisdb.gnosis',
-    'gnosisdb.relationaldb',
-    'gnosisdb.restapi',
+    'gnosisdb.chainevents.apps.ChainEventsConfig',
+    'gnosisdb.gnosis.apps.GnosisConfig',
+    'gnosisdb.ipfs.apps.IpfsConfig',
+    'gnosisdb.relationaldb.apps.RelationalDbConfig',
+    'gnosisdb.restapi.apps.RestApiConfig',
     'gnosisdb.taskapp.celery.CeleryConfig',
 ]
 
