@@ -2,7 +2,7 @@
 echo "==> Migrating Django models ... "
 python manage.py migrate --noinput
 echo "==> Collecting statics ... "
-DOCKER_SHARED_DIR=/gnosis-nginx
+DOCKER_SHARED_DIR=/nginx
 rm -rf $DOCKER_SHARED_DIR/*
 STATIC_ROOT=$DOCKER_SHARED_DIR/staticfiles python manage.py collectstatic
 echo "==> Running Gunicorn ... "

@@ -11,7 +11,7 @@ services:
       - "8000:8000"
     volumes:
       - ./docker/nginx:/etc/nginx/conf.d
-      - nginx-shared:/gnosis-nginx
+      - nginx-shared:/nginx
     depends_on:
       - web
 
@@ -54,7 +54,7 @@ services:
       - db
     working_dir: /gnosisdb
     volumes:
-      - nginx-shared:/gnosis-nginx
+      - nginx-shared:/nginx
 
   worker: &worker
     command: scripts/run_celery_worker.sh
