@@ -1,5 +1,5 @@
 from django.apps import AppConfig
 
 
-class ChaineventsConfig(AppConfig):
-    name = 'chainevents'
+class ChainEventsConfig(AppConfig):
+    name = 'gnosisdb.chainevents'

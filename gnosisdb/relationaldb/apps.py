@@ -1,5 +1,5 @@
 from django.apps import AppConfig
 
 
-class RelationaldbConfig(AppConfig):
-    name = 'relationaldb'
+class RelationalDbConfig(AppConfig):
+    name = 'gnosisdb.relationaldb'
