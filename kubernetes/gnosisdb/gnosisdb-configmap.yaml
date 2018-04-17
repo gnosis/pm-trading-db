@@ -18,7 +18,7 @@ data:
     upstream web {
       ip_hash;
       # server web:8000;
-      server unix:/nginx/gunicorn.socket fail_timeout=0;
+      server unix:/gnosis-nginx/gunicorn.socket fail_timeout=0;
     }
 
     server {
@@ -55,6 +55,6 @@ data:
       }
 
       location /static {
-            alias /nginx/staticfiles;
+            alias /gnosis-nginx/staticfiles;
       }
     }
