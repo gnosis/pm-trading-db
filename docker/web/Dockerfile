@@ -2,7 +2,7 @@ FROM python:3-slim-stretch
 
 ENV PYTHONUNBUFFERED 1
 RUN mkdir -p /root/var/run/celery
-WORKDIR /gnosisdb
+WORKDIR /app
 
 # Signal handling for PID1 https://github.com/krallin/tini
 ENV TINI_VERSION v0.17.0

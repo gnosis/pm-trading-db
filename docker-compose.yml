@@ -52,7 +52,6 @@ services:
     depends_on:
       - ipfs
       - db
-    working_dir: /gnosisdb
     volumes:
       - nginx-shared:/nginx
 

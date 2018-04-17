@@ -51,7 +51,7 @@ spec:
           - name: ETH_PROCESS_BLOCKS
             value: "1000"
           - name: PYTHONPATH
-            value: "/gnosisdb/gnosisdb"
+            value: "/app/gnosisdb"
           - name: DJANGO_SETTINGS_MODULE
             value: "config.settings.production"
           - name: ALLOWED_HOSTS # Domains which you want to allow separated by commas. Example: '127.0.0.1, localhost, .amazonaws.com'
