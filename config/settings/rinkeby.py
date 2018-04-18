@@ -8,9 +8,12 @@ ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 # ------------------------------------------------------------------------------
 # Ethereum node
 # ------------------------------------------------------------------------------
-ETHEREUM_NODE_HOST = '172.17.0.1'
-ETHEREUM_NODE_PORT = 8545
-ETHEREUM_NODE_SSL = 0
+
+# ETHEREUM_NODE_HOST = '172.17.0.1'
+# ETHEREUM_NODE_PORT = 8545
+# ETHEREUM_NODE_SSL = 0
+
+ETHEREUM_IPC_PATH = '/root/.ethereum/rinkeby/geth.ipc'
 
 ETH_PROCESS_BLOCKS = 100
 
@@ -36,7 +39,8 @@ ISSUANCE_GAS_PRICE = 50000000000
 os.environ['CENTRALIZED_ORACLE_FACTORY'] = '0xb3289eAAc0Fe3eD15Df177F925c6F8ceEB908b8f'
 os.environ['EVENT_FACTORY'] = '0x0f60faf69F3Ac146e1E557247583BC0c84f9f086'
 os.environ['MARKET_FACTORY'] = '0xEAA325bACAe405fd5B45E9cF695D391F1C624A2f'
-os.environ['UPORT_IDENTITY_MANAGER'] = '0xABBcD5B340C80B5f1C0545C04C987b87310296aE'
+os.environ['UPORT_IDENTITY_MANAGER'] = '0x0000000000000000000000000000000000000000'
+# os.environ['UPORT_IDENTITY_MANAGER'] = '0xABBcD5B340C80B5f1C0545C04C987b87310296aE'
 os.environ['GENERIC_IDENTITY_MANAGER_ADDRESS'] = '0x79DA1C9eF6bf6bC64E66F8AbFFDDC1A093E50f13'
 
 from .events.olympia import ETH_EVENTS  # isort:skip
