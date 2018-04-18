@@ -1,5 +1,6 @@
 import time
 
+from django_eth_events.models import Daemon, Block
 from django_eth_events.utils import normalize_address_without_0x
 from django.conf import settings
 from django.core.management import call_command
@@ -11,7 +12,10 @@ from gnosisdb.relationaldb.models import TournamentWhitelistedCreator
 class Command(BaseCommand):
     help = 'Cleans the Relational Database and sets up all required configuration for tournament'
 
-    def handle(self, *args, **options):
+    def add_arguments(self, parser):
+        parser.add_argument('--start-block-number', type=int, required=False)
+
+    def handle(self, *args, start_block_number, **options):
         PeriodicTask.objects.filter(task__in=[
             'django_eth_events.tasks.event_listener',
             'gnosisdb.relationaldb.tasks.calculate_scoreboard',
@@ -22,9 +26,19 @@ class Command(BaseCommand):
         call_command('cleandatabase')
         call_command('resync_daemon')
         self.stdout.write(self.style.SUCCESS('Making sure no process was running'))
+
         time.sleep(5)
         call_command('cleandatabase')
         call_command('resync_daemon')
+
+        if start_block_number is not None:
+            Block.objects.all().delete()
+
+            daemon = Daemon.get_solo()
+            daemon.block_number = start_block_number - 1
+            daemon.save()
+
+            self.stdout.write(self.style.SUCCESS('Restart processing at block {}'.format(start_block_number)))
 
         # auto-create celery task
         five_seconds_interval = IntervalSchedule(every=5, period='seconds')

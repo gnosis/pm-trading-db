@@ -67,6 +67,8 @@ services:
     depends_on:
       - db
       - rabbit
+    volumes:
+      - ~/.ethereum/rinkeby/geth.ipc:/root/.ethereum/rinkeby/geth.ipc
 
   scheduler:
     <<: *worker

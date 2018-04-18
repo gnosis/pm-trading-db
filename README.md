@@ -367,6 +367,9 @@ Change these lines with your custom values in **config/settings/rinkeby.py**:
 
 ```
 TOURNAMENT_TOKEN = '0x2924e2338356c912634a513150e6ff5be890f7a0'
+
+...
+
 os.environ['GENERIC_IDENTITY_MANAGER_ADDRESS'] = '0x12f73864dc1f603b2e62a36b210c294fd286f9fc'
 ```
 
@@ -379,7 +382,13 @@ ETHEREUM_DEFAULT_ACCOUNT_PRIVATE_KEY = 'a3b12a165350ab3c7d1ecd3596096969db2839c7
 
 If you don't have the private key for your account, but you do know the BIP39 mnemonic for it, you may enter your mnemonic into [Ganache](http://truffleframework.com/ganache/) to recover the private key.
 
-You must have a running `Geth` connected to [Rinkeby](https://www.rinkeby.io/#geth). Configure it on **config/settings/rinkeby.py**:
+You may have a running Geth node connected to [Rinkeby](https://www.rinkeby.io/#geth) on the same machine:
+
+```sh
+geth --rinkeby --rpc
+```
+
+Configure an HTTP provider on **config/settings/rinkeby.py**:
 
 ```
 ETHEREUM_NODE_HOST = '172.17.0.1'
@@ -387,16 +396,27 @@ ETHEREUM_NODE_PORT = 8545
 ETHEREUM_NODE_SSL = 0
 ```
 
-You will want to take note of the IPC endpoint for your Geth instance. Look for a line in the output indicating this information:
+In order to use this node through IPC instead of an HTTP RPC provider, you will want to take note of the IPC endpoint for your Geth instance. If you've just started Geth, look for a line in the console output indicating this information:
 
 ```
-INFO [01-01|00:00:00] IPC endpoint opened                      url=/home/user/.rinkeby/geth.ipc
+INFO [01-01|00:00:00] IPC endpoint opened                      url=/home/user/.ethereum/rinkeby/geth.ipc
 ```
 
-To use IPC instead of HTTP RPC, make sure the socket file is visible from the docker machine, and just set:
+Make sure the socket file is visible from the dependent docker container by modifying the `docker-compose.yml` to expose the IPC socket as one of the `volumes` on the `worker` container:
+
+```yml
+  worker: &worker
+
+    # ...
+
+    volumes:
+      - ~/.ethereum/rinkeby/geth.ipc:/root/.ethereum/rinkeby/geth.ipc
+```
+
+Then ensure the following is set in **config/settings/rinkeby.py**:
 
 ```
-ETHEREUM_IPC_PATH = '/path/to/geth.ipc'
+ETHEREUM_IPC_PATH = '/root/.ethereum/rinkeby/geth.ipc'
 ```
 
 Edit **.env** file in the root of the project and change:
@@ -407,14 +427,15 @@ Then in *gnosisdb root folder*:
 
 ```
 docker-compose build --force-rm
-docker-compose run web sh
+docker-compose run web bash
 python manage.py migrate
-python manage.py setup_tournament
+python manage.py setup_tournament --start-block-number 2000000
 exit
 docker-compose up
 ```
 
 The command `setup_tournament` will prepare the database and set up periodic tasks:
+  - `--start-block-number` will, if specified, start GnosisDB processing at a specific block instead of all the way back at the genesis block. You should give it as late a block before tournament events start occurring as you can.
   - **Ethereum blockchain event listener** every 5 seconds (the main task of the application).
   - **Scoreboard calculation** every 10 minutes.
   - **Token issuance** every minute. Tokens will be issued in batches of 50 users (to prevent
@@ -427,12 +448,12 @@ All these tasks can be changed in the [application admin](http://localhost:8000/
 You will need a superuser:
 
 ```
-docker-compose run web sh
+docker-compose run web bash
 python manage.py createsuperuser
 ```
 
 You should have now the api running in http://localhost:8000. You have to be patient because the
-first synchronization of Rinkeby will last about 12 hours
+first synchronization of Rinkeby may take some time, depending on how many blocks GnosisDB has to process. It may take even more time if your Geth node is unsynchronized, since it [may need to finish synchronizing](https://github.com/ethereum/go-ethereum/issues/14338) before it will have the information required.
 
 #### How to issue tournament tokens
 GnosisDB comes with an handful command allowing to issue new tokens.
