@@ -40,7 +40,7 @@ The application is made up of several container images that are linked together 
 Enter the Web container's command line with the following command:
 
 ```
-docker-compose run web bash
+docker-compose run web sh
 ```
 
 Once inside, create a super user in order to access the /admin interface.
@@ -427,7 +427,7 @@ Then in *gnosisdb root folder*:
 
 ```
 docker-compose build --force-rm
-docker-compose run web bash
+docker-compose run web sh
 python manage.py migrate
 python manage.py setup_tournament --start-block-number 2000000
 exit
@@ -448,7 +448,7 @@ All these tasks can be changed in the [application admin](http://localhost:8000/
 You will need a superuser:
 
 ```
-docker-compose run web bash
+docker-compose run web sh
 python manage.py createsuperuser
 ```
 
@@ -528,7 +528,7 @@ kubectl apply -f gnosisdb
 ### Celery task configuration
   - Create an admin user to access the /admin interface.
   ```
-    kubectl exec -it [GNOSISDB_WEB_POD_NAME] -c web bash
+    kubectl exec -it [GNOSISDB_WEB_POD_NAME] -c web sh
     python manage.py createsuperuser
   ```
   - Login into the admin /interface with your admin user
