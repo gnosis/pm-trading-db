@@ -535,6 +535,18 @@ kubectl apply -f gnosisdb
   - Create celery periodic task (follow the paragraph where It is explained).
 
 
+Troubleshooting
+---------------
+
+### Scheduler exits early with code 73
+
+This could be due to a temporary PID file conflict. Simply open another terminal and start the scheduler again:
+
+```sh
+docker-compose up scheduler
+```
+
+
 Contributors
 ------------
 - Stefan George (stefan@gnosis.pm)
