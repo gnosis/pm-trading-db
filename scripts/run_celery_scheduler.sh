@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 database_status="$(pg_isready -h $DATABASE_HOST -U $DATABASE_USER -d $DATABASE_NAME)"
 

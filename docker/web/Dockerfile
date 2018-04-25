@@ -1,47 +1,21 @@
-FROM python:3-slim-stretch
+FROM python:3-alpine3.7
 
 ENV PYTHONUNBUFFERED 1
 RUN mkdir -p /root/var/run/celery
 WORKDIR /app
 
-# Signal handling for PID1 https://github.com/krallin/tini
-ENV TINI_VERSION v0.17.0
-ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /tini
-RUN chmod +x /tini
-
-# Remove libsecp256k1-dev when it gets supported in debian stretch
-ENV BUILD_DEP build-essential pkg-config libssl-dev libsecp256k1-dev
-ENV POSTGRES_DEP wget gnupg
-
-RUN apt-get update && \
-    apt-get install -yq --no-install-recommends $POSTGRES_DEP && \
-    apt-get clean && \
-    echo "deb http://apt.postgresql.org/pub/repos/apt/ stretch-pgdg main" > /etc/apt/sources.list.d/pgdg.list && \
-    wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - && \
-    apt-get update && \
-    apt-get install -yq --no-install-recommends postgresql-client-10 procps && \
-    apt-get remove --purge -y $POSTGRES_DEP && \
-    apt-get autoremove -y && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
-
-
 COPY requirements.txt ./
-RUN apt-get update && \
-    apt-get install -yq --no-install-recommends $BUILD_DEP && \
+
+# Signal handling for PID1 https://github.com/krallin/tini
+RUN apk add --update --no-cache tini postgresql-client && \
+    apk add --no-cache --virtual .build-dependencies postgresql-dev alpine-sdk libffi-dev autoconf automake libtool gmp-dev && \
     pip install --no-cache-dir -r requirements.txt && \
+    apk del .build-dependencies && \
     find /usr/local \
         \( -type d -a -name test -o -name tests \) \
         -o \( -type f -a -name '*.pyc' -o -name '*.pyo' \) \
-        -exec rm -rf '{}' + && \
-    apt-get remove --purge -y $BUILD_DEP && \
-    apt-get autoremove -y && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+        -exec rm -rf '{}' +
 
 COPY . .
 
-ENTRYPOINT ["/tini", "--"]
-
-# RUN useradd --user-group --shell /bin/false python
-# USER python
+ENTRYPOINT ["/sbin/tini", "--"]
