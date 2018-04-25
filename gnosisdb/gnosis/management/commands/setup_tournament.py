@@ -1,11 +1,12 @@
 import time
 
-from django_eth_events.models import Daemon, Block
-from django_eth_events.utils import normalize_address_without_0x
 from django.conf import settings
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
 from django_celery_beat.models import IntervalSchedule, PeriodicTask
+from django_eth_events.models import Block, Daemon
+from django_eth_events.utils import normalize_address_without_0x
+
 from gnosisdb.relationaldb.models import TournamentWhitelistedCreator
 
 

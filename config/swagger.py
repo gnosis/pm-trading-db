@@ -1,12 +1,15 @@
-from rest_framework import status, exceptions
-from rest_framework.views import APIView
-from rest_framework.permissions import AllowAny
-from rest_framework.response import Response
-from rest_framework_swagger import renderers
-from rest_framework.schemas import SchemaGenerator
-from rest_framework.renderers import CoreJSONRenderer, JSONRenderer
-from rest_framework_swagger.renderers import OpenAPICodec, OpenAPIRenderer as BaseOpenAPIRenderer
 import os
+
+from rest_framework import exceptions, status
+from rest_framework.permissions import AllowAny
+from rest_framework.renderers import CoreJSONRenderer, JSONRenderer
+from rest_framework.response import Response
+from rest_framework.schemas import SchemaGenerator
+from rest_framework.views import APIView
+from rest_framework_swagger import renderers
+from rest_framework_swagger.renderers import OpenAPICodec
+from rest_framework_swagger.renderers import \
+    OpenAPIRenderer as BaseOpenAPIRenderer
 
 
 def get_swagger_view(title=None, url=None, patterns=None, urlconf=None):

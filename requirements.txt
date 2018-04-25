@@ -15,7 +15,7 @@ djangorestframework-camel-case==0.2.0
 djangorestframework==3.8.2
 docutils==0.14
 eth-abi==1.0.0
-eth-tester==0.1.0b21
+eth-tester==0.1.0b23
 eth-utils==1.0.3
 ethereum==1.6.1
 factory-boy==2.10.0
