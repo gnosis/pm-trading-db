@@ -3,7 +3,7 @@
 set -euo pipefail
 
 # DEBUG set in .env
-if [ "$DEBUG" = True ]; then
+if [ ${DEBUG:-False} = True ]; then
     log_level="debug"
 else
     log_level="info"
