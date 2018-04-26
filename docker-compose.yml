@@ -40,7 +40,7 @@ services:
       - "5432:5432"
 
   web:
-    command: scripts/run_web.sh
+    command: docker/web/run_web.sh
     build:
       context: .
       dockerfile: docker/web/Dockerfile
@@ -56,7 +56,7 @@ services:
       - nginx-shared:/nginx
 
   worker: &worker
-    command: scripts/run_celery_worker.sh
+    command: docker/web/celery/worker/run.sh
     build:
       context: .
       dockerfile: docker/web/Dockerfile
@@ -72,4 +72,4 @@ services:
 
   scheduler:
     <<: *worker
-    command: scripts/run_celery_scheduler.sh
+    command: docker/web/celery/scheduler/run.sh
