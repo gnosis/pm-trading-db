@@ -12,8 +12,8 @@ services:
   - postgresql
   - docker
 install:
-  - pip install -r requirements.txt
-  - pip install coveralls
+  - travis_retry pip install -r requirements.txt
+  - travis_retry pip install coveralls
 before_script:
   - psql -c 'create database travisci;' -U postgres
 script:
