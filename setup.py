@@ -24,7 +24,7 @@ version = read_version()
 
 requirements = [
     'djangorestframework',
-    'django-eth-events==2.0.9',
+    'django-eth-events==2.3.5',
     'ethereum==1.6.1',
     'eth-abi==1.0.0',
     'eth-utils==1.0.2'
