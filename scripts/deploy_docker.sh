@@ -1,5 +1,5 @@
 #!/bin/bash
-if [ "$TRAVIS_PULL_REQUEST" == "false" ]
+if [ "$TRAVIS_PULL_REQUEST" = "false" ]
 then
     echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
     docker build -t gnosisdb -f docker/web/Dockerfile .
