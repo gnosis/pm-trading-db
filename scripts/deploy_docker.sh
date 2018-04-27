@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 if [ "$TRAVIS_PULL_REQUEST" == "false" ]
 then
     echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin

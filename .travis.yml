@@ -17,15 +17,15 @@ script:
   - coverage run --source=gnosisdb manage.py test --settings=config.settings.test
 deploy:
   - provider: script
-    script: sh scripts/deploy_docker.sh staging
+    script: bash scripts/deploy_docker.sh staging
     on:
       branch: master
   - provider: script
-    script: sh scripts/deploy_docker.sh develop
+    script: bash scripts/deploy_docker.sh develop
     on:
       branch: develop
   - provider:
-    script: sh scripts/deploy_docker.sh $TRAVIS_TAG
+    script: bash scripts/deploy_docker.sh $TRAVIS_TAG
     on:
       tags: true
       all_branches: true
