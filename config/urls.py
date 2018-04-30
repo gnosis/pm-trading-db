@@ -3,6 +3,7 @@ from django.conf import settings
 from django.conf.urls import include, url
 from django.contrib import admin
 from django.http import HttpResponse
+
 from .swagger import get_swagger_view
 
 schema_view = get_swagger_view(title='GnosisDB API')

@@ -3,33 +3,34 @@ cache: pip
 python:
   - "3.6"
 dist: trusty
-addons:
-  ssh_known_hosts:
-  - gnosisdb-kovan.gnosis.pm
+env:
+  global:
+  - DOCKERHUB_PROJECT=gnosisdb
+  - SOURCE_FOLDER=gnosisdb
+  - PIP_USE_MIRRORS=true
 services:
   - postgresql
+  - docker
+install:
+  - travis_retry pip install -r requirements.txt
+  - travis_retry pip install coveralls
 before_script:
   - psql -c 'create database travisci;' -U postgres
-before_install:
-  - export PIP_USE_MIRRORS=true
-install:
-  - pip install -r requirements.txt
-  - pip install coveralls
 script:
-  - coverage run --source=gnosisdb manage.py test --settings=config.settings.test
+  - coverage run --source=$SOURCE_FOLDER manage.py test --settings=config.settings.test
+deploy:
+  - provider: script
+    script: bash scripts/deploy_docker.sh staging
+    on:
+      branch: master
+  - provider: script
+    script: bash scripts/deploy_docker.sh develop
+    on:
+      branch: develop
+  - provider:
+    script: bash scripts/deploy_docker.sh $TRAVIS_TAG
+    on:
+      tags: true
+      all_branches: true
 after_success:
-- coveralls
-- # Create Docker image if branch master or develop and not on pull requests
-  if [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
-    if [ "$TRAVIS_BRANCH" == "master" ]; then
-      docker build -t gnosisdb -f docker/web/Dockerfile .;
-      docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD";
-      docker tag gnosisdb gnosispm/gnosisdb:staging;
-      docker push gnosispm/gnosisdb:staging;
-    elif [ "$TRAVIS_BRANCH" == "develop" ]; then
-      docker build -t gnosisdb -f docker/web/Dockerfile .;
-      docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD";
-      docker tag gnosisdb gnosispm/gnosisdb:develop;
-      docker push gnosispm/gnosisdb:develop;
-    fi
-  fi
+  - coveralls
