@@ -79,12 +79,12 @@ class TestDaemonExec(TestCase):
         self.daemon = DaemonFactory()
         self.ipfs = Ipfs()
 
-        self.tx_data = {'from': self.web3.eth.accounts[0], 'gas': 100000000}
+        self.tx_data = {'from': self.web3.eth.accounts[0], 'gas': 1000000}
 
         # create oracles
         centralized_contract_factory = self.web3.eth.contract(abi=load_json_file(abi_file_path('CentralizedOracleFactory.json')),
                                                               bytecode=centralized_oracle_bytecode)
-        tx_hash = centralized_contract_factory.deploy()
+        tx_hash = centralized_contract_factory.constructor().transact()
         self.centralized_oracle_factory_address = self.web3.eth.getTransactionReceipt(tx_hash).get('contractAddress')
         self.centralized_oracle_factory = self.web3.eth.contract(self.centralized_oracle_factory_address,
                                                                  abi=load_json_file(abi_file_path('CentralizedOracleFactory.json')))
