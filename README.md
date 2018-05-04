@@ -1,9 +1,9 @@
-[![Build Status](https://travis-ci.org/gnosis/gnosisdb.svg?branch=master)](https://travis-ci.org/gnosis/gnosisdb)
-[![Coverage Status](https://coveralls.io/repos/github/gnosis/gnosisdb/badge.svg?branch=master)](https://coveralls.io/github/gnosis/gnosisdb?branch=master)
+[![Build Status](https://travis-ci.org/gnosis/pm-trading-db.svg?branch=master)](https://travis-ci.org/gnosis/pm-trading-db)
+[![Coverage Status](https://coveralls.io/repos/github/gnosis/pm-trading-db/badge.svg?branch=master)](https://coveralls.io/github/gnosis/pm-trading-db?branch=master)
 ![Python 3.6](https://img.shields.io/badge/Python-3.6-blue.svg)
 ![Django 2](https://img.shields.io/badge/Django-2-blue.svg)
 
-# GnosisDB
+# pm-trading-db
 Gnosis Core Database Layer
 
 ## Index of contents
@@ -15,7 +15,7 @@ Gnosis Core Database Layer
 - [Resync Database](#resync-database)
 - [Backup Database](#backup-database)
 - [Tournament Setup](#tournament-setup)
-- [GnosisDB deployment with Kubernetes](#gnosisdb-deployment-in-kubernetes)
+- [pm-trading-db deployment with Kubernetes](#pm-trading-db-deployment-in-kubernetes)
 - [Contributors](#contributors)
 
 Installation
@@ -27,8 +27,8 @@ Installation
 * Clone the repository and change your working directory:
 
 ```
-git clone https://github.com/gnosis/gnosisdb.git
-cd gnosisdb
+git clone https://github.com/gnosis/pm-trading-db.git
+cd pm-trading-db
 ```
 
 ### Build containers
@@ -57,7 +57,7 @@ exit
 ```
 
 ### Run application
-Start the gnosisdb server simply by bringing up the set of containers:
+Start the pm-trading-db server simply by bringing up the set of containers:
 
 `sudo docker-compose up`
 
@@ -72,19 +72,19 @@ You will need to have the following ports open on your machine for this to work:
 - 8000: NGINX serving a Django administrative app
 
 ### Populate database
-To populate database and retrieve some information, the easiest is to use [gnosis.js](https://github.com/gnosis/gnosis.js)
+To populate database and retrieve some information, the easiest is to use [pm-js](https://github.com/gnosis/pm-js)
 with a local blockchain (Ganache-cli).
 
-[Gnosis.js](https://github.com/gnosis/gnosis.js) will deploy gnosis smart contracts and run some operations between them (emulates the creation of oracles, events and markets),
-so you will have information in your private blockchain for gnosisdb to index.
+[pm-js](https://github.com/gnosis/pm-js) will deploy gnosis smart contracts and run some operations between them (emulates the creation of oracles, events and markets),
+so you will have information in your private blockchain for pm-trading-db to index.
 
 ```
-git clone https://github.com/gnosis/gnosis.js.git
-cd gnosis.js
+git clone https://github.com/gnosis/pm-js.git
+cd pm-js
 npm install
 ```
 
-You will need to have Ganache-cli running, which has been downloaded by previous `npm install`. So in the same gnosis.js folder:
+You will need to have Ganache-cli running, which has been downloaded by previous `npm install`. So in the same pm-js folder:
 
 `./node_modules/.bin/ganache-cli --gasLimit 40000000 -d -h 0.0.0.0 -i 437894314312`
 
@@ -95,12 +95,12 @@ This will allow a setting of `ETHEREUM_NODE_HOST = '172.x.x.x'` to work for the 
 
 The -i option sets the network id.
 
-Open another window and go to the gnosis.js folder, deploy the contracts and run gnosisdb tests. This emulates the creation of oracles, events and markets.
+Open another window and go to the pm-js folder, deploy the contracts and run pm-trading-db tests. This emulates the creation of oracles, events and markets.
 Docker containers must be up because *tests require ipfs, and* of course *Ganache-cli* too:
 
 ```
 npm run migrate
-npm run test-gnosisdb
+npm run test-pm-trading-db
 ```
 
 The execution will furnish all the contracts' addesses in the `node_modules/@gnosis.pm/gnosis-core-contracts/build/contracts` folder as parts of the build artifacts.
@@ -115,25 +115,25 @@ You can verify that the addresses in ETH_EVENTS specified in `config/settings/lo
 Open your browser and go to http://localhost:8000/admin, provide your superuser username and password.
 You should now see something like this:
 
-![Admin overview](https://github.com/gnosis/gnosisdb/blob/master/img/django_admin_overview.png)
+![Admin overview](https://github.com/gnosis/pm-trading-db/blob/master/img/django_admin_overview.png)
 
 Create now a Celery periodic task. This _Event Listener_ task will start indexing and processing information in the blockchain.
 
-![Periodic task management](https://github.com/gnosis/gnosisdb/blob/master/img/django_celery.png)
+![Periodic task management](https://github.com/gnosis/pm-trading-db/blob/master/img/django_celery.png)
 
 
 ### Development
 Every time you do a change in the source code run `docker-compose build` to apply the code changes and
-then `docker-compose up` to get GNOSISDB up and running.
+then `docker-compose up` to get pm-trading-db up and running.
 
 
 Django Settings
 ---------------
 
-GnosisDB comes with a production settings file that you can edit.
+pm-trading-db comes with a production settings file that you can edit.
 
 ##### ALLOWED_HOSTS
-Specify the list of allowed hosts to connect to GnosisDB:
+Specify the list of allowed hosts to connect to pm-trading-db:
 
 `ALLOWED_HOSTS = ['.gnosis.pm', '127.0.0.1', 'localhost']`
 
@@ -199,7 +199,7 @@ BROKER_URL = 'amqp://{user}:{password}@{hostname}:{port}/{queue}'.format(
 )
 ```
 ##### LMSR MARKET MAKER
-You need to specify the LMSR Market Maker address you have deployed previously (to discover how to do that please take a look at [gnosis-contracts](https://github.com/gnosis/gnosis-contracts):
+You need to specify the LMSR Market Maker address you have deployed previously (to discover how to do that please take a look at [pm-contracts](https://github.com/gnosis/pm-contracts):
 
 `LMSR_MARKET_MAKER = '2f2be9db638cb31d4143cbc1525b0e104f7ed597'`
 
@@ -325,7 +325,7 @@ class ContractAddressGetter(AbstractAddressesGetter):
 
 REST API
 -------
-GnosisDB comes with a handy RESTful API. Run GnosisDB, open your Web browser and connect to http://localhost:8000. You will get all the relevant API endpoints and their input/return data.
+pm-trading-db comes with a handy RESTful API. Run pm-trading-db, open your Web browser and connect to http://localhost:8000. You will get all the relevant API endpoints and their input/return data.
 
 RESYNC DATABASE
 ----------------
@@ -347,20 +347,20 @@ using custom Postgres format (as recommended on the docs). If you want to conver
 
 TOURNAMENT SETUP
 ----------------
-To configure a custom tournament, you need to first need to [deploy the smart contracts needed on the chosen public test network](https://gnosis-apollo.readthedocs.io/en/latest/smart-contracts.html). For this setup guide, we will assume the choice of [Rinkeby](https://www.rinkeby.io/#stats).
+To configure a custom tournament, you need to first need to [deploy the smart contracts needed on the chosen public test network](https://apollo-docs.readthedocs.io/en/latest/smart-contracts.html). For this setup guide, we will assume the choice of [Rinkeby](https://www.rinkeby.io/#stats).
 
-Take note of your deployed addresses for [AddressRegistry](https://github.com/gnosis/olympia-token#addressregistry) and the [PlayToken](https://github.com/gnosis/olympia-token#playtoken). You can find them with `npm run truffle networks`. This guide will assume the following as the deployed addresses, though you will have something different:
+Take note of your deployed addresses for [AddressRegistry](https://github.com/gnosis/pm-apollo-token#addressregistry) and the [PlayToken](https://github.com/gnosis/pm-apollo-token#playtoken). You can find them with `npm run truffle networks`. This guide will assume the following as the deployed addresses, though you will have something different:
 
 ```
-OlympiaToken: 0x2924e2338356c912634a513150e6ff5be890f7a0
+ApolloToken: 0x2924e2338356c912634a513150e6ff5be890f7a0
 AddressRegistry: 0x12f73864dc1f603b2e62a36b210c294fd286f9fc
 ```
 
-Clone the `gnosisdb` repository:
+Clone the `pm-trading-db` repository:
 
 ```sh
-git clone https://github.com/gnosis/gnosisdb.git
-cd gnosisdb
+git clone https://github.com/gnosis/pm-trading-db.git
+cd pm-trading-db
 ```
 
 Change these lines with your custom values in **config/settings/rinkeby.py**:
@@ -423,7 +423,7 @@ Edit **.env** file in the root of the project and change:
 
 `DJANGO_SETTINGS_MODULE=config.settings.local` to `DJANGO_SETTINGS_MODULE=config.settings.rinkeby`
 
-Then in *gnosisdb root folder*:
+Then in *pm-trading-db root folder*:
 
 ```
 docker-compose build --force-rm
@@ -435,7 +435,7 @@ docker-compose up
 ```
 
 The command `setup_tournament` will prepare the database and set up periodic tasks:
-  - `--start-block-number` will, if specified, start GnosisDB processing at a specific block instead of all the way back at the genesis block. You should give it as late a block before tournament events start occurring as you can.
+  - `--start-block-number` will, if specified, start pm-trading-db processing at a specific block instead of all the way back at the genesis block. You should give it as late a block before tournament events start occurring as you can.
   - **Ethereum blockchain event listener** every 5 seconds (the main task of the application).
   - **Scoreboard calculation** every 10 minutes.
   - **Token issuance** every minute. Tokens will be issued in batches of 50 users (to prevent
@@ -453,12 +453,12 @@ python manage.py createsuperuser
 ```
 
 You should have now the api running in http://localhost:8000. You have to be patient because the
-first synchronization of Rinkeby may take some time, depending on how many blocks GnosisDB has to process. It may take even more time if your Geth node is unsynchronized, since it [may need to finish synchronizing](https://github.com/ethereum/go-ethereum/issues/14338) before it will have the information required.
+first synchronization of Rinkeby may take some time, depending on how many blocks pm-trading-db has to process. It may take even more time if your Geth node is unsynchronized, since it [may need to finish synchronizing](https://github.com/ethereum/go-ethereum/issues/14338) before it will have the information required.
 
 #### How to issue tournament tokens
-GnosisDB comes with an handful command allowing to issue new tokens.
+pm-trading-db comes with an handful command allowing to issue new tokens.
 
-Go to gnosisdb/ root directory and execute:
+Go to pm-trading-db/ root directory and execute:
 
 ```python manage.py issue_tournament_tokens address1,adress2,address3 amount```
 
@@ -469,7 +469,7 @@ as follows:
 where amount worth of 1000000000000000000 equals 1 token.
 
 
-GNOSISDB DEPLOYMENT IN KUBERNETES
+PM-TRADING-DB DEPLOYMENT IN KUBERNETES
 ----------------------------------
 
 ### Requirements
@@ -478,15 +478,15 @@ There are a few necessary requirements:
   - Minimum Kubernetes version:  **1.9**
   - Ethereum network: **Rinkeby** (in the example)
     - If you want another network you must change the address:
-      - Download https://github.com/gnosis/gnosis-contracts
+      - Download https://github.com/gnosis/pm-contracts
       - Execute `truffle networks`
       - Replace the example addresses with this new ones in `gnosisdb-web-deployment.yaml`, `gnosisdb-worker-deployment.yaml` and `gnosisdb-scheduler-deployment.yaml` files
 
 ### Database
    ##### Database creation
-   It is necessary to create a database so that GnosisDB could index blockchain events.
+   It is necessary to create a database so that pm-trading-db could index blockchain events.
 
-   GnosisDB is tested with **Postgres** database, if you want to use another database you will have to change the connection driver.
+   pm-trading-db is tested with **Postgres** database, if you want to use another database you will have to change the connection driver.
    ##### Database secret creation
    Set your database params.
   ```
@@ -508,7 +508,7 @@ It is necessary for sending messages between gnosisdb scheduler and worker. Run 
   kubectl apply -f rabbitmq-gnosisdb
   ```
 
-### Gnosisdb services
+### pm-trading-db services
 ##### Web
 Set your custom environment variables in `gnosisdb-web-deployment.yaml`. You **only** have to set environment variables which have the `# CUSTOM` annotation.
 
