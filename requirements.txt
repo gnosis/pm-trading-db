@@ -5,7 +5,7 @@ django-celery-beat==1.1.1
 django-cors-headers==2.2.0
 django-debug-toolbar==1.9.1
 django-environ==0.4.4
-django-eth-events==2.4.4
+django-eth-events==2.5.1
 django-filter==1.1.0
 django-model-utils==3.1.1
 django-rest-swagger==2.2.0
@@ -15,9 +15,8 @@ djangorestframework-camel-case==0.2.0
 djangorestframework==3.8.2
 docutils==0.14
 eth-abi==1.0.0
-eth-tester==0.1.0b23
 eth-utils==1.0.3
-ethereum==1.6.1
+ethereum==2.3.1
 factory-boy==2.10.0
 faker==0.8.13
 gevent==1.2.2
@@ -26,4 +25,5 @@ ipfsapi==0.4.1
 kombu==4.1.0
 mpmath==1.0.0
 psycopg2-binary==2.7.4
-web3==4.2.0
+rlp==0.6.0
+web3[tester]==4.2.0
