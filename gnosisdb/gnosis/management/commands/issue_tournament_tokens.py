@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.core.management.base import BaseCommand
+from django.db import transaction
 from django_eth_events.web3_service import Web3Service
 
 from chainevents.abis import abi_file_path, load_json_file
@@ -19,6 +20,7 @@ class Command(BaseCommand):
             type=int,
         )
 
+    @transaction.atomic
     def handle(self, *args, **options):
         if options.get('users'):
             web3_service = Web3Service()
