@@ -352,7 +352,7 @@ To configure a custom tournament, you need to first need to [deploy the smart co
 Take note of your deployed addresses for [AddressRegistry](https://github.com/gnosis/pm-apollo-token#addressregistry) and the [PlayToken](https://github.com/gnosis/pm-apollo-token#playtoken). You can find them with `npm run truffle networks`. This guide will assume the following as the deployed addresses, though you will have something different:
 
 ```
-ApolloToken: 0x2924e2338356c912634a513150e6ff5be890f7a0
+OlympiaToken: 0x2924e2338356c912634a513150e6ff5be890f7a0
 AddressRegistry: 0x12f73864dc1f603b2e62a36b210c294fd286f9fc
 ```
 
