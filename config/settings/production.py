@@ -73,14 +73,7 @@ BROKER_URL = 'amqp://{user}:{password}@{hostname}:{port}/{queue}'.format(
 # ------------------------------------------------------------------------------
 # ETHEREUM
 # ------------------------------------------------------------------------------
-ETH_PROCESS_BLOCKS = os.environ.get('ETH_PROCESS_BLOCKS', '100')
-if 'ETHEREUM_IPC_PATH' in os.environ:
-    ETHEREUM_IPC_PATH = os.environ['ETHEREUM_IPC_PATH']
-else:
-    ETHEREUM_NODE_HOST = os.environ['ETHEREUM_NODE_HOST']
-    ETHEREUM_NODE_PORT = os.environ['ETHEREUM_NODE_PORT']
-    ETHEREUM_NODE_SSL = bool(int(os.environ['ETHEREUM_NODE_SSL']))
-ETHEREUM_MAX_WORKERS = int(os.environ.get('ETHEREUM_MAX_WORKERS', '10'))
+ETHEREUM_NODE_URL = os.environ['ETHEREUM_NODE_URL']
 
 # ------------------------------------------------------------------------------
 # IPFS

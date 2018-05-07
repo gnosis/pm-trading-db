@@ -6,18 +6,6 @@ DEBUG = False
 ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
 # ------------------------------------------------------------------------------
-# Ethereum node
-# ------------------------------------------------------------------------------
-
-# ETHEREUM_NODE_HOST = '172.17.0.1'
-# ETHEREUM_NODE_PORT = 8545
-# ETHEREUM_NODE_SSL = 0
-
-ETHEREUM_IPC_PATH = '/root/.ethereum/rinkeby/geth.ipc'
-
-ETH_PROCESS_BLOCKS = 100
-
-# ------------------------------------------------------------------------------
 # Tournament settings
 # ------------------------------------------------------------------------------
 TOURNAMENT_TOKEN = '0xa0c107Db0e9194c18359d3265289239453b56CF2'
