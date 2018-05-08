@@ -91,7 +91,7 @@ You will need to have Ganache-cli running, which has been downloaded by previous
 The -d option allows you to get the same address everytime a contract is deployed. You will not have to update your django settings everytime a new Ganache server is running.
 
 The -h option tells Ganache to listen on all interfaces, including the bridge interfaces which are exposed inside of the docker containers.
-This will allow a setting of `ETHEREUM_NODE_HOST = '172.x.x.x'` to work for the Celery worker.
+This will allow a setting of `ETHEREUM_NODE_URL= 'http://172.x.x.x:8545'` to work for the Celery worker.
 
 The -i option sets the network id.
 
@@ -148,23 +148,15 @@ ADMINS = (
 ```
 
 ##### ETHEREUM
-Provide an Ethereum _host_, _port_ and _SSL (0, 1)_. Use _SSL = 1_ only if your Ethereum host supports HTTPS/SSL.
-Communication with node will use **RPC through HTTP/S**
+Provide an Ethereum _node url_. Provider will be detected depending on the protocol of the url. _http/s_, _ipc_ and
+_ws(websocket)_ providers are available.
+For example, using _https://localhost:8545_ communication with node will use **RPC through HTTPS**
 
 ```
-ETHEREUM_NODE_HOST = os.environ['ETHEREUM_NODE_HOST']
-ETHEREUM_NODE_PORT = os.environ['ETHEREUM_NODE_PORT']
-ETHEREUM_NODE_SSL = bool(int(os.environ['ETHEREUM_NODE_SSL']))
+ETHEREUM_NODE_URL = os.environ['ETHEREUM_NODE_URL']
 ```
 
-You can also provide an **IPC path** to a node running locally, which will be faster.
-You can use the environment variable  _ETHEREUM_IPC_PATH_.
-If set, it will override _ETHEREUM_NODE_HOST_ and _ETHEREUM_NODE_PORT_, so **IPC will
-be used instead of RPC**:
-
-```
-ETHEREUM_IPC_PATH = os.environ['ETHEREUM_IPC_PATH']
-```
+You can also provide an **IPC path** to a node running locally, which will be faster, using _ipc://PATH_TO_IPC_SOCKET_
 
 Number of concurrent threads connected to the ethereum node can be configured:
 
@@ -391,9 +383,7 @@ geth --rinkeby --rpc
 Configure an HTTP provider on **config/settings/rinkeby.py**:
 
 ```
-ETHEREUM_NODE_HOST = '172.17.0.1'
-ETHEREUM_NODE_PORT = 8545
-ETHEREUM_NODE_SSL = 0
+ETHEREUM_NODE_URL= 'http://172.17.0.1:8545'
 ```
 
 In order to use this node through IPC instead of an HTTP RPC provider, you will want to take note of the IPC endpoint for your Geth instance. If you've just started Geth, look for a line in the console output indicating this information:
@@ -416,7 +406,7 @@ Make sure the socket file is visible from the dependent docker container by modi
 Then ensure the following is set in **config/settings/rinkeby.py**:
 
 ```
-ETHEREUM_IPC_PATH = '/root/.ethereum/rinkeby/geth.ipc'
+ETHEREUM_NODE_URL = 'ipc:///root/.ethereum/rinkeby/geth.ipc'
 ```
 
 Edit **.env** file in the root of the project and change:

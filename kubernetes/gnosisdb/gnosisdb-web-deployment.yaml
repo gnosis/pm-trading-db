@@ -29,7 +29,7 @@ spec:
           - name: gunicorn-volume
             mountPath: /gnosis-nginx
       - name: web
-        image: gnosispm/gnosisdb:v1.0.2 # Set gnosisdb version (It must be the same as scheduler and worker deployments)
+        image: gnosispm/gnosisdb:v1.4.1 # Set gnosisdb version (It must be the same as scheduler and worker deployments)
         imagePullPolicy: Always
         args: ["/bin/sh", "scripts/run_web.sh"]
         resources:
@@ -88,12 +88,8 @@ spec:
             value: "[GnosisDB]"
           - name: EMAIL_USE_TLS
             value: ""
-          - name: ETHEREUM_NODE_HOST # It could be: domain or IP (Don't put the protocol)
-            value: "localhost"
-          - name: ETHEREUM_NODE_PORT
-            value: "8545"
-          - name: ETHEREUM_NODE_SSL # O -> HTTP, 1 -> HTTPS
-            value: "0"
+          - name: ETHEREUM_NODE_URL
+            value: "http://localhost:8545"
           - name: ETHEREUM_DEFAULT_ACCOUNT
             value: ""
           - name: ETHEREUM_DEFAULT_ACCOUNT_PRIVATE_KEY

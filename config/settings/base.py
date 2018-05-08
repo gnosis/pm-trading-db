@@ -233,11 +233,11 @@ CELERY_LOCK_EXPIRE = 60
 # ------------------------------------------------------------------------------
 # ETHEREUM
 # ------------------------------------------------------------------------------
-ETHEREUM_NODE_HOST = '172.17.0.1'
-ETHEREUM_NODE_PORT = 8545
-ETHEREUM_NODE_SSL = 0
+ETH_BACKUP_BLOCKS = int(os.environ.get('ETH_BACKUP_BLOCKS ', 100))
+ETH_PROCESS_BLOCKS = int(os.environ.get('ETH_PROCESS_BLOCKS', 100))
 
-ETH_PROCESS_BLOCKS = 10000
+ETHEREUM_NODE_URL = 'http://172.17.0.1:8545'
+ETHEREUM_MAX_WORKERS = int(os.environ.get('ETHEREUM_MAX_WORKERS', 10))
 
 # ------------------------------------------------------------------------------
 # IPFS

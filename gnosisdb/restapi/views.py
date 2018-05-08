@@ -32,9 +32,7 @@ class AboutView(APIView):
             'version': __version__,
             'settings': {
                 'ethereum_node': {
-                    'ETHEREUM_IPC_PATH': getattr(settings, 'ETHEREUM_IPC_PATH', ''),
-                    'ETHEREUM_NODE_HOST': getattr(settings, 'ETHEREUM_NODE_HOST', ''),
-                    'ETHEREUM_NODE_PORT': getattr(settings, 'ETHEREUM_NODE_PORT', ''),
+                    'ETHEREUM_NODE_URL': settings.ETHEREUM_NODE_URL,
                 },
                 'ipfs': {
                     'IPFS_HOST': settings.IPFS_HOST,

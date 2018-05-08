@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
       - name: worker
-        image: gnosispm/gnosisdb:v1.0.2 # Set gnosisdb version (It must be the same as web and scheduler deployments)
+        image: gnosispm/gnosisdb:v1.4.1 # Set gnosisdb version (It must be the same as web and scheduler deployments)
         imagePullPolicy: Always
         args: ["scripts/run_celery_worker.sh"]
         resources:
@@ -51,7 +51,7 @@ spec:
           - name: ETH_PROCESS_BLOCKS
             value: "1000"
           - name: PYTHONPATH
-            value: "/gnosisdb/gnosisdb"
+            value: "/app/gnosisdb"
           - name: DJANGO_SETTINGS_MODULE
             value: "config.settings.production"
           - name: ALLOWED_HOSTS # Domains which you want to allow separated by commas. Example: '127.0.0.1, localhost, .amazonaws.com'
@@ -97,14 +97,8 @@ spec:
             value: "[GnosisDB]"
           - name: EMAIL_USE_TLS
             value: ""
-          - name: ETHEREUM_IPC_PATH
-            value: "/ethereum-ipc/geth.ipc"
-          - name: ETHEREUM_NODE_HOST # It could be: domain or IP (Don't put the protocol)
-            value: "localhost"
-          - name: ETHEREUM_NODE_PORT
-            value: "8545"
-          - name: ETHEREUM_NODE_SSL # O -> HTTP, 1 -> HTTPS
-            value: "0"
+          - name: ETHEREUM_NODE_URL
+            value: "ipc:///ethereum-ipc/geth.ipc"
           - name: ETHEREUM_DEFAULT_ACCOUNT
             value: ""
           - name: ETHEREUM_DEFAULT_ACCOUNT_PRIVATE_KEY
