@@ -283,7 +283,7 @@ An Addresses Getter class must inherit from [**django_eth_events.chainevents.Abs
 Take a look at ContractAddressGetter:
 
 ```
-from gnosisdb.relationaldb.models import Contract
+from tradingdb.relationaldb.models import Contract
 from django.core.exceptions import ObjectDoesNotExist
 from django_eth_events.chainevents import AbstractAddressesGetter
 
@@ -470,7 +470,7 @@ There are a few necessary requirements:
     - If you want another network you must change the address:
       - Download https://github.com/gnosis/pm-contracts
       - Execute `truffle networks`
-      - Replace the example addresses with this new ones in `gnosisdb-web-deployment.yaml`, `gnosisdb-worker-deployment.yaml` and `gnosisdb-scheduler-deployment.yaml` files
+      - Replace the example addresses with this new ones in `tradingdb-web-deployment.yaml`, `tradingdb-worker-deployment.yaml` and `tradingdb-scheduler-deployment.yaml` files
 
 ### Database
    ##### Database creation
@@ -480,7 +480,7 @@ There are a few necessary requirements:
    ##### Database secret creation
    Set your database params.
   ```
-  kubectl create secret generic gnosisdb-database \
+  kubectl create secret generic tradingdb-database \
   --from-literal host='[DATABASE_HOST]' \
   --from-literal name=[DATABASE_NAME] \
   --from-literal user=[DATABASE_USER] \
@@ -492,33 +492,33 @@ There are a few necessary requirements:
 It will be used for storing blockchain data of Geth node.
 
 ### Rabbit service
-It is necessary for sending messages between gnosisdb scheduler and worker. Run rabbit service:
+It is necessary for sending messages between tradingdb scheduler and worker. Run rabbit service:
 
   ```
-  kubectl apply -f rabbitmq-gnosisdb
+  kubectl apply -f rabbitmq-tradingdb
   ```
 
 ### pm-trading-db services
 ##### Web
-Set your custom environment variables in `gnosisdb-web-deployment.yaml`. You **only** have to set environment variables which have the `# CUSTOM` annotation.
+Set your custom environment variables in `tradingdb-web-deployment.yaml`. You **only** have to set environment variables which have the `# CUSTOM` annotation.
 
 ##### Celery Scheduler
-Set your custom environment variables in `gnosisdb-scheduler-deployment.yaml`. You **only** have to set environment variables which have the `# CUSTOM` annotation.
+Set your custom environment variables in `tradingdb-scheduler-deployment.yaml`. You **only** have to set environment variables which have the `# CUSTOM` annotation.
 
 ##### Celery Worker
-  - Set your custom environment variables in `gnosisdb-worker-deployment.yaml`. You **only** have to set environment variables which have the `# CUSTOM` annotation.
+  - Set your custom environment variables in `tradingdb-worker-deployment.yaml`. You **only** have to set environment variables which have the `# CUSTOM` annotation.
   - Set persistent volume which was created in a previous step. Geth node uses it.
 
 ##### RUN services
-After setting custom environments in the previous steps, application can be started. Apply to the folder `gnosisdb` the following command:
+After setting custom environments in the previous steps, application can be started. Apply to the folder `tradingdb` the following command:
 ```
-kubectl apply -f gnosisdb
+kubectl apply -f tradingdb
 ```
 
 ### Celery task configuration
   - Create an admin user to access the /admin interface.
   ```
-    kubectl exec -it [GNOSISDB_WEB_POD_NAME] -c web sh
+    kubectl exec -it [tradingdb_WEB_POD_NAME] -c web sh
     python manage.py createsuperuser
   ```
   - Login into the admin /interface with your admin user

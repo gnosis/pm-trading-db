@@ -1,6 +1,6 @@
 import os
 
-from gnosisdb.chainevents.abis import abi_file_path, load_json_file
+from tradingdb.chainevents.abis import abi_file_path, load_json_file
 
 from .base import ETH_EVENTS
 

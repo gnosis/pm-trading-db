@@ -5,8 +5,8 @@ python:
 dist: trusty
 env:
   global:
-  - DOCKERHUB_PROJECT=gnosisdb
-  - SOURCE_FOLDER=gnosisdb
+  - DOCKERHUB_PROJECT=pm-trading-db
+  - SOURCE_FOLDER=tradingdb
   - PIP_USE_MIRRORS=true
 services:
   - postgresql

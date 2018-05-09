@@ -2,7 +2,7 @@ import os
 
 import environ
 
-from gnosisdb.chainevents.abis import abi_file_path, load_json_file
+from tradingdb.chainevents.abis import abi_file_path, load_json_file
 
 TIME_ZONE = 'UTC'
 LANGUAGE_CODE = 'en-us'
@@ -14,7 +14,7 @@ USE_TZ = True
 DEBUG = False
 
 ROOT_DIR = environ.Path(__file__) - 3  # (/a/b/myfile.py - 3 = /)
-APPS_DIR = ROOT_DIR.path('gnosisdb')
+APPS_DIR = ROOT_DIR.path('tradingdb')
 
 DJANGO_APPS = [
     # Default Django apps:
@@ -48,12 +48,12 @@ GNOSIS_APPS = [
 ]
 
 LOCAL_APPS = [
-    'gnosisdb.chainevents.apps.ChainEventsConfig',
-    'gnosisdb.gnosis.apps.GnosisConfig',
-    'gnosisdb.ipfs.apps.IpfsConfig',
-    'gnosisdb.relationaldb.apps.RelationalDbConfig',
-    'gnosisdb.restapi.apps.RestApiConfig',
-    'gnosisdb.taskapp.celery.CeleryConfig',
+    'tradingdb.chainevents.apps.ChainEventsConfig',
+    'tradingdb.gnosis.apps.GnosisConfig',
+    'tradingdb.ipfs.apps.IpfsConfig',
+    'tradingdb.relationaldb.apps.RelationalDbConfig',
+    'tradingdb.restapi.apps.RestApiConfig',
+    'tradingdb.taskapp.celery.CeleryConfig',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + GNOSIS_APPS + LOCAL_APPS
@@ -193,8 +193,8 @@ REST_FRAMEWORK = {
 # RABBIT MQ
 # ------------------------------------------------------------------------------
 RABBIT_HOSTNAME = 'rabbit'
-RABBIT_USER = 'gnosisdb'
-RABBIT_PASSWORD = 'gnosisdb'
+RABBIT_USER = 'tradingdb'
+RABBIT_PASSWORD = 'tradingdb'
 RABBIT_PORT = '5672'
 BROKER_URL = 'amqp://{user}:{password}@{hostname}:{port}'.format(
     user=RABBIT_USER,

@@ -1,5 +1,5 @@
 """
-WSGI config for gnosisdb project.
+WSGI config for tradingdb project.
 
 This module contains the WSGI application used by Django's development server
 and any production WSGI deployments. It should expose a module-level variable
@@ -19,9 +19,9 @@ import sys
 from django.core.wsgi import get_wsgi_application
 
 # This allows easy placement of apps within the interior
-# gnosisdb directory.
+# tradingdb directory.
 app_path = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir))
-sys.path.append(os.path.join(app_path, 'gnosisdb'))
+sys.path.append(os.path.join(app_path, 'tradingdb'))
 
 # if os.environ.get('DJANGO_SETTINGS_MODULE') == 'config.settings.production':
 #     from raven.contrib.django.raven_compat.middleware.wsgi import Sentry
