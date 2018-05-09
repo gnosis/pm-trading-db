@@ -6,7 +6,7 @@ from django.http import HttpResponse
 
 from .swagger import get_swagger_view
 
-schema_view = get_swagger_view(title='GnosisDB API')
+schema_view = get_swagger_view(title='TradingDB API')
 
 urlpatterns = [
     url(r'^$', schema_view),

@@ -15,7 +15,7 @@ os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
 def read_version():
     main_ns = {}
-    ver_path = convert_path('gnosisdb/version.py')
+    ver_path = convert_path('tradingdb/version.py')
     with open(ver_path) as ver_file:
         exec(ver_file.read(), main_ns)
     return main_ns['__version__']
@@ -31,7 +31,7 @@ requirements = [
 ]
 
 setup(
-    name='django_gnosisdb',
+    name='tradingdb',
     version=version,
     packages=find_packages(exclude=["*.tests",
                                     "*.tests.*",
@@ -40,8 +40,8 @@ setup(
     include_package_data=True,
     install_requires=requirements,
     license='MIT License',
-    description='The Gnosisdb django app',
-    url='https://github.com/gnosis/gnosisdb',
+    description='The prediction markets tradingdb app',
+    url='https://github.com/gnosis/pm-trading-db',
     author='Gnosis Inc.',
     author_email='giacomo.licari@gnosis.pm, denis@gnosis.pm, stefan@gnosis.pm, uxio@gnosis.pm',
     classifiers=[

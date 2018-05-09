@@ -28,8 +28,8 @@ services:
     image: rabbitmq:3-alpine
     hostname: rabbit
     environment:
-      - RABBITMQ_DEFAULT_USER=gnosisdb
-      - RABBITMQ_DEFAULT_PASS=gnosisdb
+      - RABBITMQ_DEFAULT_USER=tradingdb
+      - RABBITMQ_DEFAULT_PASS=tradingdb
     ports:
       - "5672:5672"
       - "15672:15672"
