@@ -2,8 +2,6 @@ import os
 
 import environ
 
-from tradingdb.chainevents.abis import abi_file_path, load_json_file
-
 TIME_ZONE = 'UTC'
 LANGUAGE_CODE = 'en-us'
 USE_TZ = True
@@ -11,7 +9,7 @@ USE_TZ = True
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#site-id
 # SITE_ID = 1
 
-DEBUG = False
+DEBUG = bool(int(os.environ.get('DEBUG', '0')))
 
 ROOT_DIR = environ.Path(__file__) - 3  # (/a/b/myfile.py - 3 = /)
 APPS_DIR = ROOT_DIR.path('tradingdb')
@@ -98,7 +96,7 @@ LOGGING = {
     'loggers': {
         '': {
             'handlers': ['console'],
-            'level': 'INFO',
+            'level': 'DEBUG' if DEBUG else 'INFO',
         },
         'django': {
             'handlers': ['console', 'mail_admins'],
@@ -238,6 +236,7 @@ ETH_PROCESS_BLOCKS = int(os.environ.get('ETH_PROCESS_BLOCKS', 100))
 
 ETHEREUM_NODE_URL = 'http://172.17.0.1:8545'
 ETHEREUM_MAX_WORKERS = int(os.environ.get('ETHEREUM_MAX_WORKERS', 10))
+ETHEREUM_MAX_BATCH_REQUESTS = int(os.environ.get('ETHEREUM_MAX_BATCH_REQUESTS ', 10))
 
 # ------------------------------------------------------------------------------
 # IPFS
