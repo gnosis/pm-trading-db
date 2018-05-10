@@ -236,7 +236,7 @@ ETH_PROCESS_BLOCKS = int(os.environ.get('ETH_PROCESS_BLOCKS', 100))
 
 ETHEREUM_NODE_URL = 'http://172.17.0.1:8545'
 ETHEREUM_MAX_WORKERS = int(os.environ.get('ETHEREUM_MAX_WORKERS', 10))
-ETHEREUM_MAX_BATCH_REQUESTS = int(os.environ.get('ETHEREUM_MAX_BATCH_REQUESTS ', 500))
+ETHEREUM_MAX_BATCH_REQUESTS = int(os.environ.get('ETHEREUM_MAX_BATCH_REQUESTS', 500))
 
 # ------------------------------------------------------------------------------
 # IPFS
