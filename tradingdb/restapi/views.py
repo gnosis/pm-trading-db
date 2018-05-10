@@ -33,6 +33,10 @@ class AboutView(APIView):
             'settings': {
                 'ethereum_node': {
                     'ETHEREUM_NODE_URL': settings.ETHEREUM_NODE_URL,
+                    'ETHEREUM_MAX_WORKERS': settings.ETHEREUM_MAX_WORKERS,
+                    'ETHEREUM_MAX_BATCH_REQUESTS': settings.ETHEREUM_MAX_BATCH_REQUESTS,
+                    'ETH_BACKUP_BLOCKS': settings.ETH_BACKUP_BLOCKS,
+                    'ETH_PROCESS_BLOCKS': settings.ETH_PROCESS_BLOCKS,
                 },
                 'ipfs': {
                     'IPFS_HOST': settings.IPFS_HOST,
