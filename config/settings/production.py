@@ -53,22 +53,6 @@ ADMINS = (
 )
 
 # ------------------------------------------------------------------------------
-# RABBIT MQ
-# ------------------------------------------------------------------------------
-RABBIT_HOSTNAME = os.environ['RABBIT_HOSTNAME']
-RABBIT_USER = os.environ['RABBIT_USER']
-RABBIT_PASSWORD = os.environ['RABBIT_PASSWORD']
-RABBIT_PORT = os.environ['RABBIT_PORT']
-RABBIT_QUEUE = os.environ['RABBIT_QUEUE']
-BROKER_URL = 'amqp://{user}:{password}@{hostname}:{port}/{queue}'.format(
-    user=RABBIT_USER,
-    password=RABBIT_PASSWORD,
-    hostname=RABBIT_HOSTNAME,
-    port=RABBIT_PORT,
-    queue=RABBIT_QUEUE
-)
-
-# ------------------------------------------------------------------------------
 # ETHEREUM
 # ------------------------------------------------------------------------------
 ETHEREUM_NODE_URL = os.environ['ETHEREUM_NODE_URL']
