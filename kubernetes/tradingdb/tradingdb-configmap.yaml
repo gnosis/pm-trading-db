@@ -1,10 +1,10 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: gnosisdb-configmap
+  name: tradingdb-configmap
 data:
-  gnosisdb.conf: |
-    # NGINX conf for gnosisdb
+  tradingdb.conf: |
+    # NGINX conf for tradingdb
 
     # https://github.com/KyleAMathews/docker-nginx/blob/master/nginx.conf
     # https://linode.com/docs/web-servers/nginx/configure-nginx-for-optimized-performance/
@@ -18,7 +18,7 @@ data:
     upstream web {
       ip_hash;
       # server web:8000;
-      server unix:/gnosis-nginx/gunicorn.socket fail_timeout=0;
+      server unix:/nginx/gunicorn.socket fail_timeout=0;
     }
 
     server {
@@ -40,7 +40,6 @@ data:
       gzip_types text/plain text/css application/json application/javascript application/x-javascript text/javascript text/xml application/xml application/rss+xml application/atom+xml application/rdf+xml;
       gzip_disable "MSIE [1-6]\.";
 
-
       location / {
             proxy_pass http://web/;
             proxy_set_header Host $host;
@@ -55,6 +54,6 @@ data:
       }
 
       location /static {
-            alias /gnosis-nginx/staticfiles;
+            alias /nginx/staticfiles;
       }
     }

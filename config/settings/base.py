@@ -11,8 +11,15 @@ USE_TZ = True
 
 DEBUG = bool(int(os.environ.get('DEBUG', 0)))
 
-ROOT_DIR = environ.Path(__file__) - 3  # (/a/b/myfile.py - 3 = /)
+ROOT_DIR = environ.Path(__file__) - 3  # (/pm-trading-db/config/settings/base.py - 3 = /pm-trading-db)
 APPS_DIR = ROOT_DIR.path('tradingdb')
+
+env = environ.Env()
+READ_DOT_ENV_FILE = env.bool('DJANGO_READ_DOT_ENV_FILE', default=False)
+if READ_DOT_ENV_FILE:
+    # OS environment variables take precedence over variables from .env
+    env.read_env(str(ROOT_DIR.path('.env')))
+
 
 DJANGO_APPS = [
     # Default Django apps:
@@ -51,7 +58,6 @@ LOCAL_APPS = [
     'tradingdb.ipfs.apps.IpfsConfig',
     'tradingdb.relationaldb.apps.RelationalDbConfig',
     'tradingdb.restapi.apps.RestApiConfig',
-    'tradingdb.taskapp.celery.CeleryConfig',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + GNOSIS_APPS + LOCAL_APPS
@@ -187,48 +193,23 @@ REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
 }
 
+# Celery
 # ------------------------------------------------------------------------------
-# RABBIT MQ
-# ------------------------------------------------------------------------------
-RABBIT_HOSTNAME = 'rabbit'
-RABBIT_USER = 'tradingdb'
-RABBIT_PASSWORD = 'tradingdb'
-RABBIT_PORT = '5672'
-BROKER_URL = 'amqp://{user}:{password}@{hostname}:{port}'.format(
-    user=RABBIT_USER,
-    password=RABBIT_PASSWORD,
-    hostname=RABBIT_HOSTNAME,
-    port=RABBIT_PORT
-)
-
-BROKER_POOL_LIMIT = 1
-BROKER_CONNECTION_TIMEOUT = 10
-
+INSTALLED_APPS += ['tradingdb.taskapp.celery.CeleryConfig']
+# http://docs.celeryproject.org/en/latest/userguide/configuration.html#std:setting-broker_url
+CELERY_BROKER_URL = env('CELERY_BROKER_URL', default='django://')
+# http://docs.celeryproject.org/en/latest/userguide/configuration.html#std:setting-result_backend
+if CELERY_BROKER_URL == 'django://':
+    CELERY_RESULT_BACKEND = 'redis://'
+else:
+    CELERY_RESULT_BACKEND = CELERY_BROKER_URL
+# http://docs.celeryproject.org/en/latest/userguide/configuration.html#std:setting-accept_content
+CELERY_ACCEPT_CONTENT = ['json']
+# http://docs.celeryproject.org/en/latest/userguide/configuration.html#std:setting-task_serializer
+CELERY_TASK_SERIALIZER = 'json'
+# http://docs.celeryproject.org/en/latest/userguide/configuration.html#std:setting-result_serializer
 CELERY_RESULT_SERIALIZER = 'json'
-# configure queues, currently we have only one
-CELERY_DEFAULT_QUEUE = 'default'
 
-# Sensible settings for celery
-CELERY_ALWAYS_EAGER = False
-CELERY_ACKS_LATE = True
-CELERY_TASK_PUBLISH_RETRY = True
-CELERY_DISABLE_RATE_LIMITS = False
-
-# By default we will ignore result
-# If you want to see results and try out tasks interactively, change it to False
-# Or change this setting on tasks level
-CELERY_IGNORE_RESULT = False
-CELERY_SEND_TASK_ERROR_EMAILS = True
-CELERY_TASK_RESULT_EXPIRES = 200
-# Don't use pickle as serializer, json is much safer
-CELERY_TASK_SERIALIZER = "json"
-CELERY_ACCEPT_CONTENT = ['application/json']
-CELERYD_HIJACK_ROOT_LOGGER = False
-CELERYD_PREFETCH_MULTIPLIER = 1
-CELERYD_MAX_TASKS_PER_CHILD = 10
-CELERY_LOCK_EXPIRE = 60
-
-# ------------------------------------------------------------------------------
 # ETHEREUM
 # ------------------------------------------------------------------------------
 ETH_BACKUP_BLOCKS = int(os.environ.get('ETH_BACKUP_BLOCKS ', 100))
@@ -238,7 +219,6 @@ ETHEREUM_NODE_URL = 'http://172.17.0.1:8545'
 ETHEREUM_MAX_WORKERS = int(os.environ.get('ETHEREUM_MAX_WORKERS', 10))
 ETHEREUM_MAX_BATCH_REQUESTS = int(os.environ.get('ETHEREUM_MAX_BATCH_REQUESTS', 500))
 
-# ------------------------------------------------------------------------------
 # IPFS
 # ------------------------------------------------------------------------------
 IPFS_HOST = 'http://ipfs'  # 'ipfs'

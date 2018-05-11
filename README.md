@@ -68,7 +68,7 @@ You will need to have the following ports open on your machine for this to work:
 - 5432: PostgreSQL
 - 4001: IPFS peering port
 - 5001: IPFS API server
-- 5672: RabbitMQ
+- 6379: Redis
 - 8000: NGINX serving a Django administrative app
 
 ### Populate database
@@ -172,24 +172,18 @@ IPFS_HOST = os.environ['IPFS_HOST']
 IPFS_PORT = os.environ['IPFS_PORT']
 ```
 
-##### RABBIT MQ
-RabbitMQ is the default Celery's messaging broker, other brokers are Redis and Amazon SQS.<br/>
+##### REDIS
+Redis is the configured Celery's messaging broker, other brokers are RabbitMQ and Amazon SQS. Redis
+is also used as cache<br/>
 More info about Celery's brokers at [this link](http://docs.celeryproject.org/en/latest/getting-started/brokers/index.html).<br/>
 
 ```
-RABBIT_HOSTNAME = os.environ['RABBIT_HOSTNAME']
-RABBIT_USER = os.environ['RABBIT_USER']
-RABBIT_PASSWORD = os.environ['RABBIT_PASSWORD']
-RABBIT_PORT = os.environ['RABBIT_PORT']
-RABBIT_QUEUE = os.environ['RABBIT_QUEUE']
-BROKER_URL = 'amqp://{user}:{password}@{hostname}:{port}/{queue}'.format(
-    user=RABBIT_USER,
-    password=RABBIT_PASSWORD,
-    hostname=RABBIT_HOSTNAME,
-    port=RABBIT_PORT,
-    queue=RABBIT_QUEUE
-)
+REDIS_URL = os.environ['REDIS_URL']
+CELERY_BROKER_URL = os.environ['CELERY_BROKER_URL']
 ```
+
+A REDIS_URL example could be `redis://localhost/0`
+
 ##### LMSR MARKET MAKER
 You need to specify the LMSR Market Maker address you have deployed previously (to discover how to do that please take a look at [pm-contracts](https://github.com/gnosis/pm-contracts):
 
@@ -491,11 +485,11 @@ There are a few necessary requirements:
 ### Persistent volume creation
 It will be used for storing blockchain data of Geth node.
 
-### Rabbit service
-It is necessary for sending messages between tradingdb scheduler and worker. Run rabbit service:
+### Redis service
+It is necessary for sending messages between tradingdb scheduler and worker. Run redis service:
 
   ```
-  kubectl apply -f rabbitmq-tradingdb
+  kubectl apply -f redis-tradingdb
   ```
 
 ### pm-trading-db services
