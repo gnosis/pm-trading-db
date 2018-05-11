@@ -10,4 +10,4 @@ else
 fi
 
 echo "==> Running Celery worker <=="
-exec celery worker -A tradingdb.taskapp -Q default --hostname default@%h --loglevel $log_level -c 2 --pidfile=/tmp/celery_worker.pid --logfile=/dev/null
+exec celery worker -A tradingdb.taskapp --loglevel $log_level -c 2

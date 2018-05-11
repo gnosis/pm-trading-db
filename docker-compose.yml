@@ -24,15 +24,8 @@ services:
       - "4001:4001"
       - "5001:5001"
 
-  rabbit:
-    image: rabbitmq:3-alpine
-    hostname: rabbit
-    environment:
-      - RABBITMQ_DEFAULT_USER=tradingdb
-      - RABBITMQ_DEFAULT_PASS=tradingdb
-    ports:
-      - "5672:5672"
-      - "15672:15672"
+  redis:
+    image: redis:4-alpine
 
   db:
     image: postgres:10-alpine
@@ -63,12 +56,10 @@ services:
     env_file:
       - .env
     links:
-      - rabbit
+      - redis
     depends_on:
       - db
-      - rabbit
-    volumes:
-      - ~/.ethereum/rinkeby/geth.ipc:/root/.ethereum/rinkeby/geth.ipc
+      - redis
 
   scheduler:
     <<: *worker

@@ -22,8 +22,8 @@ faker==0.8.13
 gevent==1.2.2
 gunicorn==19.8.1
 ipfsapi==0.4.1
-kombu==4.1.0
 mpmath==1.0.0
 psycopg2-binary==2.7.4
+redis==2.10.6
 rlp==0.6.0
 web3[tester]==4.2.0
