@@ -1,118 +1,115 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: gnosisdb-scheduler
+  name: tradingdb-worker
   labels:
-    app: gnosisdb-scheduler
+    app: tradingdb-worker
 spec:
   replicas: 1
   strategy:
     type: "Recreate"
   selector:
     matchLabels:
-      app: gnosisdb-scheduler
+      app: tradingdb-worker
   template:
     metadata:
       labels:
-        app: gnosisdb-scheduler
+        app: tradingdb-worker
     spec:
+      terminationGracePeriodSeconds: 300 # Because in mainnet blocks have a lot of transactions
       containers:
-      - name: scheduler
-        image: gnosispm/gnosisdb:v1.0.2 # Set gnosisdb version (It must be the same as web and worker deployments)
+      - name: worker
+        image: gnosispm/pm-trading-db:v1.5.1
         imagePullPolicy: Always
-        args: ["scripts/run_celery_scheduler.sh"]
+        args: ["docker/web/celery/worker/run.sh"]
         resources:
           requests:
-            memory: "200Mi"
-            cpu: "200m"
+            memory: "2000Mi"
+            cpu: "500m"
           limits:
-            memory: "400Mi"
-            cpu: "400m"
+            memory: "3000Mi"
+            cpu: "1000m"
         livenessProbe:
           exec:
             command:
-              - "pgrep"
-              - "celery"
+              - pgrep
+              - "-f"
+              - "(celery).+(worker)"
           initialDelaySeconds: 45
           periodSeconds: 5
         readinessProbe:
           exec:
             command:
-              - "pgrep"
-              - "celery"
+              - pgrep
+              - "-f"
+              - "(celery).+(worker)"
           initialDelaySeconds: 45
           periodSeconds: 5
         env:
+          - name: DEBUG
+            value: "0"
           - name: ETH_PROCESS_BLOCKS
             value: "1000"
+          - name: ETHEREUM_MAX_WORKERS
+            value: "10"
+          - name: ETHEREUM_MAX_BATCH_REQUESTS
+            value: "500"
           - name: PYTHONPATH
-            value: "/app/gnosisdb"
+            value: "/app/tradingdb"
           - name: DJANGO_SETTINGS_MODULE
             value: "config.settings.production"
-          - name: ALLOWED_HOSTS # Domains which you want to allow separated by commas. Example: '127.0.0.1, localhost, .amazonaws.com'
+          - name: ALLOWED_HOSTS
             value: '*'
-          - name: C_FORCE_ROOT # Celery must be root
+          - name: C_FORCE_ROOT
             value: "false"
           - name: DATABASE_HOST
             valueFrom:
               secretKeyRef:
-                name: gnosisdb-database
+                name: tradingdb-database
                 key: host
           - name: DATABASE_NAME
             valueFrom:
               secretKeyRef:
-                name: gnosisdb-database
+                name: tradingdb-database
                 key: name
           - name: DATABASE_USER
             valueFrom:
               secretKeyRef:
-                name: gnosisdb-database
+                name: tradingdb-database
                 key: user
           - name: DATABASE_PASSWORD
             valueFrom:
               secretKeyRef:
-                name: gnosisdb-database
+                name: tradingdb-database
                 key: password
           - name: DATABASE_PORT
             valueFrom:
               secretKeyRef:
-                name: gnosisdb-database
+                name: tradingdb-database
                 key: port
-          - name: DEFAULT_FROM_EMAIL
-            value: ""
-          - name: EMAIL_HOST_PASSWORD
-            value: ""
-          - name: EMAIL_HOST
-            value: ""
-          - name: EMAIL_HOST_USER
-            value: ""
-          - name: EMAIL_PORT
-            value: ""
-          - name: EMAIL_SUBJECT_PREFIX
-            value: "[GnosisDB]"
-          - name: EMAIL_USE_TLS
-            value: ""
           - name: ETHEREUM_NODE_URL
             value: "http://localhost:8545"
           - name: ETHEREUM_DEFAULT_ACCOUNT
             value: ""
           - name: ETHEREUM_DEFAULT_ACCOUNT_PRIVATE_KEY
             value: ""
+          - name: ETHEREUM_GENERIC_IDENTITY_MANAGER_ADDRESS
+            value: ""
           - name: IPFS_HOST
             value: "https://ipfs.infura.io"
           - name: IPFS_PORT
             value: "5001"
-          - name: RABBIT_HOSTNAME # IP of your rabbit service
-            value: "[IP]" # CUSTOM
+          - name: RABBIT_HOSTNAME
+            value: "[IP]"
           - name: RABBIT_USER
-            value: gnosisdb
+            value: "tradingdb"
           - name: RABBIT_PASSWORD
-            value: gnosisdb
+            value: "tradingdb"
           - name: RABBIT_PORT
             value: "5672"
           - name: RABBIT_QUEUE
             value: ""
-          - name: SECRET_KEY # Django secret key
+          - name: SECRET_KEY
             value: "[DJANGO_SECRET_KEY]" # CUSTOM
           - name: CENTRALIZED_ORACLE_FACTORY
             value: "0xb3289eAAc0Fe3eD15Df177F925c6F8ceEB908b8f"
@@ -126,3 +123,5 @@ spec:
             value: "0xa0c107Db0e9194c18359d3265289239453b56CF2"
           - name: UPORT_IDENTITY_MANAGER
             value: "0xABBcD5B340C80B5f1C0545C04C987b87310296aE"
+          - name: GENERIC_IDENTITY_MANAGER_ADDRESS
+            value: "0x79DA1C9eF6bf6bC64E66F8AbFFDDC1A093E50f13"

@@ -1,18 +1,18 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: rabbitmq-gnosisdb
+  name: rabbitmq-tradingdb
   labels:
-    app: rabbitmq-gnosisdb
+    app: rabbitmq-tradingdb
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: rabbitmq-gnosisdb
+      app: rabbitmq-tradingdb
   template:
     metadata:
       labels:
-        app: rabbitmq-gnosisdb
+        app: rabbitmq-tradingdb
     spec:
       containers:
       - name: rabbitmq
@@ -22,9 +22,9 @@ spec:
           - containerPort: 15672
         env:
           - name: RABBITMQ_DEFAULT_USER
-            value: "gnosisdb"
+            value: "tradingdb"
           - name: RABBITMQ_DEFAULT_PASS
-            value: "gnosisdb"
+            value: "tradingdb"
         resources:
           requests:
             memory: "128Mi"

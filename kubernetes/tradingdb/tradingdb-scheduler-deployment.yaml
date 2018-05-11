@@ -1,93 +1,85 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: gnosisdb-web
+  name: tradingdb-scheduler
   labels:
-    app: gnosisdb-web
+    app: tradingdb-scheduler
 spec:
   replicas: 1
   strategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxUnavailable: 1
-  minReadySeconds: 60
+    type: "Recreate"
   selector:
     matchLabels:
-      app: gnosisdb-web
+      app: tradingdb-scheduler
   template:
     metadata:
       labels:
-        app: gnosisdb-web
+        app: tradingdb-scheduler
     spec:
       containers:
-      - name: nginx
-        image: nginx:1.13.8
+      - name: scheduler
+        image: gnosispm/pm-trading-db:v1.5.1
         imagePullPolicy: Always
-        volumeMounts:
-          - name: nginx-volume
-            mountPath: /etc/nginx/conf.d
-          - name: gunicorn-volume
-            mountPath: /gnosis-nginx
-      - name: web
-        image: gnosispm/gnosisdb:v1.4.1 # Set gnosisdb version (It must be the same as scheduler and worker deployments)
-        imagePullPolicy: Always
-        args: ["/bin/sh", "scripts/run_web.sh"]
+        args: ["docker/web/celery/scheduler/run.sh"]
         resources:
           requests:
-            memory: "450Mi"
-            cpu: "1500m"
+            memory: "200Mi"
+            cpu: "200m"
           limits:
-            memory: "600Mi"
-            cpu: "1800m"
-        volumeMounts:
-          - name: gunicorn-volume
-            mountPath: /gnosis-nginx
+            memory: "400Mi"
+            cpu: "400m"
+        livenessProbe:
+          exec:
+            command:
+              - "pgrep"
+              - "-f"
+              - "celery"
+          initialDelaySeconds: 45
+          periodSeconds: 5
+        readinessProbe:
+          exec:
+            command:
+              - "pgrep"
+              - "-f"
+              - "celery"
+          initialDelaySeconds: 45
+          periodSeconds: 5
         env:
+          - name: ETH_PROCESS_BLOCKS
+            value: "100"
+          - name: PYTHONPATH
+            value: "/app/tradingdb"
           - name: DJANGO_SETTINGS_MODULE
             value: "config.settings.production"
-          - name: WEB_CONCURRENCY # Gunicorn workers amount
-            value: "4"
-          - name: ALLOWED_HOSTS # Domains which you want to allow separated by commas. Example: '127.0.0.1, localhost, .amazonaws.com'
+          - name: ALLOWED_HOSTS
             value: '*'
+          - name: C_FORCE_ROOT
+            value: "false"
           - name: DATABASE_HOST
             valueFrom:
               secretKeyRef:
-                name: gnosisdb-database
+                name: tradingdb-database
                 key: host
           - name: DATABASE_NAME
             valueFrom:
               secretKeyRef:
-                name: gnosisdb-database
+                name: tradingdb-database
                 key: name
           - name: DATABASE_USER
             valueFrom:
               secretKeyRef:
-                name: gnosisdb-database
+                name: tradingdb-database
                 key: user
           - name: DATABASE_PASSWORD
             valueFrom:
               secretKeyRef:
-                name: gnosisdb-database
+                name: tradingdb-database
                 key: password
           - name: DATABASE_PORT
             valueFrom:
               secretKeyRef:
-                name: gnosisdb-database
+                name: tradingdb-database
                 key: port
-          - name: DEFAULT_FROM_EMAIL
-            value: ""
-          - name: EMAIL_HOST_PASSWORD
-            value: ""
-          - name: EMAIL_HOST
-            value: ""
-          - name: EMAIL_HOST_USER
-            value: ""
-          - name: EMAIL_PORT
-            value: ""
-          - name: EMAIL_SUBJECT_PREFIX
-            value: "[GnosisDB]"
-          - name: EMAIL_USE_TLS
-            value: ""
           - name: ETHEREUM_NODE_URL
             value: "http://localhost:8545"
           - name: ETHEREUM_DEFAULT_ACCOUNT
@@ -98,18 +90,18 @@ spec:
             value: "https://ipfs.infura.io"
           - name: IPFS_PORT
             value: "5001"
-          - name: RABBIT_HOSTNAME # IP of your rabbit service
-            value: "[IP]" # CUSTOM
+          - name: RABBIT_HOSTNAME
+            value: "[IP]"
           - name: RABBIT_USER
-            value: gnosisdb
+            value: "tradingdb"
           - name: RABBIT_PASSWORD
-            value: gnosisdb
+            value: "tradingdb"
           - name: RABBIT_PORT
             value: "5672"
           - name: RABBIT_QUEUE
             value: ""
-          - name: SECRET_KEY # Django secret key
-            value: "[DJANGO_SECRET_KEY]" # CUSTOM
+          - name: SECRET_KEY
+            value: "[DJANGO_SECRET_KEY]"
           - name: CENTRALIZED_ORACLE_FACTORY
             value: "0xb3289eAAc0Fe3eD15Df177F925c6F8ceEB908b8f"
           - name: EVENT_FACTORY
@@ -122,9 +114,5 @@ spec:
             value: "0xa0c107Db0e9194c18359d3265289239453b56CF2"
           - name: UPORT_IDENTITY_MANAGER
             value: "0xABBcD5B340C80B5f1C0545C04C987b87310296aE"
-      volumes:
-        - name: nginx-volume
-          configMap:
-            name: gnosisdb-configmap
-        - name: gunicorn-volume
-          emptyDir: {}
+          - name: GENERIC_IDENTITY_MANAGER_ADDRESS
+            value: "0x79DA1C9eF6bf6bC64E66F8AbFFDDC1A093E50f13"

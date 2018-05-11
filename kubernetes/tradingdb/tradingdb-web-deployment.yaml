@@ -1,0 +1,156 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: tradingdb-web
+  labels:
+    app: tradingdb-web
+spec:
+  replicas: 1
+  strategy:
+      type: RollingUpdate
+      rollingUpdate:
+        maxUnavailable: 1
+  minReadySeconds: 60
+  selector:
+    matchLabels:
+      app: tradingdb-web
+  template:
+    metadata:
+      labels:
+        app: tradingdb-web
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.13.8
+        imagePullPolicy: Always
+        volumeMounts:
+          - name: nginx-volume
+            mountPath: /etc/nginx/conf.d
+          - name: gunicorn-volume
+            mountPath: /nginx
+        livenessProbe:
+            httpGet:
+              path: /api/about/
+              port: 8000
+              httpHeaders:
+              - name: Disable-Https-Redirection
+                value: 'true'
+            initialDelaySeconds: 60
+            periodSeconds: 5
+            timeoutSeconds: 2
+        readinessProbe:
+            httpGet:
+              path: /api/about/
+              port: 8000
+              httpHeaders:
+              - name: Disable-Https-Redirection
+                value: 'true'
+            initialDelaySeconds: 60
+            periodSeconds: 5
+            timeoutSeconds: 2
+      - name: web
+        image: gnosispm/pm-trading-db:v1.5.1
+        imagePullPolicy: Always
+        args: ["/bin/sh", "docker/web/run_web.sh"]
+        resources:
+          requests:
+            memory: "450Mi"
+            cpu: "300m"
+          limits:
+            memory: "600Mi"
+            cpu: "600m"
+        volumeMounts:
+          - name: gunicorn-volume
+            mountPath: /nginx
+        livenessProbe:
+            httpGet:
+              path: /api/about/
+              port: 8888
+            initialDelaySeconds: 60
+            periodSeconds: 5
+            timeoutSeconds: 2
+        readinessProbe:
+            httpGet:
+              path: /api/about/
+              port: 8888
+            initialDelaySeconds: 60
+            periodSeconds: 5
+            timeoutSeconds: 2
+        env:
+          - name: DJANGO_SETTINGS_MODULE
+            value: "config.settings.production"
+          - name: WEB_CONCURRENCY #Gunicorn workers amount
+            value: "4"
+          - name: ALLOWED_HOSTS
+            value: '*'
+          - name: C_FORCE_ROOT
+            value: "false"
+          - name: DATABASE_HOST
+            valueFrom:
+              secretKeyRef:
+                name: tradingdb-database
+                key: host
+          - name: DATABASE_NAME
+            valueFrom:
+              secretKeyRef:
+                name: tradingdb-database
+                key: name
+          - name: DATABASE_USER
+            valueFrom:
+              secretKeyRef:
+                name: tradingdb-database
+                key: user
+          - name: DATABASE_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: tradingdb-database
+                key: password
+          - name: DATABASE_PORT
+            valueFrom:
+              secretKeyRef:
+                name: tradingdb-database
+                key: port
+          - name: ETHEREUM_NODE_URL
+            value: "http://{{ .ethereumNodeHost }}:8545"
+          - name: ETHEREUM_DEFAULT_ACCOUNT
+            value: ""
+          - name: ETHEREUM_DEFAULT_ACCOUNT_PRIVATE_KEY
+            value: ""
+          - name: IPFS_HOST
+            value: "https://ipfs.infura.io"
+          - name: IPFS_PORT
+            value: "5001"
+          - name: RABBIT_HOSTNAME
+            value: "[IP]" # CUSTOM
+          - name: RABBIT_USER
+            value: tradingdb
+          - name: RABBIT_PASSWORD
+            value: tradingdb
+          - name: RABBIT_PORT
+            value: "5672"
+          - name: RABBIT_QUEUE
+            value: ""
+          - name: SWAGGER_SCHEME_PROTOCOL
+            value: "https"
+          - name: SECRET_KEY
+            value: "[DJANGO_SECRET_KEY]" # CUSTOM
+          - name: CENTRALIZED_ORACLE_FACTORY
+            value: "0xb3289eAAc0Fe3eD15Df177F925c6F8ceEB908b8f"
+          - name: EVENT_FACTORY
+            value: "0x0f60faf69F3Ac146e1E557247583BC0c84f9f086"
+          - name: LMSR_MARKET_MAKER
+            value: "0x11B5257396f156027B9232da7220bd7447282DB6"
+          - name: MARKET_FACTORY
+            value: "0xEAA325bACAe405fd5B45E9cF695D391F1C624A2f"
+          - name: TOURNAMENT_TOKEN
+            value: "0xa0c107Db0e9194c18359d3265289239453b56CF2"
+          - name: UPORT_IDENTITY_MANAGER
+            value: "0xABBcD5B340C80B5f1C0545C04C987b87310296aE"
+          - name: GENERIC_IDENTITY_MANAGER_ADDRESS
+            value: "0x79DA1C9eF6bf6bC64E66F8AbFFDDC1A093E50f13"
+      volumes:
+        - name: nginx-volume
+          configMap:
+            name: tradingdb-configmap
+        - name: gunicorn-volume
+          emptyDir: {}
