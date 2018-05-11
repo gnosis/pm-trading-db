@@ -49,7 +49,7 @@ spec:
             periodSeconds: 5
             timeoutSeconds: 2
       - name: web
-        image: gnosispm/pm-trading-db:v1.5.1
+        image: gnosispm/pm-trading-db:v1.6.0
         imagePullPolicy: Always
         args: ["/bin/sh", "docker/web/run_web.sh"]
         resources:
@@ -120,16 +120,10 @@ spec:
             value: "https://ipfs.infura.io"
           - name: IPFS_PORT
             value: "5001"
-          - name: RABBIT_HOSTNAME
-            value: "[IP]" # CUSTOM
-          - name: RABBIT_USER
-            value: tradingdb
-          - name: RABBIT_PASSWORD
-            value: tradingdb
-          - name: RABBIT_PORT
-            value: "5672"
-          - name: RABBIT_QUEUE
-            value: ""
+          - name: REDIS_URL
+            value: "redis://[IP]/0"
+          - name: CELERY_BROKER_URL
+            value: "redis://[IP]/0"
           - name: SWAGGER_SCHEME_PROTOCOL
             value: "https"
           - name: SECRET_KEY

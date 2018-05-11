@@ -1,0 +1,28 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: redis-tradingdb
+  labels:
+    app: redis-tradingdb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis-tradingdb
+  template:
+    metadata:
+      labels:
+        app: redis-tradingdb
+    spec:
+      containers:
+      - name: redis
+        image: redis:4-alpine
+        ports:
+          - containerPort: 6379
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"

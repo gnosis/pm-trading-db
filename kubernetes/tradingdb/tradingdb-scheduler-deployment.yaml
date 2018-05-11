@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
       - name: scheduler
-        image: gnosispm/pm-trading-db:v1.5.1
+        image: gnosispm/pm-trading-db:v1.6.0
         imagePullPolicy: Always
         args: ["docker/web/celery/scheduler/run.sh"]
         resources:
@@ -90,16 +90,10 @@ spec:
             value: "https://ipfs.infura.io"
           - name: IPFS_PORT
             value: "5001"
-          - name: RABBIT_HOSTNAME
-            value: "[IP]"
-          - name: RABBIT_USER
-            value: "tradingdb"
-          - name: RABBIT_PASSWORD
-            value: "tradingdb"
-          - name: RABBIT_PORT
-            value: "5672"
-          - name: RABBIT_QUEUE
-            value: ""
+          - name: REDIS_URL
+            value: "redis://[IP]/0"
+          - name: CELERY_BROKER_URL
+            value: "redis://[IP]/0"
           - name: SECRET_KEY
             value: "[DJANGO_SECRET_KEY]"
           - name: CENTRALIZED_ORACLE_FACTORY
