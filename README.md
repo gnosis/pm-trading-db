@@ -333,9 +333,9 @@ using custom Postgres format (as recommended on the docs). If you want to conver
 
 TOURNAMENT SETUP
 ----------------
-To configure a custom tournament, you need to first need to [deploy the smart contracts needed on the chosen public test network](https://apollo-docs.readthedocs.io/en/latest/smart-contracts.html). For this setup guide, we will assume the choice of [Rinkeby](https://www.rinkeby.io/#stats).
+To configure a custom tournament, you need to first need to [deploy the smart contracts needed on the chosen public test network](https://gnosis-apollo.readthedocs.io/en/latest/smart-contracts.html). For this setup guide, we will assume the choice of [Rinkeby](https://www.rinkeby.io/#stats).
 
-Take note of your deployed addresses for [AddressRegistry](https://github.com/gnosis/pm-apollo-token#addressregistry) and the [PlayToken](https://github.com/gnosis/pm-apollo-token#playtoken). You can find them with `npm run truffle networks`. This guide will assume the following as the deployed addresses, though you will have something different:
+Take note of your deployed addresses for [AddressRegistry](https://github.com/gnosis/pm-apollo-contracts#addressregistry) and the [PlayToken](https://github.com/gnosis/pm-apollo-contracts#playtoken). You can find them with `npm run truffle networks`. This guide will assume the following as the deployed addresses, though you will have something different:
 
 ```
 OlympiaToken: 0x2924e2338356c912634a513150e6ff5be890f7a0
