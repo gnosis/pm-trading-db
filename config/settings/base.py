@@ -109,6 +109,10 @@ LOGGING = {
             'propagate': True,
             'level': 'ERROR',
         },
+        'celery.worker.strategy': {
+            'handlers': ['console'],
+            'level': 'INFO' if DEBUG else 'WARNING',
+        },
     }
 }
 
