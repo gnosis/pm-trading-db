@@ -1,25 +1,34 @@
-import os
-
 import environ
-
-TIME_ZONE = 'UTC'
-LANGUAGE_CODE = 'en-us'
-USE_TZ = True
-
-# See: https://docs.djangoproject.com/en/dev/ref/settings/#site-id
-# SITE_ID = 1
-
-DEBUG = bool(int(os.environ.get('DEBUG', 0)))
 
 ROOT_DIR = environ.Path(__file__) - 3  # (/pm-trading-db/config/settings/base.py - 3 = /pm-trading-db)
 APPS_DIR = ROOT_DIR.path('tradingdb')
 
 env = environ.Env()
+
 READ_DOT_ENV_FILE = env.bool('DJANGO_READ_DOT_ENV_FILE', default=False)
 if READ_DOT_ENV_FILE:
     # OS environment variables take precedence over variables from .env
     env.read_env(str(ROOT_DIR.path('.env')))
 
+# GENERAL
+# ------------------------------------------------------------------------------
+# https://docs.djangoproject.com/en/dev/ref/settings/#debug
+DEBUG = env.bool('DJANGO_DEBUG', False)
+# Local time zone. Choices are
+# http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
+# though not all of them may be available with every OS.
+# In Windows, this must be set to your system time zone.
+TIME_ZONE = 'UTC'
+# https://docs.djangoproject.com/en/dev/ref/settings/#language-code
+LANGUAGE_CODE = 'en-us'
+# https://docs.djangoproject.com/en/dev/ref/settings/#site-id
+SITE_ID = 1
+# https://docs.djangoproject.com/en/dev/ref/settings/#use-i18n
+USE_I18N = True
+# https://docs.djangoproject.com/en/dev/ref/settings/#use-l10n
+USE_L10N = True
+# https://docs.djangoproject.com/en/dev/ref/settings/#use-tz
+USE_TZ = True
 
 DJANGO_APPS = [
     # Default Django apps:
@@ -61,7 +70,6 @@ LOCAL_APPS = [
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + GNOSIS_APPS + LOCAL_APPS
-
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
@@ -155,22 +163,22 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTOCOL', 'https')
 # STATIC FILE CONFIGURATION
 # ------------------------------------------------------------------------------
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#static-root
-STATIC_ROOT = os.environ.get('STATIC_ROOT', str(ROOT_DIR('staticfiles')))
-
+STATIC_ROOT = env('STATIC_ROOT', default=str(ROOT_DIR('staticfiles')))
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#static-url
 STATIC_URL = '/static/'
-
 # See: https://docs.djangoproject.com/en/dev/ref/contrib/staticfiles/#std:setting-STATICFILES_DIRS
 STATICFILES_DIRS = (
     str(APPS_DIR.path('static')),
 )
-
 # See: https://docs.djangoproject.com/en/dev/ref/contrib/staticfiles/#staticfiles-finders
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder'
 )
 
+# DATABASES
+# ------------------------------------------------------------------------------
+# https://docs.djangoproject.com/en/dev/ref/settings/#databases
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
@@ -182,8 +190,11 @@ DATABASES = {
     }
 }
 
+# URLS
+# ------------------------------------------------------------------------------
+# https://docs.djangoproject.com/en/dev/ref/settings/#root-urlconf
 ROOT_URLCONF = 'config.urls'
-
+# https://docs.djangoproject.com/en/dev/ref/settings/#wsgi-application
 WSGI_APPLICATION = 'config.wsgi.application'
 
 # Filtering
@@ -216,12 +227,12 @@ CELERY_RESULT_SERIALIZER = 'json'
 
 # ETHEREUM
 # ------------------------------------------------------------------------------
-ETH_BACKUP_BLOCKS = int(os.environ.get('ETH_BACKUP_BLOCKS ', 100))
-ETH_PROCESS_BLOCKS = int(os.environ.get('ETH_PROCESS_BLOCKS', 100))
+ETH_BACKUP_BLOCKS = env.int('ETH_BACKUP_BLOCKS ', default=100)
+ETH_PROCESS_BLOCKS = env.int('ETH_PROCESS_BLOCKS', default=100)
 
 ETHEREUM_NODE_URL = 'http://172.17.0.1:8545'
-ETHEREUM_MAX_WORKERS = int(os.environ.get('ETHEREUM_MAX_WORKERS', 10))
-ETHEREUM_MAX_BATCH_REQUESTS = int(os.environ.get('ETHEREUM_MAX_BATCH_REQUESTS', 500))
+ETHEREUM_MAX_WORKERS = env.int('ETHEREUM_MAX_WORKERS', default=10)
+ETHEREUM_MAX_BATCH_REQUESTS = env.int('ETHEREUM_MAX_BATCH_REQUESTS', default=500)
 
 # IPFS
 # ------------------------------------------------------------------------------

@@ -1,26 +1,22 @@
-import os
-
 from .base import *
 from .events.olympia import ETH_EVENTS
 
 CELERY_SEND_TASK_ERROR_EMAILS = False
 
-SECRET_KEY = os.environ['SECRET_KEY']
+SECRET_KEY = env('SECRET_KEY')
 
 INSTALLED_APPS.append("gunicorn")
 
-DEBUG = bool(int(os.environ.get('DEBUG', '0')))
-
-ALLOWED_HOSTS = os.environ['ALLOWED_HOSTS'].split(',')
+ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=[])
 
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ['DATABASE_NAME'],
-        'USER': os.environ['DATABASE_USER'],
-        'PASSWORD': os.environ['DATABASE_PASSWORD'],
-        'HOST': os.environ['DATABASE_HOST'],
-        'PORT': os.environ['DATABASE_PORT'],
+        'NAME': env('DATABASE_NAME'),
+        'USER': env('DATABASE_USER'),
+        'PASSWORD': env('DATABASE_PASSWORD'),
+        'HOST': env('DATABASE_HOST'),
+        'PORT': env('DATABASE_PORT'),
     }
 }
 
@@ -34,14 +30,14 @@ CACHES = {
 # ------------------------------------------------------------------------------
 # EMAIL CONFIGURATION
 # ------------------------------------------------------------------------------
-if 'EMAIL_HOST' in os.environ:
-    EMAIL_HOST = os.environ['EMAIL_HOST']
-    EMAIL_HOST_PASSWORD = os.environ['EMAIL_HOST_PASSWORD']
-    EMAIL_HOST_USER = os.environ['EMAIL_HOST_USER']
-    EMAIL_PORT = os.environ['EMAIL_PORT']
+if env('EMAIL_HOST', None):
+    EMAIL_HOST = env('EMAIL_HOST')
+    EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
+    EMAIL_HOST_USER = env('EMAIL_HOST_USER')
+    EMAIL_PORT = env('EMAIL_PORT')
     EMAIL_USE_TLS = True
-    EMAIL_SUBJECT_PREFIX = os.environ['EMAIL_SUBJECT_PREFIX']
-    DEFAULT_FROM_EMAIL = os.environ['DEFAULT_FROM_EMAIL']
+    EMAIL_SUBJECT_PREFIX = env('EMAIL_SUBJECT_PREFIX')
+    DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL')
     SERVER_EMAIL = DEFAULT_FROM_EMAIL
     EMAIL_LOG_BACKEND = 'email_log.backends.EmailBackend'
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
@@ -55,25 +51,25 @@ ADMINS = (
 # ------------------------------------------------------------------------------
 # ETHEREUM
 # ------------------------------------------------------------------------------
-ETHEREUM_NODE_URL = os.environ['ETHEREUM_NODE_URL']
+ETHEREUM_NODE_URL = env('ETHEREUM_NODE_URL')
 
 # ------------------------------------------------------------------------------
 # IPFS
 # ------------------------------------------------------------------------------
-IPFS_HOST = os.environ['IPFS_HOST']
-IPFS_PORT = os.environ['IPFS_PORT']
+IPFS_HOST = env('IPFS_HOST')
+IPFS_PORT = env('IPFS_PORT')
 
 # ------------------------------------------------------------------------------
 # Tournament settings
 # ------------------------------------------------------------------------------
-TOURNAMENT_TOKEN = os.environ['TOURNAMENT_TOKEN']
-LMSR_MARKET_MAKER = os.environ['LMSR_MARKET_MAKER']
+TOURNAMENT_TOKEN = env('TOURNAMENT_TOKEN')
+LMSR_MARKET_MAKER = env('LMSR_MARKET_MAKER')
 
 # ------------------------------------------------------------------------------
 # Token issuance (optional)
 # ------------------------------------------------------------------------------
-ETHEREUM_DEFAULT_ACCOUNT = os.environ.get('ETHEREUM_DEFAULT_ACCOUNT')
-ETHEREUM_DEFAULT_ACCOUNT_PRIVATE_KEY = os.environ.get('ETHEREUM_DEFAULT_ACCOUNT_PRIVATE_KEY')
-TOURNAMENT_TOKEN_ISSUANCE = os.environ.get('TOURNAMENT_TOKEN_ISSUANCE', '200000000000000000000')
-ISSUANCE_GAS = int(os.environ.get('ISSUANCE_GAS', 2000000))
-ISSUANCE_GAS_PRICE = int(os.environ.get('ISSUANCE_GAS_PRICE', 50000000000))
+ETHEREUM_DEFAULT_ACCOUNT = env('ETHEREUM_DEFAULT_ACCOUNT', None)
+ETHEREUM_DEFAULT_ACCOUNT_PRIVATE_KEY = env('ETHEREUM_DEFAULT_ACCOUNT_PRIVATE_KEY', None)
+TOURNAMENT_TOKEN_ISSUANCE = env('TOURNAMENT_TOKEN_ISSUANCE', '200000000000000000000', None)
+ISSUANCE_GAS = env.int('ISSUANCE_GAS', 2000000)
+ISSUANCE_GAS_PRICE = env.int('ISSUANCE_GAS_PRICE', 50000000000)
