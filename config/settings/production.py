@@ -5,7 +5,7 @@ CELERY_SEND_TASK_ERROR_EMAILS = False
 
 SECRET_KEY = env('SECRET_KEY')
 
-INSTALLED_APPS.append("gunicorn")
+INSTALLED_APPS.append('gunicorn')
 
 ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=[])
 
@@ -30,7 +30,7 @@ CACHES = {
 # ------------------------------------------------------------------------------
 # EMAIL CONFIGURATION
 # ------------------------------------------------------------------------------
-if env('EMAIL_HOST', None):
+if env('EMAIL_HOST', default=None):
     EMAIL_HOST = env('EMAIL_HOST')
     EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
     EMAIL_HOST_USER = env('EMAIL_HOST_USER')
@@ -68,8 +68,8 @@ LMSR_MARKET_MAKER = env('LMSR_MARKET_MAKER')
 # ------------------------------------------------------------------------------
 # Token issuance (optional)
 # ------------------------------------------------------------------------------
-ETHEREUM_DEFAULT_ACCOUNT = env('ETHEREUM_DEFAULT_ACCOUNT', None)
-ETHEREUM_DEFAULT_ACCOUNT_PRIVATE_KEY = env('ETHEREUM_DEFAULT_ACCOUNT_PRIVATE_KEY', None)
-TOURNAMENT_TOKEN_ISSUANCE = env('TOURNAMENT_TOKEN_ISSUANCE', '200000000000000000000', None)
+ETHEREUM_DEFAULT_ACCOUNT = env('ETHEREUM_DEFAULT_ACCOUNT', default=None)
+ETHEREUM_DEFAULT_ACCOUNT_PRIVATE_KEY = env('ETHEREUM_DEFAULT_ACCOUNT_PRIVATE_KEY', default=None)
+TOURNAMENT_TOKEN_ISSUANCE = env.int('TOURNAMENT_TOKEN_ISSUANCE', 200000000000000000000)
 ISSUANCE_GAS = env.int('ISSUANCE_GAS', 2000000)
 ISSUANCE_GAS_PRICE = env.int('ISSUANCE_GAS_PRICE', 50000000000)

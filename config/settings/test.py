@@ -1,6 +1,6 @@
 import os
 
-from .local import *
+from .ganache import *
 
 ETHEREUM_NODE_URL = 'http://localhost:8545'
 

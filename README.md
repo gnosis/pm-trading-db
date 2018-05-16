@@ -153,7 +153,10 @@ _ws(websocket)_ providers are available.
 For example, using _https://localhost:8545_ communication with node will use **RPC through HTTPS**
 
 ```
-ETHEREUM_NODE_URL = os.environ['ETHEREUM_NODE_URL']
+ETHEREUM_NODE_URL = 'http://localhost:8545'
+ETHEREUM_NODE_URL = 'https://localhost:8545'
+ETHEREUM_NODE_URL = 'ipc:///tmp/socket.ipc'
+ETHEREUM_NODE_URL = 'ws://localhost:8546'
 ```
 
 You can also provide an **IPC path** to a node running locally, which will be faster, using _ipc://PATH_TO_IPC_SOCKET_
@@ -161,15 +164,15 @@ You can also provide an **IPC path** to a node running locally, which will be fa
 Number of concurrent threads connected to the ethereum node can be configured:
 
 ```
-ETHEREUM_MAX_WORKERS = os.environ['ETHEREUM_MAX_WORKERS']
+ETHEREUM_MAX_WORKERS = 10
 ```
 
 ##### IPFS
 Provide an IPFS host and port:
 
 ```
-IPFS_HOST = os.environ['IPFS_HOST']
-IPFS_PORT = os.environ['IPFS_PORT']
+IPFS_HOST = 'https://ipfs.infura.io'
+IPFS_PORT = 5001
 ```
 
 ##### REDIS
@@ -178,8 +181,8 @@ is also used as cache<br/>
 More info about Celery's brokers at [this link](http://docs.celeryproject.org/en/latest/getting-started/brokers/index.html).<br/>
 
 ```
-REDIS_URL = os.environ['REDIS_URL']
-CELERY_BROKER_URL = os.environ['CELERY_BROKER_URL']
+REDIS_URL = 'redis://localhost:6379/0'
+CELERY_BROKER_URL = 'redis://localhost:6379/1'
 ```
 
 A REDIS_URL example could be `redis://localhost/0`
@@ -349,21 +352,18 @@ git clone https://github.com/gnosis/pm-trading-db.git
 cd pm-trading-db
 ```
 
-Change these lines with your custom values in **config/settings/rinkeby.py**:
+Change these lines with your custom values in **.env_rinkeby**:
 
 ```
-TOURNAMENT_TOKEN = '0x2924e2338356c912634a513150e6ff5be890f7a0'
-
-...
-
-os.environ['GENERIC_IDENTITY_MANAGER_ADDRESS'] = '0x12f73864dc1f603b2e62a36b210c294fd286f9fc'
+TOURNAMENT_TOKEN=0x2924e2338356c912634a513150e6ff5be890f7a0
+GENERIC_IDENTITY_MANAGER_ADDRESS=0x12f73864dc1f603b2e62a36b210c294fd286f9fc
 ```
 
 Add your ethereum account too for token issuance:
 
 ```
-ETHEREUM_DEFAULT_ACCOUNT = '0x847968C6407F32eb261dC19c3C558C445931C9fF'
-ETHEREUM_DEFAULT_ACCOUNT_PRIVATE_KEY = 'a3b12a165350ab3c7d1ecd3596096969db2839c7899a3b0b39dd479fdd5148c7'
+ETHEREUM_DEFAULT_ACCOUNT=0x847968C6407F32eb261dC19c3C558C445931C9fF
+ETHEREUM_DEFAULT_ACCOUNT_PRIVATE_KEY=a3b12a165350ab3c7d1ecd3596096969db2839c7899a3b0b39dd479fdd5148c7
 ```
 
 If you don't have the private key for your account, but you do know the BIP39 mnemonic for it, you may enter your mnemonic into [Ganache](http://truffleframework.com/ganache/) to recover the private key.
@@ -374,7 +374,7 @@ You may have a running Geth node connected to [Rinkeby](https://www.rinkeby.io/#
 geth --rinkeby --rpc
 ```
 
-Configure an HTTP provider on **config/settings/rinkeby.py**:
+Configure an HTTP provider on **config/settings/base.py**:
 
 ```
 ETHEREUM_NODE_URL= 'http://172.17.0.1:8545'
@@ -383,7 +383,7 @@ ETHEREUM_NODE_URL= 'http://172.17.0.1:8545'
 In order to use this node through IPC instead of an HTTP RPC provider, you will want to take note of the IPC endpoint for your Geth instance. If you've just started Geth, look for a line in the console output indicating this information:
 
 ```
-INFO [01-01|00:00:00] IPC endpoint opened                      url=/home/user/.ethereum/rinkeby/geth.ipc
+INFO [01-01|00:00:00] IPC endpoint opened url=/home/user/.ethereum/rinkeby/geth.ipc
 ```
 
 Make sure the socket file is visible from the dependent docker container by modifying the `docker-compose.yml` to expose the IPC socket as one of the `volumes` on the `worker` container:
@@ -397,7 +397,7 @@ Make sure the socket file is visible from the dependent docker container by modi
       - ~/.ethereum/rinkeby/geth.ipc:/root/.ethereum/rinkeby/geth.ipc
 ```
 
-Then ensure the following is set in **config/settings/rinkeby.py**:
+Then ensure the following is set in **config/settings/base.py**:
 
 ```
 ETHEREUM_NODE_URL = 'ipc:///root/.ethereum/rinkeby/geth.ipc'
