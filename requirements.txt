@@ -22,6 +22,7 @@ faker==0.8.15
 gevent==1.3.0
 gunicorn==19.8.1
 ipfsapi==0.4.1
+kombu==4.1.0
 mpmath==1.0.0
 psycopg2-binary==2.7.4
 redis==2.10.6
