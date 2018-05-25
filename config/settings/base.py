@@ -208,6 +208,7 @@ REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
 }
 
+# ------------------------------------------------------------------------------
 # Celery
 # ------------------------------------------------------------------------------
 INSTALLED_APPS += ['tradingdb.taskapp.celery.CeleryConfig']
@@ -225,16 +226,18 @@ CELERY_TASK_SERIALIZER = 'json'
 # http://docs.celeryproject.org/en/latest/userguide/configuration.html#std:setting-result_serializer
 CELERY_RESULT_SERIALIZER = 'json'
 
+# ------------------------------------------------------------------------------
 # ETHEREUM
 # ------------------------------------------------------------------------------
 ETH_BACKUP_BLOCKS = env.int('ETH_BACKUP_BLOCKS ', default=100)
 ETH_PROCESS_BLOCKS = env.int('ETH_PROCESS_BLOCKS', default=100)
 
-ETHEREUM_NODE_URL = 'http://172.17.0.1:8545'
+ETHEREUM_NODE_URL = env('ETHEREUM_NODE_URL')
 ETHEREUM_MAX_WORKERS = env.int('ETHEREUM_MAX_WORKERS', default=10)
 ETHEREUM_MAX_BATCH_REQUESTS = env.int('ETHEREUM_MAX_BATCH_REQUESTS', default=500)
 
+# ------------------------------------------------------------------------------
 # IPFS
 # ------------------------------------------------------------------------------
-IPFS_HOST = 'http://ipfs'  # 'ipfs'
-IPFS_PORT = 5001
+IPFS_HOST = env('IPFS_HOST')
+IPFS_PORT = env('IPFS_PORT')
