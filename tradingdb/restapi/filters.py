@@ -3,7 +3,7 @@ from django.utils import timezone
 from django_filters import rest_framework as filters
 from rest_framework.pagination import LimitOffsetPagination
 from tradingdb.relationaldb.models import CentralizedOracle, Event, Market, Order, OutcomeTokenBalance
-from tradingdb.gnosis.utils import remove_0x_prefix
+from django_eth_events.utils import normalize_address_without_0x
 
 
 class DefaultPagination(LimitOffsetPagination):
@@ -85,7 +85,7 @@ class MarketFilter(filters.FilterSet):
                   'resolution_date_time', 'collateral_token',)
 
     def filter_collateral_token(self, queryset, name, value):
-        value = remove_0x_prefix(value.lower())
+        value = normalize_address_without_0x(value)
         return queryset.filter(event__collateral_token__iexact=value)
 
 
@@ -113,7 +113,7 @@ class MarketTradesFilter(filters.FilterSet):
         super().__init__(data, *args, **kwargs)
 
     def filter_collateral_token(self, queryset, name, value):
-        value = remove_0x_prefix(value.lower())
+        value = normalize_address_without_0x(value)
         return queryset.filter(market__event__collateral_token__iexact=value)
 
 
@@ -132,6 +132,6 @@ class MarketSharesFilter(filters.FilterSet):
         fields = ('creation_date_time', 'collateral_token',)
 
     def filter_collateral_token(self, queryset, name, value):
-        value = remove_0x_prefix(value.lower())
+        value = normalize_address_without_0x(value)
         return queryset.filter(outcome_token__event__collateral_token__iexact=value)
 
