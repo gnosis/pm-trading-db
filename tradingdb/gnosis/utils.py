@@ -43,6 +43,10 @@ def add_0x_prefix(value):
     return '0x' + value if value[:2] not in (b'0x', '0x') else value
 
 
+def remove_0x_prefix(value):
+    return value[2:] if value[:2] in (b'0x', '0x') else value
+
+
 def calc_lmsr_marginal_price(token_index, net_outcome_tokens_sold, funding):
     b = mpf(funding) / mp.log(len(net_outcome_tokens_sold))
     return float(mp.exp(net_outcome_tokens_sold[token_index] / b) / sum(mp.exp(share_count / b)

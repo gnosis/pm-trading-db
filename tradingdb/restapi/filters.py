@@ -3,6 +3,7 @@ from django.utils import timezone
 from django_filters import rest_framework as filters
 from rest_framework.pagination import LimitOffsetPagination
 from tradingdb.relationaldb.models import CentralizedOracle, Event, Market, Order, OutcomeTokenBalance
+from tradingdb.gnosis.utils import remove_0x_prefix
 
 
 class DefaultPagination(LimitOffsetPagination):
@@ -67,7 +68,7 @@ class MarketFilter(filters.FilterSet):
     # TODO refactor, maybe duplicate resolution_date from event_description to market
     resolution_date_time = filters.DateTimeFromToRangeFilter(name='event__oracle__centralizedoracle__event_description__resolution_date')
     event_oracle_is_outcome_set = filters.BooleanFilter(name='event__oracle__is_outcome_set')
-    collateral_token = filters.CharFilter(name='event__collateral_token')
+    collateral_token = filters.CharFilter(name='event__collateral_token', method='filter_collateral_token')
 
     ordering = filters.OrderingFilter(
         fields=(
@@ -82,6 +83,10 @@ class MarketFilter(filters.FilterSet):
         fields = ('creator', 'creation_date_time', 'market_maker', 'event_oracle_factory', 'event_oracle_creator',
                   'event_oracle_creation_date_time', 'event_oracle_is_outcome_set',
                   'resolution_date_time', 'collateral_token',)
+
+    def filter_collateral_token(self, queryset, name, value):
+        value = remove_0x_prefix(value.lower())
+        return queryset.filter(event__collateral_token__iexact=value)
 
 
 class MarketTradesFilter(filters.FilterSet):
@@ -108,6 +113,7 @@ class MarketTradesFilter(filters.FilterSet):
         super().__init__(data, *args, **kwargs)
 
     def filter_collateral_token(self, queryset, name, value):
+        value = remove_0x_prefix(value.lower())
         return queryset.filter(market__event__collateral_token__iexact=value)
 
 
@@ -126,5 +132,6 @@ class MarketSharesFilter(filters.FilterSet):
         fields = ('creation_date_time', 'collateral_token',)
 
     def filter_collateral_token(self, queryset, name, value):
+        value = remove_0x_prefix(value.lower())
         return queryset.filter(outcome_token__event__collateral_token__iexact=value)
 
