@@ -179,11 +179,13 @@ class MarketTradesSerializer(serializers.ModelSerializer):
     profit = serializers.SerializerMethodField()
     event_description = serializers.SerializerMethodField()
     owner = serializers.SerializerMethodField()
+    collateral_token = serializers.SerializerMethodField()
 
     class Meta:
         model = Order
         fields = ('date', 'net_outcome_tokens_sold', 'marginal_prices', 'outcome_token',
-                  'outcome_token_count', 'order_type', 'cost', 'profit', 'event_description', 'owner', )
+                  'outcome_token_count', 'order_type', 'cost', 'profit', 'event_description', 'owner',
+                  'collateral_token',)
 
     def get_order_type(self, obj):
         return get_order_type(obj)
@@ -205,6 +207,9 @@ class MarketTradesSerializer(serializers.ModelSerializer):
 
     def get_owner(self, obj):
         return add_0x_prefix(obj.sender)
+
+    def get_collateral_token(self, obj):
+        return obj.outcome_token.event.collateral_token
 
     def to_representation(self, instance):
         response = super().to_representation(instance)
@@ -254,10 +259,11 @@ class OutcomeTokenBalanceSerializer(serializers.ModelSerializer):
     outcome_token = OutcomeTokenSerializer()
     event_description = serializers.SerializerMethodField()
     marginal_price = serializers.SerializerMethodField()
+    collateral_token = serializers.SerializerMethodField()
 
     class Meta:
         model = OutcomeTokenBalance
-        fields = ('outcome_token', 'owner', 'balance', 'event_description', 'marginal_price', )
+        fields = ('outcome_token', 'owner', 'balance', 'event_description', 'marginal_price', 'collateral_token',)
 
     def get_event_description(self, obj):
         try:
@@ -269,6 +275,9 @@ class OutcomeTokenBalanceSerializer(serializers.ModelSerializer):
 
     def get_marginal_price(self, obj):
         return obj.outcome_token.event.markets.all()[0].marginal_prices[obj.outcome_token.index]
+
+    def get_collateral_token(self, obj):
+        return obj.outcome_token.event.collateral_token
 
 
 class OlympiaScoreboardSerializer(serializers.ModelSerializer):
