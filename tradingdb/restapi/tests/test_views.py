@@ -116,6 +116,11 @@ class TestViews(APITestCase):
         response = self.client.get(url, content_type='application/json')
         self.assertEqual(len(json.loads(response.content).get('results')), 1)
 
+        # test collateral token beginning with 0x
+        url = reverse('api:markets') + '?collateral_token=0x%s' % event.collateral_token
+        response = self.client.get(url, content_type='application/json')
+        self.assertEqual(len(json.loads(response.content).get('results')), 1)
+
         wrong_collateral_token = '0x%s' % ('0'*40)
         url = reverse('api:markets') + '?collateral_token=%s' % wrong_collateral_token
         response = self.client.get(url, content_type='application/json')
@@ -332,6 +337,10 @@ class TestViews(APITestCase):
         url = reverse('api:trades-by-account', kwargs={'account_address': account1}) + '?collateral_token=%s' % buy_order.market.event.collateral_token
         trades_response = self.client.get(url, content_type='application/json')
         self.assertEqual(len(json.loads(trades_response.content).get('results')), 1)
+        # test collateral token beginning with 0x
+        url = reverse('api:trades-by-account', kwargs={'account_address': account1}) + '?collateral_token=0x%s' % buy_order.market.event.collateral_token
+        trades_response = self.client.get(url, content_type='application/json')
+        self.assertEqual(len(json.loads(trades_response.content).get('results')), 1)
 
         wrong_collateral_token = '0x%s' % ('0' * 40)
         url = reverse('api:trades-by-account', kwargs={'account_address': account1}) + '?collateral_token=%s' % wrong_collateral_token
@@ -372,6 +381,11 @@ class TestViews(APITestCase):
 
         # test filter by collateral token
         url = reverse('api:shares-by-account', kwargs={'account_address': account1}) + '?collateral_token=%s' % event.collateral_token
+        shares_response = self.client.get(url, content_type='application/json')
+        self.assertEqual(len(json.loads(shares_response.content).get('results')), 1)
+
+        # test collateral token beginning with 0x
+        url = reverse('api:shares-by-account', kwargs={'account_address': account1}) + '?collateral_token=0x%s' % event.collateral_token
         shares_response = self.client.get(url, content_type='application/json')
         self.assertEqual(len(json.loads(shares_response.content).get('results')), 1)
 
