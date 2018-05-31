@@ -1,7 +1,6 @@
 import os
 
 from django.conf import settings
-from django.http import JsonResponse
 from django.shortcuts import get_list_or_404, get_object_or_404
 from rest_framework import generics
 from rest_framework.decorators import api_view
@@ -16,7 +15,7 @@ from tradingdb.relationaldb.models import (CentralizedOracle, Event, Market,
 from tradingdb.version import __git_info__, __version__
 
 from .filters import (CentralizedOracleFilter, DefaultPagination, EventFilter,
-                      MarketFilter, MarketTradesFilter)
+                      MarketFilter, MarketTradesFilter, MarketSharesFilter)
 from .serializers import (CentralizedOracleSerializer, EventSerializer,
                           MarketParticipantTradesSerializer, MarketSerializer,
                           MarketTradesSerializer, OlympiaScoreboardSerializer,
@@ -175,7 +174,6 @@ def factories_view(request):
 
 class MarketSharesView(generics.ListAPIView):
     serializer_class = OutcomeTokenBalanceSerializer
-    # filter_class = MarketShareEntryFilter
     pagination_class = DefaultPagination
 
     def get_queryset(self):
@@ -283,6 +281,7 @@ class AccountSharesView(generics.ListAPIView):
     """
     serializer_class = OutcomeTokenBalanceSerializer
     pagination_class = DefaultPagination
+    filter_class = MarketSharesFilter
 
     def get_queryset(self):
         return OutcomeTokenBalance.objects.filter(

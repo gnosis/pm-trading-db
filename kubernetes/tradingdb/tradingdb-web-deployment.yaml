@@ -1,4 +1,4 @@
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: tradingdb-web
@@ -111,7 +111,7 @@ spec:
                 name: tradingdb-database
                 key: port
           - name: ETHEREUM_NODE_URL
-            value: "http://{{ .ethereumNodeHost }}:8545"
+            value: "http://localhost:8545"
           - name: ETHEREUM_DEFAULT_ACCOUNT
             value: ""
           - name: ETHEREUM_DEFAULT_ACCOUNT_PRIVATE_KEY

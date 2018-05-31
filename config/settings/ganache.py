@@ -1,6 +1,9 @@
 from .local import *
 
-env.read_env(str(ROOT_DIR.path('.env_rinkeby')))
+# Everything is a local address from gnosis.js `npm run migrate`
+# Run `ganache-cli --gasLimit 40000000 -d -h 0.0.0.0 -i 437894314312`
+
+env.read_env(str(ROOT_DIR.path('.env_ganache')))
 
 # ------------------------------------------------------------------------------
 # Tournament settings
