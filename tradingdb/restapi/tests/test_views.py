@@ -107,6 +107,20 @@ class TestViews(APITestCase):
         empty_date_time_range_response = self.client.get(url, content_type='application/json')
         self.assertEqual(len(json.loads(empty_date_time_range_response.content).get('results')), 0)
 
+    def test_markets_by_collateral_token(self):
+        oracle = CentralizedOracleFactory()
+        event = CategoricalEventFactory(oracle=oracle)
+        market = MarketFactory(event=event)
+
+        url = reverse('api:markets') + '?collateral_token=%s' % event.collateral_token
+        response = self.client.get(url, content_type='application/json')
+        self.assertEqual(len(json.loads(response.content).get('results')), 1)
+
+        wrong_collateral_token = '0x%s' % ('0'*40)
+        url = reverse('api:markets') + '?collateral_token=%s' % wrong_collateral_token
+        response = self.client.get(url, content_type='application/json')
+        self.assertEqual(len(json.loads(response.content).get('results')), 0)
+
     def test_market_trading_volume(self):
 
         # create markets
@@ -304,7 +318,7 @@ class TestViews(APITestCase):
         empty_trades_response = self.client.get(url, content_type='application/json')
         self.assertEqual(len(json.loads(empty_trades_response.content).get('results')), 0)
 
-        BuyOrderFactory(sender=account1)
+        buy_order = BuyOrderFactory(sender=account1)
 
         url = reverse('api:trades-by-account', kwargs={'account_address': account1})
         trades_response = self.client.get(url, content_type='application/json')
@@ -313,6 +327,16 @@ class TestViews(APITestCase):
         url = reverse('api:trades-by-account', kwargs={'account_address': account2})
         no_trades_response = self.client.get(url, content_type='application/json')
         self.assertEqual(len(json.loads(no_trades_response.content).get('results')), 0)
+
+        # test filter by collateral token
+        url = reverse('api:trades-by-account', kwargs={'account_address': account1}) + '?collateral_token=%s' % buy_order.market.event.collateral_token
+        trades_response = self.client.get(url, content_type='application/json')
+        self.assertEqual(len(json.loads(trades_response.content).get('results')), 1)
+
+        wrong_collateral_token = '0x%s' % ('0' * 40)
+        url = reverse('api:trades-by-account', kwargs={'account_address': account1}) + '?collateral_token=%s' % wrong_collateral_token
+        trades_response = self.client.get(url, content_type='application/json')
+        self.assertEqual(len(json.loads(trades_response.content).get('results')), 0)
 
     def test_shares_by_account(self):
         account1 = '{:040d}'.format(13)
@@ -345,6 +369,16 @@ class TestViews(APITestCase):
         url = reverse('api:shares-by-account', kwargs={'account_address': account2})
         no_shares_response = self.client.get(url, content_type='application/json')
         self.assertEqual(len(json.loads(no_shares_response.content).get('results')), 0)
+
+        # test filter by collateral token
+        url = reverse('api:shares-by-account', kwargs={'account_address': account1}) + '?collateral_token=%s' % event.collateral_token
+        shares_response = self.client.get(url, content_type='application/json')
+        self.assertEqual(len(json.loads(shares_response.content).get('results')), 1)
+
+        wrong_collateral_token = '0x%s' % ('0' * 40)
+        url = reverse('api:shares-by-account', kwargs={'account_address': account1}) + '?collateral_token=%s' % wrong_collateral_token
+        shares_response = self.client.get(url, content_type='application/json')
+        self.assertEqual(len(json.loads(shares_response.content).get('results')), 0)
 
     def test_tournament_serializer(self):
         balance = TournamentParticipantBalanceFactory()
