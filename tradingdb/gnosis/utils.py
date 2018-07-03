@@ -11,7 +11,7 @@ def singleton(clazz):
     return getinstance
 
 
-class SingletonObject(object):
+class SingletonObject:
     _instances = {}
 
     def __new__(cls, *args, **kwargs):
