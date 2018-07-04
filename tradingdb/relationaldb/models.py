@@ -280,6 +280,11 @@ class TournamentParticipant(Contract, TimeStampedModel, BlockTimeStamped):
     tokens_issued = models.BooleanField(default=False)  # True if the user already issued tokens
     mainnet_address = models.CharField(max_length=ADDRESS_LENGTH, default=None, null=True)
 
+    def __str__(self):
+        return '{} - {} - {}'.format(self.current_rank,
+                                     self.address,
+                                     self.score)
+
 
 class TournamentParticipantBalance(models.Model):
     """Defines the participant's balance"""
@@ -290,7 +295,15 @@ class TournamentParticipantBalance(models.Model):
                                        related_name='tournament_balance',
                                        on_delete=models.CASCADE)
 
+    def __str__(self):
+        return '{} - {}'.format(self.participant.address,
+                                self.balance)
+
 
 class TournamentWhitelistedCreator(models.Model):
     address = models.CharField(max_length=ADDRESS_LENGTH, primary_key=True)
     enabled = models.BooleanField(default=True)
+
+    def __str__(self):
+        return '{} - {}'.format(self.address,
+                                self.enabled)
