@@ -1,4 +1,4 @@
-FROM python:3-alpine3.7
+FROM python:3.6-alpine3.7
 
 ENV PYTHONUNBUFFERED 1
 RUN mkdir -p /root/var/run/celery
