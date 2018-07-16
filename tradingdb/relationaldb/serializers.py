@@ -1,9 +1,11 @@
 from datetime import datetime
 from decimal import Decimal
+import sys
 
 from celery.utils.log import get_task_logger
 from django.conf import settings
 from django_eth_events.utils import normalize_address_without_0x
+from django_eth_events.web3_service import Web3Service
 from ipfsapi.exceptions import ErrorResponse
 from mpmath import mp
 from rest_framework import serializers
@@ -12,6 +14,7 @@ from web3 import Web3
 
 from gnosis.utils import calc_lmsr_marginal_price
 from ipfs.ipfs import Ipfs
+from chainevents.abis import abi_file_path, load_json_file
 
 from . import models
 
@@ -1100,9 +1103,22 @@ class GenericTournamentParticipantEventSerializerTimestamped(ContractSerializerT
 
         participant = models.TournamentParticipant.objects.create(**validated_data)
         participant_balance = models.TournamentParticipantBalance()
-        participant_balance.balance = 0
         participant_balance.participant = participant
-        participant_balance.save()
+        try:
+            # check blockchain balance
+            web3_service = Web3Service()
+            web3 = web3_service.web3
+            tournament_token_address = web3_service.make_sure_cheksumed_address(settings.TOURNAMENT_TOKEN)
+            abi = load_json_file(abi_file_path('TournamentToken.json'))
+            token_contract = web3.eth.contract(abi=abi, address=tournament_token_address)
+            blockchain_balance = token_contract.functions.balanceOf(web3_service.make_sure_cheksumed_address(participant.address)).call()
+            participant_balance.balance = blockchain_balance
+        except:
+            participant_balance.balance = 0
+            logger.error('Could not get token balance for address %s, %s' % (participant.mainnet_address, sys.exc_info()))
+        finally:
+            participant_balance.save()
+
         return participant
 
     def rollback(self):
