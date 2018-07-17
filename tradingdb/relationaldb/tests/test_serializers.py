@@ -3,6 +3,9 @@ from time import mktime
 from django.conf import settings
 from django.test import TestCase
 from django_eth_events.utils import normalize_address_without_0x
+from django_eth_events.web3_service import Web3Service
+from web3.providers.eth_tester import EthereumTesterProvider
+from eth_tester import EthereumTester
 
 from ipfs.ipfs import Ipfs
 
@@ -29,6 +32,8 @@ from .factories import (CategoricalEventDescriptionFactory,
                         OutcomeTokenBalanceFactory, OutcomeTokenFactory,
                         ScalarEventDescriptionFactory, ScalarEventFactory,
                         TournamentParticipantBalanceFactory)
+from .utils import tournament_token_bytecode
+from chainevents.abis import abi_file_path, load_json_file
 
 
 class TestSerializers(TestCase):
@@ -594,7 +599,9 @@ class TestSerializers(TestCase):
 
         contract_address = "d833215cbcc3f914bd1c9ece3ee7bf8b14f841bb"
         registrant_address = "90f8bf6a479f320ead074411a4b0e7944ea8c9c1"
+        registrant_address2 = "80f8bf6a479f320ead074411a4b0e7944ea8c9c2"
         registered_mainnet_address = "ffcf8fdee72ac11b5c542428b35eef5769c409f0"
+
         participant_event = {
             "address": contract_address,
             "name": "AddressRegistration",
@@ -615,9 +622,69 @@ class TestSerializers(TestCase):
         instance = s.save()
 
         self.assertEqual(TournamentParticipant.objects.all().count(), 1)
+        self.assertEqual(TournamentParticipant.objects.first().tournament_balance.balance, 0)
         self.assertIsNotNone(instance)
         self.assertEqual(instance.address, registrant_address)
         self.assertEqual(instance.mainnet_address, registered_mainnet_address)
+
+        web3_service = Web3Service(provider=EthereumTesterProvider(EthereumTester()))
+        web3 = web3_service.web3
+        checksumed_registrant_address2 = web3.toChecksumAddress('0x' + registrant_address2)
+        tournament_token_abi = load_json_file(abi_file_path('TournamentToken.json'))
+
+        # create tournament token
+        tournament_token = web3.eth.contract(abi=tournament_token_abi, bytecode=tournament_token_bytecode)
+        tx_hash = tournament_token.constructor().transact()
+        tournament_token_address = web3.eth.getTransactionReceipt(tx_hash).get('contractAddress')
+        self.assertIsNotNone(tournament_token_address)
+        # Get token instance
+        token_contract = web3.eth.contract(abi=tournament_token_abi, address=tournament_token_address)
+        # Issue tokens
+        tokens_amount = 100
+        tx_hash = token_contract.functions.issue([checksumed_registrant_address2], tokens_amount).transact(
+            {
+                'from': web3.eth.coinbase
+            }
+        )
+        blockchain_balance = token_contract.functions.balanceOf(checksumed_registrant_address2).call()
+        self.assertEquals(blockchain_balance, tokens_amount)
+
+        # Save participant 2
+        oracle = CentralizedOracleFactory()
+        block = {
+            'number': oracle.creation_block,
+            'timestamp': mktime(oracle.creation_date_time.timetuple())
+        }
+
+        participant_with_tokens_event = {
+            "address": contract_address,
+            "name": "AddressRegistration",
+            "params": [
+                {
+                    "name": "registrant",
+                    "value": checksumed_registrant_address2[2:],
+                },
+                {
+                    "name": "registeredMainnetAddress",
+                    "value": registered_mainnet_address,
+                }
+            ]
+        }
+
+        # Mocks
+        setattr(settings, 'TOURNAMENT_TOKEN', tournament_token_address)
+        def new(cls, provider=None):
+            return web3_service
+
+        # Mock Web3Service __new__ method to retrieve the same web3 instance used to deploy the contract
+        Web3Service.__new__ = new
+
+        s = GenericTournamentParticipantEventSerializerTimestamped(data=participant_with_tokens_event, block=block)
+        self.assertTrue(s.is_valid(), s.errors)
+        instance = s.save()
+        self.assertEqual(TournamentParticipant.objects.all().count(), 2)
+        self.assertEqual(TournamentParticipant.objects.first().tournament_balance.balance, tokens_amount)
+
 
     def test_save_uport_tournament_participant(self):
         oracle = CentralizedOracleFactory()

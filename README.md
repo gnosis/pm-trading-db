@@ -21,6 +21,8 @@ Gnosis Core Database Layer
 Installation
 ------------
 
+For the next steps, a Linux/MacOs operating system is required. Windows is currently not tested/supported.
+
 ### Install Docker and Docker Compose
 * First, install docker: https://docs.docker.com/engine/installation/.
 * Then, install docker compose: https://docs.docker.com/compose/install/

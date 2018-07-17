@@ -6,7 +6,7 @@ from gnosis.utils import singleton
 
 
 @singleton
-class Ipfs(object):
+class Ipfs:
 
     def __init__(self):
         self.api = ipfsapi.connect(settings.IPFS_HOST, settings.IPFS_PORT)

@@ -1,4 +1,4 @@
-FROM python:3-alpine3.7
+FROM python:3.6-alpine3.7
 
 ENV PYTHONUNBUFFERED 1
 RUN mkdir -p /root/var/run/celery
@@ -9,6 +9,7 @@ COPY requirements.txt ./
 # Signal handling for PID1 https://github.com/krallin/tini
 RUN apk add --update --no-cache tini postgresql-client && \
     apk add --no-cache --virtual .build-dependencies postgresql-dev alpine-sdk libffi-dev autoconf automake libtool gmp-dev && \
+    pip install coincurve==7.0.0 && \
     pip install --no-cache-dir -r requirements.txt && \
     apk del .build-dependencies && \
     find /usr/local \
