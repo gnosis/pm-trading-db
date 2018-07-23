@@ -1,9 +1,12 @@
 from datetime import timedelta
+
 from django.utils import timezone
+from django_eth_events.utils import normalize_address_without_0x
 from django_filters import rest_framework as filters
 from rest_framework.pagination import LimitOffsetPagination
-from tradingdb.relationaldb.models import CentralizedOracle, Event, Market, Order, OutcomeTokenBalance
-from django_eth_events.utils import normalize_address_without_0x
+
+from tradingdb.relationaldb.models import (CentralizedOracle, Event, Market,
+                                           Order, OutcomeTokenBalance)
 
 
 class DefaultPagination(LimitOffsetPagination):
@@ -134,4 +137,3 @@ class MarketSharesFilter(filters.FilterSet):
     def filter_collateral_token(self, queryset, name, value):
         value = normalize_address_without_0x(value)
         return queryset.filter(outcome_token__event__collateral_token__iexact=value)
-

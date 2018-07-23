@@ -5,7 +5,7 @@ from django_eth_events.web3_service import Web3Service
 
 from tradingdb.chainevents.abis import abi_file_path, load_json_file
 from tradingdb.relationaldb.models import (TournamentParticipant,
-                                          TournamentParticipantBalance)
+                                           TournamentParticipantBalance)
 
 
 class Command(BaseCommand):

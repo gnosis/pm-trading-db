@@ -1,3 +1,4 @@
+import json
 import os
 
 from rest_framework import exceptions, status
@@ -6,11 +7,12 @@ from rest_framework.renderers import CoreJSONRenderer, JSONRenderer
 from rest_framework.response import Response
 from rest_framework.schemas import SchemaGenerator
 from rest_framework.views import APIView
+from rest_framework_swagger.renderers import OpenAPICodec
+from rest_framework_swagger.renderers import \
+    OpenAPIRenderer as BaseOpenAPIRenderer
+from rest_framework_swagger.renderers import \
+    SwaggerUIRenderer as BaseSwaggerUIRenderer
 from rest_framework_swagger.settings import swagger_settings as settings
-from rest_framework_swagger.renderers import (
-    OpenAPICodec, SwaggerUIRenderer as BaseSwaggerUIRenderer, OpenAPIRenderer as BaseOpenAPIRenderer
-)
-import json
 
 
 def get_swagger_view(title=None, url=None, patterns=None, urlconf=None):

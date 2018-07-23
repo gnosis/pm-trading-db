@@ -10,9 +10,9 @@ from django.utils import timezone
 from django_eth_events.utils import normalize_address_without_0x
 
 from tradingdb.relationaldb.models import (Event, Market, Order,
-                                          OutcomeTokenBalance,
-                                          TournamentParticipant,
-                                          TournamentWhitelistedCreator)
+                                           OutcomeTokenBalance,
+                                           TournamentParticipant,
+                                           TournamentWhitelistedCreator)
 
 OUTCOME_RANGE = 1000000
 

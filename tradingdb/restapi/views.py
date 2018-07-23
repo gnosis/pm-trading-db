@@ -9,16 +9,16 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from tradingdb.relationaldb.models import (CentralizedOracle, Event, Market,
-                                          Order, OutcomeTokenBalance,
-                                          TournamentParticipant,
-                                          TournamentWhitelistedCreator)
+                                           Order, OutcomeTokenBalance,
+                                           TournamentParticipant,
+                                           TournamentWhitelistedCreator)
 from tradingdb.version import __git_info__, __version__
 
 from .filters import (CentralizedOracleFilter, DefaultPagination, EventFilter,
-                      MarketFilter, MarketTradesFilter, MarketSharesFilter)
+                      MarketFilter, MarketSharesFilter, MarketTradesFilter)
 from .serializers import (CentralizedOracleSerializer, EventSerializer,
-                          MarketParticipantTradesSerializer, MarketSerializer,
-                          MarketTradesSerializer, OlympiaScoreboardSerializer,
+                          MarketSerializer, MarketTradesSerializer,
+                          OlympiaScoreboardSerializer,
                           OutcomeTokenBalanceSerializer)
 
 
