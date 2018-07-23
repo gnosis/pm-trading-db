@@ -219,18 +219,29 @@ class AllMarketSharesView(generics.ListAPIView):
 
 
 class MarketParticipantTradesView(generics.ListAPIView):
-
-    serializer_class = MarketParticipantTradesSerializer
+    serializer_class = MarketTradesSerializer
     pagination_class = DefaultPagination
+    filter_class = MarketTradesFilter
 
     def get_queryset(self):
         return Order.objects.filter(
             market=self.kwargs['market_address'],
             sender=self.kwargs['owner_address']
-        )
+        ).select_related(
+            'outcome_token',
+            'outcome_token__event',
+            'outcome_token__event__oracle',
+            'outcome_token__event__oracle__centralizedoracle',
+            'outcome_token__event__oracle__centralizedoracle__event_description',
+            'outcome_token__event__oracle__centralizedoracle__event_description__categoricaleventdescription',
+            'outcome_token__event__oracle__centralizedoracle__event_description__scalareventdescription',
+        ).prefetch_related('outcome_token__event__markets')
 
 
 class MarketTradesView(generics.ListAPIView):
+    """
+    Returns the orders (trades) for the given market address
+    """
     serializer_class = MarketTradesSerializer
     pagination_class = DefaultPagination
     filter_class = MarketTradesFilter
