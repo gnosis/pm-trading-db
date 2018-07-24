@@ -1,6 +1,6 @@
+import sys
 from datetime import datetime
 from decimal import Decimal
-import sys
 
 from celery.utils.log import get_task_logger
 from django.conf import settings
@@ -12,9 +12,9 @@ from rest_framework import serializers
 from rest_framework.fields import CharField
 from web3 import Web3
 
+from chainevents.abis import abi_file_path, load_json_file
 from gnosis.utils import calc_lmsr_marginal_price
 from ipfs.ipfs import Ipfs
-from chainevents.abis import abi_file_path, load_json_file
 
 from . import models
 

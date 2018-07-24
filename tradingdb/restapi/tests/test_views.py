@@ -9,15 +9,15 @@ from rest_framework.test import APITestCase
 
 from gnosis.utils import add_0x_prefix
 from tradingdb.relationaldb.models import (CentralizedOracle, Market,
-                                          ShortSellOrder,
-                                          TournamentParticipant)
+                                           ShortSellOrder,
+                                           TournamentParticipant)
 from tradingdb.relationaldb.tests.factories import (BuyOrderFactory,
-                                                   CategoricalEventFactory,
-                                                   CentralizedOracleFactory,
-                                                   MarketFactory,
-                                                   OutcomeTokenBalanceFactory,
-                                                   OutcomeTokenFactory,
-                                                   TournamentParticipantBalanceFactory)
+                                                    CategoricalEventFactory,
+                                                    CentralizedOracleFactory,
+                                                    MarketFactory,
+                                                    OutcomeTokenBalanceFactory,
+                                                    OutcomeTokenFactory,
+                                                    TournamentParticipantBalanceFactory)
 
 
 class TestViews(APITestCase):

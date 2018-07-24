@@ -1,7 +1,7 @@
 from django.test import TestCase
 
 from tradingdb.relationaldb.tests.factories import (MarketFactory,
-                                                   OutcomeTokenFactory)
+                                                    OutcomeTokenFactory)
 
 from ..utils import calc_lmsr_marginal_price
 

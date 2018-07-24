@@ -6,9 +6,9 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from tradingdb.relationaldb.tests.factories import (CategoricalEventFactory,
-                                                   CentralizedOracleFactory,
-                                                   ScalarEventFactory,
-                                                   TournamentParticipantBalanceFactory)
+                                                    CentralizedOracleFactory,
+                                                    ScalarEventFactory,
+                                                    TournamentParticipantBalanceFactory)
 
 
 class TestSerializers(APITestCase):

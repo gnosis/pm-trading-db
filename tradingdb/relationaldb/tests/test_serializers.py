@@ -4,9 +4,10 @@ from django.conf import settings
 from django.test import TestCase
 from django_eth_events.utils import normalize_address_without_0x
 from django_eth_events.web3_service import Web3Service
-from web3.providers.eth_tester import EthereumTesterProvider
 from eth_tester import EthereumTester
+from web3.providers.eth_tester import EthereumTesterProvider
 
+from chainevents.abis import abi_file_path, load_json_file
 from ipfs.ipfs import Ipfs
 
 from ..models import (OutcomeToken, OutcomeTokenBalance,
@@ -33,7 +34,6 @@ from .factories import (CategoricalEventDescriptionFactory,
                         ScalarEventDescriptionFactory, ScalarEventFactory,
                         TournamentParticipantBalanceFactory)
 from .utils import tournament_token_bytecode
-from chainevents.abis import abi_file_path, load_json_file
 
 
 class TestSerializers(TestCase):
