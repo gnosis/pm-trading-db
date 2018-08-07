@@ -26,6 +26,4 @@ RUN set -ex \
 
 COPY . .
 
-RUN pip install -e django-eth-events
-
 ENTRYPOINT ["/tini", "--"]
