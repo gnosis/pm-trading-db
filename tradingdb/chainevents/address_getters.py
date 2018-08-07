@@ -1,3 +1,5 @@
+from typing import List
+
 from django.core.exceptions import ObjectDoesNotExist
 from django_eth_events.chainevents import AbstractAddressesGetter
 
@@ -12,7 +14,7 @@ class ContractAddressGetter(AbstractAddressesGetter):
     class Meta:
         model = Contract
 
-    def get_addresses(self):
+    def get_addresses(self) -> List[str]:
         """
         Returns list of ethereum addresses
         :return: [address]
