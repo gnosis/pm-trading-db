@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 set -euo pipefail
 
@@ -9,5 +9,6 @@ else
     log_level="info"
 fi
 
+sleep 5
 echo "==> Running Celery worker <=="
 exec celery worker -A tradingdb.taskapp --loglevel $log_level -c 2

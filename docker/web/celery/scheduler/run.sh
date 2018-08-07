@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 set -euo pipefail
 
@@ -9,5 +9,6 @@ else
     log_level="info"
 fi
 
+sleep 5
 echo "==> Running Celery beat <=="
 exec celery beat -A tradingdb.taskapp -S django_celery_beat.schedulers:DatabaseScheduler --loglevel $log_level
