@@ -13,10 +13,9 @@ RUN set -ex \
 	&& buildDeps=" \
 		build-essential \
 		libssl-dev \
-		procps \
 		" \
     && apt-get update \
-    && apt-get install -y --no-install-recommends $buildDeps \
+    && apt-get install -y --no-install-recommends $buildDeps procps \
     && pip install --no-cache-dir -r requirements.txt \
     && apt-get purge -y --auto-remove $buildDeps \
     && rm -rf /var/lib/apt/lists/* \
