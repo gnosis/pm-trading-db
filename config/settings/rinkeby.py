@@ -2,6 +2,8 @@ from .local import *
 
 env.read_env(str(ROOT_DIR.path('.env_rinkeby')))
 
+IPFS_HOST = 'https://ipfs.infura.io'
+
 # ------------------------------------------------------------------------------
 # Tournament settings
 # ------------------------------------------------------------------------------
