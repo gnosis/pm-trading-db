@@ -13,6 +13,7 @@ RUN set -ex \
 	&& buildDeps=" \
 		build-essential \
 		libssl-dev \
+		procps \
 		" \
     && apt-get update \
     && apt-get install -y --no-install-recommends $buildDeps \
