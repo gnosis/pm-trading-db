@@ -116,8 +116,9 @@ class OutcomeToken(Contract):
                                        default=0)
 
     def __str__(self):
-        return 'Index {} with total_supply {}'.format(self.index,
-                                                      self.total_supply)
+        return '{} - Index {} with total_supply {}'.format(self.address,
+                                                           self.index,
+                                                           self.total_supply)
 
 
 class OutcomeTokenBalance(models.Model):
