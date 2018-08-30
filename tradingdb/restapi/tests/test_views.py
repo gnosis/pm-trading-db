@@ -27,7 +27,7 @@ class TestViews(APITestCase):
         empty_centralized_response = self.client.get(reverse('api:centralized-oracles'), content_type='application/json')
         self.assertEqual(len(json.loads(empty_centralized_response.content).get('results')), 0)
         # create centralized oracles
-        centralized_oracles = [CentralizedOracleFactory() for x in range(0, 10)]
+        centralized_oracles = [CentralizedOracleFactory() for _ in range(0, 10)]
         centralized_oraclesdb = CentralizedOracle.objects.all()
         self.assertEqual(len(centralized_oracles), centralized_oraclesdb.count())
 
@@ -88,6 +88,24 @@ class TestViews(APITestCase):
         market_search_response = self.client.get(reverse('api:markets-by-name', kwargs={'market_address': markets[0].address}), content_type='application/json')
         self.assertEqual(market_search_response.status_code, status.HTTP_200_OK)
         self.assertEqual(json.loads(market_search_response.content).get('contract').get('address'), add_0x_prefix(markets[0].address))
+
+    def test_markets_by_creator(self):
+        oracle = CentralizedOracleFactory()
+        event = CategoricalEventFactory(oracle=oracle)
+        market = MarketFactory(event=event)
+        market2 = MarketFactory(event=event)
+
+        url = reverse('api:markets') + '?creator=%s' % market.creator
+        response = self.client.get(url, content_type='application/json')
+        self.assertEqual(len(response.json().get('results')), 1)
+
+        url = reverse('api:markets') + '?creator=%s' % market.creator.upper()
+        response = self.client.get(url, content_type='application/json')
+        self.assertEqual(len(response.json().get('results')), 1)
+
+        url = reverse('api:markets') + '?creator=0x%s,0x%s' % (market.creator.upper(), market2.creator.upper())
+        response = self.client.get(url, content_type='application/json')
+        self.assertEqual(len(response.json().get('results')), 2)
 
     def test_markets_by_resolution_date(self):
         # test empty events response
@@ -192,7 +210,8 @@ class TestViews(APITestCase):
 
     def test_shares_by_owner(self):
         market = MarketFactory()
-        response = self.client.get(reverse('api:shares-by-owner', kwargs = {'market_address': market.address, 'owner_address': market.creator}),
+        response = self.client.get(reverse('api:shares-by-owner', kwargs={'market_address': market.address,
+                                                                          'owner_address': market.creator}),
                                    content_type='application/json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(json.loads(response.content).get('results')), 0)
