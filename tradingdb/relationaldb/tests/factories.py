@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
-import hashlib
-import random
 from datetime import datetime
+import os
 
+from ethereum import utils
 import factory as factory_boy
-import pytz
 from factory.fuzzy import FuzzyDateTime
 from faker import Factory as FakerFactory
 from faker import Faker
+import pytz
 
 from .. import models
 
@@ -15,8 +15,12 @@ fakerFactory = FakerFactory.create()
 faker = Faker()
 
 
-def randomSHA256():
-    return hashlib.sha256(str(random.random())).hexdigest()
+# TODO `factory_boy.Sequence(lambda n: '{:040x}'.format(n))` must be `factory_boy.LazyFunction(generate_eth_address)`
+def generate_eth_address() -> str:
+    private_key = utils.sha3(os.urandom(4096))
+    public_key = utils.checksum_encode(utils.privtoaddr(private_key))
+    print(public_key)
+    return public_key[2:].lower()
 
 
 class BlockTimestampedFactory(factory_boy.Factory):
