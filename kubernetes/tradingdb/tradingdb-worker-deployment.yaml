@@ -93,8 +93,6 @@ spec:
             value: ""
           - name: ETHEREUM_DEFAULT_ACCOUNT_PRIVATE_KEY
             value: ""
-          - name: ETHEREUM_GENERIC_IDENTITY_MANAGER_ADDRESS
-            value: ""
           - name: IPFS_HOST
             value: "https://ipfs.infura.io"
           - name: IPFS_PORT
