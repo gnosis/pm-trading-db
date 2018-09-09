@@ -149,6 +149,9 @@ class IpfsHashField(CharField):
             except Exception as e:
                 raise serializers.ValidationError('IPFS hash must exist')
 
+            if not "get" in dir(event_description_json):
+                raise serializers.ValidationError('Invalid json')
+
             if not event_description_json.get('title'):
                 raise serializers.ValidationError('Missing title field')
 
