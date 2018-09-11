@@ -274,7 +274,12 @@ class OutcomeTokenBalanceSerializer(serializers.ModelSerializer):
             return {}
 
     def get_marginal_price(self, obj):
-        return obj.outcome_token.event.markets.all()[0].marginal_prices[obj.outcome_token.index]
+        # If BuyAllOutcomes is called by a user on the Event (without Market), markets will be empty
+        markets = obj.outcome_token.event.markets.all()
+        if markets:
+            return markets[0].marginal_prices[obj.outcome_token.index]
+        else:
+            return None
 
     def get_collateral_token(self, obj):
         return obj.outcome_token.event.collateral_token
