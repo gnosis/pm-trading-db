@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-# DEBUG set in .env
+# DEBUG set in .env_docker_compose
 if [ ${DEBUG:-0} = 1 ]; then
     log_level="debug"
 else

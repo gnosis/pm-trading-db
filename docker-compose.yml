@@ -38,7 +38,7 @@ services:
       context: .
       dockerfile: docker/web/Dockerfile
     env_file:
-      - .env
+      - .env_docker_compose
     depends_on:
       - ipfs
       - db
@@ -51,7 +51,7 @@ services:
       context: .
       dockerfile: docker/web/Dockerfile
     env_file:
-      - .env
+      - .env_docker_compose
     depends_on:
       - db
       - redis

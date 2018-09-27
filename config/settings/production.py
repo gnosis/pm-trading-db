@@ -9,6 +9,8 @@ INSTALLED_APPS.append('gunicorn')
 
 ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=[])
 
+ETHEREUM_NODE_URL = env('ETHEREUM_NODE_URL')
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
