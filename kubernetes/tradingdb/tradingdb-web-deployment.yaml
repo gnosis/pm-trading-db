@@ -51,7 +51,7 @@ spec:
       - name: web
         image: gnosispm/pm-trading-db:v1.6.0
         imagePullPolicy: Always
-        args: ["/bin/sh", "docker/web/run_web.sh"]
+        args: ["/bin/bash", "docker/web/run_web.sh"]
         resources:
           requests:
             memory: "450Mi"

@@ -1,4 +1,4 @@
-version: '3'
+version: '3.6'
 
 volumes:
   nginx-shared:
@@ -38,10 +38,7 @@ services:
       context: .
       dockerfile: docker/web/Dockerfile
     env_file:
-      - .env
-    links:
-      - db
-      - ipfs
+      - .env_docker_compose
     depends_on:
       - ipfs
       - db
@@ -54,9 +51,7 @@ services:
       context: .
       dockerfile: docker/web/Dockerfile
     env_file:
-      - .env
-    links:
-      - redis
+      - .env_docker_compose
     depends_on:
       - db
       - redis

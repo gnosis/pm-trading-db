@@ -6,9 +6,11 @@ APPS_DIR = ROOT_DIR.path('tradingdb')
 env = environ.Env()
 
 READ_DOT_ENV_FILE = env.bool('DJANGO_READ_DOT_ENV_FILE', default=False)
-if READ_DOT_ENV_FILE:
-    # OS environment variables take precedence over variables from .env
-    env.read_env(str(ROOT_DIR.path('.env')))
+DOT_ENV_FILE = env('DJANGO_DOT_ENV_FILE', default=None)
+if READ_DOT_ENV_FILE or DOT_ENV_FILE:
+    DOT_ENV_FILE = DOT_ENV_FILE or '.env_docker_compose'
+    # OS environment variables take precedence over variables from .env_docker_compose
+    env.read_env(str(ROOT_DIR.path(DOT_ENV_FILE)))
 
 # GENERAL
 # ------------------------------------------------------------------------------
@@ -179,16 +181,21 @@ STATICFILES_FINDERS = (
 # DATABASES
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#databases
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'postgres',                      # Or path to database file if using sqlite3.
-        'USER': 'postgres',                      # Not used with sqlite3.
-        'PASSWORD': '',                  # Not used with sqlite3.
-        'HOST': 'db',                      # Set to empty string for localhost. Not used with sqlite3.
-        'PORT': '5432',                      # Set to empty string for default. Not used with sqlite3.
+if 'DATABASE_URL' in env:
+    DATABASES = {
+        'default': env.db('DATABASE_URL'),
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': 'postgres',                      # Or path to database file if using sqlite3.
+            'USER': 'postgres',                      # Not used with sqlite3.
+            'PASSWORD': '',                  # Not used with sqlite3.
+            'HOST': 'localhost',                      # Set to empty string for localhost. Not used with sqlite3.
+            'PORT': '5432',                      # Set to empty string for default. Not used with sqlite3.
+        }
+    }
 
 # URLS
 # ------------------------------------------------------------------------------
@@ -231,13 +238,14 @@ CELERY_RESULT_SERIALIZER = 'json'
 # ------------------------------------------------------------------------------
 ETH_BACKUP_BLOCKS = env.int('ETH_BACKUP_BLOCKS ', default=100)
 ETH_PROCESS_BLOCKS = env.int('ETH_PROCESS_BLOCKS', default=100)
+ETH_FILTER_MAX_BLOCKS = env.int('ETH_FILTER_MAX_BLOCKS', default=100000)
 
-ETHEREUM_NODE_URL = env('ETHEREUM_NODE_URL')
+ETHEREUM_NODE_URL = env('ETHEREUM_NODE_URL', default='http://localhost:8545')
 ETHEREUM_MAX_WORKERS = env.int('ETHEREUM_MAX_WORKERS', default=10)
 ETHEREUM_MAX_BATCH_REQUESTS = env.int('ETHEREUM_MAX_BATCH_REQUESTS', default=500)
 
 # ------------------------------------------------------------------------------
 # IPFS
 # ------------------------------------------------------------------------------
-IPFS_HOST = env('IPFS_HOST')
-IPFS_PORT = env('IPFS_PORT')
+IPFS_HOST = env('IPFS_HOST', default='ipfs.infura.io')
+IPFS_PORT = env('IPFS_PORT', default=5001)

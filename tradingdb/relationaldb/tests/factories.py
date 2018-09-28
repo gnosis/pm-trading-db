@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
-import hashlib
-import random
 from datetime import datetime
+import os
 
+from ethereum import utils
 import factory as factory_boy
-import pytz
 from factory.fuzzy import FuzzyDateTime
 from faker import Factory as FakerFactory
 from faker import Faker
+import pytz
 
 from .. import models
 
@@ -15,8 +15,12 @@ fakerFactory = FakerFactory.create()
 faker = Faker()
 
 
-def randomSHA256():
-    return hashlib.sha256(str(random.random())).hexdigest()
+# TODO `factory_boy.Sequence(lambda n: '{:040x}'.format(n))` must be `factory_boy.LazyFunction(generate_eth_address)`
+def generate_eth_address() -> str:
+    private_key = utils.sha3(os.urandom(4096))
+    public_key = utils.checksum_encode(utils.privtoaddr(private_key))
+    print(public_key)
+    return public_key[2:].lower()
 
 
 class BlockTimestampedFactory(factory_boy.Factory):
@@ -29,7 +33,7 @@ class ContractFactory(factory_boy.DjangoModelFactory):
     class Meta:
         model = models.Contract
 
-    address = factory_boy.Sequence(lambda n: '{:040d}'.format(n))
+    address = factory_boy.Sequence(lambda n: '{:040x}'.format(n))
 
 
 class ContractCreatedByFactory(ContractFactory, BlockTimestampedFactory):
@@ -37,8 +41,8 @@ class ContractCreatedByFactory(ContractFactory, BlockTimestampedFactory):
     class Meta:
         model = models.ContractCreatedByFactory
 
-    factory = factory_boy.Sequence(lambda n: '{:040d}'.format(n))
-    creator = factory_boy.Sequence(lambda n: '{:040d}'.format(n))
+    factory = factory_boy.Sequence(lambda n: '{:040x}'.format(n))
+    creator = factory_boy.Sequence(lambda n: '{:040x}'.format(n))
 
 
 class EventDescriptionFactory(factory_boy.DjangoModelFactory):
@@ -48,7 +52,7 @@ class EventDescriptionFactory(factory_boy.DjangoModelFactory):
     title = factory_boy.Sequence(lambda _: ' '.join(faker.words(5)))
     description = factory_boy.Sequence(lambda _: ' '.join(faker.words(5)))
     resolution_date = FuzzyDateTime(datetime.now(pytz.utc))
-    ipfs_hash = factory_boy.Sequence(lambda n: '{:046d}'.format(n))
+    ipfs_hash = factory_boy.Sequence(lambda n: '{:046x}'.format(n))
 
 
 class CategoricalEventDescriptionFactory(EventDescriptionFactory):
@@ -80,7 +84,7 @@ class CentralizedOracleFactory(OracleFactory):
     class Meta:
         model = models.CentralizedOracle
 
-    owner = factory_boy.Sequence(lambda n: '{:040d}'.format(n))
+    owner = factory_boy.Sequence(lambda n: '{:040x}'.format(n))
     old_owner = None
     event_description = factory_boy.SubFactory(CategoricalEventDescriptionFactory)
 
@@ -90,7 +94,7 @@ class EventFactory(ContractCreatedByFactory):
     class Meta:
         model = models.Event
 
-    collateral_token = factory_boy.Sequence(lambda n: '{:040d}'.format(n))
+    collateral_token = factory_boy.Sequence(lambda n: '{:040x}'.format(n))
     oracle = factory_boy.SubFactory(CentralizedOracleFactory)
     is_winning_outcome_set = False
     outcome = 1
@@ -127,7 +131,7 @@ class OutcomeTokenBalanceFactory(factory_boy.DjangoModelFactory):
 
     outcome_token = factory_boy.SubFactory(OutcomeTokenFactory)
     balance = factory_boy.Sequence(lambda n: n)
-    owner = factory_boy.Sequence(lambda n: '{:040d}'.format(n))
+    owner = factory_boy.Sequence(lambda n: '{:040x}'.format(n))
 
 
 class MarketFactory(ContractCreatedByFactory):
@@ -136,7 +140,7 @@ class MarketFactory(ContractCreatedByFactory):
         model = models.Market
 
     event = factory_boy.SubFactory(CategoricalEventFactory)
-    market_maker = factory_boy.Sequence(lambda n: '{:040d}'.format(n))
+    market_maker = factory_boy.Sequence(lambda n: '{:040x}'.format(n))
     fee = factory_boy.Sequence(lambda n: n)
     funding = factory_boy.Sequence(lambda n: (n+1)*1e18)
     net_outcome_tokens_sold = [0, 0]
@@ -151,7 +155,7 @@ class MarketFactory(ContractCreatedByFactory):
 
 class OrderFactory(BlockTimestampedFactory, factory_boy.DjangoModelFactory):
     market = factory_boy.SubFactory(MarketFactory)
-    sender = factory_boy.Sequence(lambda n: '{:040d}'.format(n))
+    sender = factory_boy.Sequence(lambda n: '{:040x}'.format(n))
     outcome_token = factory_boy.SubFactory(OutcomeTokenFactory)
     outcome_token_count = factory_boy.Sequence(lambda n: n)
     net_outcome_tokens_sold = [0, 0]

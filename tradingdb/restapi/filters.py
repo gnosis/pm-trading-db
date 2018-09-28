@@ -62,7 +62,7 @@ class AddressInFilter(filters.BaseInFilter, filters.CharFilter):
 
 
 class MarketFilter(filters.FilterSet):
-    creator = AddressInFilter(lookup_expr='in')
+    creator = filters.CharFilter(method='filter_creator')  # Accept multiple creators split by comma
     creation_date_time = filters.DateTimeFromToRangeFilter()
     market_maker = filters.AllValuesMultipleFilter()
     event_oracle_factory = filters.AllValuesMultipleFilter(name='event__oracle__factory')
@@ -86,6 +86,10 @@ class MarketFilter(filters.FilterSet):
         fields = ('creator', 'creation_date_time', 'market_maker', 'event_oracle_factory', 'event_oracle_creator',
                   'event_oracle_creation_date_time', 'event_oracle_is_outcome_set',
                   'resolution_date_time', 'collateral_token',)
+
+    def filter_creator(self, queryset, name, value):
+        creators = [normalize_address_without_0x(creator) for creator in value.split(',')]
+        return queryset.filter(creator__in=creators)
 
     def filter_collateral_token(self, queryset, name, value):
         value = normalize_address_without_0x(value)
