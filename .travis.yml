@@ -9,6 +9,8 @@ env:
   - SOURCE_FOLDER=tradingdb
   - PIP_USE_MIRRORS=true
   - DJANGO_READ_DOT_ENV_FILE=True
+addons:
+  postgresql: "9.6"
 services:
   - postgresql
   - docker
