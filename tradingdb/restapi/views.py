@@ -35,6 +35,7 @@ class AboutView(APIView):
                     'ETHEREUM_MAX_WORKERS': settings.ETHEREUM_MAX_WORKERS,
                     'ETHEREUM_MAX_BATCH_REQUESTS': settings.ETHEREUM_MAX_BATCH_REQUESTS,
                     'ETH_BACKUP_BLOCKS': settings.ETH_BACKUP_BLOCKS,
+                    'ETH_FILTER_PROCESS_BLOCKS': settings.ETH_FILTER_PROCESS_BLOCKS,
                     'ETH_PROCESS_BLOCKS': settings.ETH_PROCESS_BLOCKS,
                 },
                 'ipfs': {

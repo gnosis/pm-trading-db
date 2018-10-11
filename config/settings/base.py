@@ -238,7 +238,7 @@ CELERY_RESULT_SERIALIZER = 'json'
 # ------------------------------------------------------------------------------
 ETH_BACKUP_BLOCKS = env.int('ETH_BACKUP_BLOCKS ', default=100)
 ETH_PROCESS_BLOCKS = env.int('ETH_PROCESS_BLOCKS', default=100)
-ETH_FILTER_MAX_BLOCKS = env.int('ETH_FILTER_MAX_BLOCKS', default=100000)
+ETH_FILTER_PROCESS_BLOCKS = env.int('ETH_FILTER_PROCESS_BLOCKS', default=100000)
 
 ETHEREUM_NODE_URL = env('ETHEREUM_NODE_URL', default='http://localhost:8545')
 ETHEREUM_MAX_WORKERS = env.int('ETHEREUM_MAX_WORKERS', default=10)
