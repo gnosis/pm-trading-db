@@ -3,7 +3,7 @@ from .local import *
 env.read_env(str(ROOT_DIR.path('.env_rinkeby')))
 
 IPFS_HOST = env('IPFS_HOST', default='https://ipfs.infura.io')
-ETH_FILTER_MAX_BLOCKS = env.int('ETH_FILTER_MAX_BLOCKS', default=1000)
+ETH_FILTER_PROCESS_BLOCKS = env.int('ETH_FILTER_PROCESS_BLOCKS', default=1000)
 ETHEREUM_MAX_WORKERS = env.int('ETHEREUM_MAX_WORKERS', default=2)
 
 # ------------------------------------------------------------------------------
