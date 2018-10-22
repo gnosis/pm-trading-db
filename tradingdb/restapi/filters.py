@@ -19,9 +19,9 @@ class CentralizedOracleFilter(filters.FilterSet):
     creation_date_time = filters.DateTimeFromToRangeFilter()
     is_outcome_set = filters.BooleanFilter()
     owner = filters.AllValuesMultipleFilter()
-    title = filters.CharFilter(name='event_description__title', lookup_expr='contains')
-    description = filters.CharFilter(name='event_description__description', lookup_expr='contains')
-    resolution_date = filters.DateTimeFromToRangeFilter(name='event_description__resolution_date')
+    title = filters.CharFilter(field_name='event_description__title', lookup_expr='contains')
+    description = filters.CharFilter(field_name='event_description__description', lookup_expr='contains')
+    resolution_date = filters.DateTimeFromToRangeFilter(field_name='event_description__resolution_date')
 
     ordering = filters.OrderingFilter(
         fields=(
@@ -39,10 +39,10 @@ class EventFilter(filters.FilterSet):
     creator = filters.AllValuesMultipleFilter()
     creation_date_time = filters.DateTimeFromToRangeFilter()
     is_winning_outcome_set = filters.BooleanFilter()
-    oracle_factory = filters.AllValuesMultipleFilter(name='oracle__factory')
-    oracle_creator = filters.AllValuesMultipleFilter(name='oracle__creator')
-    oracle_creation_date_time = filters.DateTimeFromToRangeFilter(name='oracle__creation_date_time')
-    oracle_is_outcome_set = filters.BooleanFilter(name='oracle__is_outcome_set')
+    oracle_factory = filters.AllValuesMultipleFilter(field_name='oracle__factory')
+    oracle_creator = filters.AllValuesMultipleFilter(field_name='oracle__creator')
+    oracle_creation_date_time = filters.DateTimeFromToRangeFilter(field_name='oracle__creation_date_time')
+    oracle_is_outcome_set = filters.BooleanFilter(field_name='oracle__is_outcome_set')
 
     ordering = filters.OrderingFilter(
         fields=(
@@ -65,13 +65,13 @@ class MarketFilter(filters.FilterSet):
     creator = filters.CharFilter(method='filter_creator')  # Accept multiple creators split by comma
     creation_date_time = filters.DateTimeFromToRangeFilter()
     market_maker = filters.AllValuesMultipleFilter()
-    event_oracle_factory = filters.AllValuesMultipleFilter(name='event__oracle__factory')
-    event_oracle_creator = filters.AllValuesMultipleFilter(name='event__oracle__creator')
-    event_oracle_creation_date_time = filters.DateTimeFromToRangeFilter(name='event__oracle__creation_date_time')
+    event_oracle_factory = filters.AllValuesMultipleFilter(field_name='event__oracle__factory')
+    event_oracle_creator = filters.AllValuesMultipleFilter(field_name='event__oracle__creator')
+    event_oracle_creation_date_time = filters.DateTimeFromToRangeFilter(field_name='event__oracle__creation_date_time')
     # TODO refactor, maybe duplicate resolution_date from event_description to market
-    resolution_date_time = filters.DateTimeFromToRangeFilter(name='event__oracle__centralizedoracle__event_description__resolution_date')
-    event_oracle_is_outcome_set = filters.BooleanFilter(name='event__oracle__is_outcome_set')
-    collateral_token = filters.CharFilter(name='event__collateral_token', method='filter_collateral_token')
+    resolution_date_time = filters.DateTimeFromToRangeFilter(field_name='event__oracle__centralizedoracle__event_description__resolution_date')
+    event_oracle_is_outcome_set = filters.BooleanFilter(field_name='event__oracle__is_outcome_set')
+    collateral_token = filters.CharFilter(field_name='event__collateral_token', method='filter_collateral_token')
 
     ordering = filters.OrderingFilter(
         fields=(
