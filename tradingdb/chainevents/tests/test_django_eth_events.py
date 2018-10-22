@@ -2,12 +2,12 @@
 import os
 
 from django.test import TestCase
-from django_eth_events.event_listener import EventListener
-from django_eth_events.factories import DaemonFactory
-from django_eth_events.web3_service import Web3Service
 from eth_tester import EthereumTester
 from web3.providers.eth_tester import EthereumTesterProvider
 
+from django_eth_events.event_listener import EventListener
+from django_eth_events.factories import DaemonFactory
+from django_eth_events.web3_service import Web3Service
 from ipfs.ipfs import Ipfs
 from tradingdb.relationaldb import models
 from tradingdb.relationaldb.tests.factories import EventDescriptionFactory

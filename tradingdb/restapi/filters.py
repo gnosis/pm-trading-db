@@ -1,10 +1,10 @@
 from datetime import timedelta
 
 from django.utils import timezone
-from django_eth_events.utils import normalize_address_without_0x
 from django_filters import rest_framework as filters
 from rest_framework.pagination import LimitOffsetPagination
 
+from django_eth_events.utils import normalize_address_without_0x
 from tradingdb.relationaldb.models import (CentralizedOracle, Event, Market,
                                            Order, OutcomeTokenBalance)
 

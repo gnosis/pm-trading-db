@@ -1,9 +1,9 @@
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.db import transaction
-from django_eth_events.web3_service import Web3Service
 
 from chainevents.abis import abi_file_path, load_json_file
+from django_eth_events.web3_service import Web3ServiceProvider
 
 
 class Command(BaseCommand):
@@ -23,7 +23,7 @@ class Command(BaseCommand):
     @transaction.atomic
     def handle(self, *args, **options):
         if options.get('users'):
-            web3_service = Web3Service()
+            web3_service = Web3ServiceProvider()
             web3 = web3_service.web3
 
             users = [web3_service.make_sure_cheksumed_address(user) for user in options['users'].split(",")]

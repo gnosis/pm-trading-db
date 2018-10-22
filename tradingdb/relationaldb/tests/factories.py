@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
-from datetime import datetime
 import os
+from datetime import datetime
 
-from ethereum import utils
 import factory as factory_boy
+import pytz
+from ethereum import utils
 from factory.fuzzy import FuzzyDateTime
 from faker import Factory as FakerFactory
 from faker import Faker
-import pytz
 
 from .. import models
 

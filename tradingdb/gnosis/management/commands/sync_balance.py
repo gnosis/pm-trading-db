@@ -1,8 +1,8 @@
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.db import transaction
-from django_eth_events.web3_service import Web3Service
 
+from django_eth_events.web3_service import Web3ServiceProvider
 from tradingdb.chainevents.abis import abi_file_path, load_json_file
 from tradingdb.relationaldb.models import (TournamentParticipant,
                                            TournamentParticipantBalance)
@@ -17,7 +17,7 @@ class Command(BaseCommand):
         for user in users:
 
             # check blockchain balance
-            web3_service = Web3Service()
+            web3_service = Web3ServiceProvider()
             web3 = web3_service.web3
             tournament_token_address = web3_service.make_sure_cheksumed_address(settings.TOURNAMENT_TOKEN)
             abi = load_json_file(abi_file_path('TournamentToken.json'))

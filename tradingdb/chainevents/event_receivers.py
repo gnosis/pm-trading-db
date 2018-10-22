@@ -1,9 +1,9 @@
 from json import dumps
 
 from celery.utils.log import get_task_logger
+
 from django_eth_events.chainevents import AbstractEventReceiver
 from django_eth_events.utils import JsonBytesEncoder
-
 from tradingdb.relationaldb.serializers import (CategoricalEventSerializer,
                                                 CentralizedOracleSerializer,
                                                 FeeWithdrawalSerializer,

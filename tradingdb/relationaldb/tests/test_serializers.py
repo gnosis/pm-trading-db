@@ -2,12 +2,12 @@ from time import mktime
 
 from django.conf import settings
 from django.test import TestCase
-from django_eth_events.utils import normalize_address_without_0x
-from django_eth_events.web3_service import Web3Service
 from eth_tester import EthereumTester
 from web3.providers.eth_tester import EthereumTesterProvider
 
 from chainevents.abis import abi_file_path, load_json_file
+from django_eth_events.utils import normalize_address_without_0x
+from django_eth_events.web3_service import Web3Service, Web3ServiceProvider
 from ipfs.ipfs import Ipfs
 
 from ..models import (OutcomeToken, OutcomeTokenBalance,
@@ -647,7 +647,7 @@ class TestSerializers(TestCase):
             }
         )
         blockchain_balance = token_contract.functions.balanceOf(checksumed_registrant_address2).call()
-        self.assertEquals(blockchain_balance, tokens_amount)
+        self.assertEqual(blockchain_balance, tokens_amount)
 
         # Save participant 2
         oracle = CentralizedOracleFactory()
@@ -672,19 +672,14 @@ class TestSerializers(TestCase):
         }
 
         # Mocks
-        setattr(settings, 'TOURNAMENT_TOKEN', tournament_token_address)
-        def new(cls, provider=None):
-            return web3_service
-
-        # Mock Web3Service __new__ method to retrieve the same web3 instance used to deploy the contract
-        Web3Service.__new__ = new
-
-        s = GenericTournamentParticipantEventSerializerTimestamped(data=participant_with_tokens_event, block=block)
-        self.assertTrue(s.is_valid(), s.errors)
-        instance = s.save()
-        self.assertEqual(TournamentParticipant.objects.all().count(), 2)
-        self.assertEqual(TournamentParticipant.objects.first().tournament_balance.balance, tokens_amount)
-
+        with self.settings(TOURNAMENT_TOKEN=tournament_token_address):
+            # Mock Web3Service __new__ method to retrieve the same web3 instance used to deploy the contract
+            Web3ServiceProvider.instance = web3_service
+            s = GenericTournamentParticipantEventSerializerTimestamped(data=participant_with_tokens_event, block=block)
+            self.assertTrue(s.is_valid(), s.errors)
+            instance = s.save()
+            self.assertEqual(TournamentParticipant.objects.all().count(), 2)
+            self.assertEqual(TournamentParticipant.objects.first().tournament_balance.balance, tokens_amount)
 
     def test_save_uport_tournament_participant(self):
         oracle = CentralizedOracleFactory()

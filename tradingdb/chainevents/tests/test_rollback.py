@@ -4,8 +4,8 @@ from time import mktime
 from django.conf import settings
 from django.test import TestCase
 from django.utils import timezone
-from django_eth_events.utils import normalize_address_without_0x
 
+from django_eth_events.utils import normalize_address_without_0x
 from ipfs.ipfs import Ipfs
 from tradingdb.relationaldb.models import (BuyOrder, CategoricalEvent,
                                            CentralizedOracle, Market,

@@ -4,8 +4,6 @@ from decimal import Decimal
 
 from celery.utils.log import get_task_logger
 from django.conf import settings
-from django_eth_events.utils import normalize_address_without_0x
-from django_eth_events.web3_service import Web3Service
 from ipfsapi.exceptions import ErrorResponse
 from mpmath import mp
 from rest_framework import serializers
@@ -13,6 +11,8 @@ from rest_framework.fields import CharField
 from web3 import Web3
 
 from chainevents.abis import abi_file_path, load_json_file
+from django_eth_events.utils import normalize_address_without_0x
+from django_eth_events.web3_service import Web3ServiceProvider
 from gnosis.utils import calc_lmsr_marginal_price
 from ipfs.ipfs import Ipfs
 
@@ -1109,7 +1109,7 @@ class GenericTournamentParticipantEventSerializerTimestamped(ContractSerializerT
         participant_balance.participant = participant
         try:
             # check blockchain balance
-            web3_service = Web3Service()
+            web3_service = Web3ServiceProvider()
             web3 = web3_service.web3
             tournament_token_address = web3_service.make_sure_cheksumed_address(settings.TOURNAMENT_TOKEN)
             abi = load_json_file(abi_file_path('TournamentToken.json'))
