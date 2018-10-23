@@ -1,9 +1,9 @@
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.db import transaction
+from django_eth_events.web3_service import Web3ServiceProvider
 
 from chainevents.abis import abi_file_path, load_json_file
-from django_eth_events.web3_service import Web3ServiceProvider
 
 
 class Command(BaseCommand):

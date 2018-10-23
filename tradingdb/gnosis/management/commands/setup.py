@@ -3,7 +3,6 @@ import time
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
 from django_celery_beat.models import IntervalSchedule, PeriodicTask
-
 from django_eth_events.models import Block, Daemon
 
 

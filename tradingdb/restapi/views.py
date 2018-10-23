@@ -1,5 +1,6 @@
 import os
 
+import ethereum.utils
 from django.conf import settings
 from django.shortcuts import get_list_or_404, get_object_or_404
 from rest_framework import generics
@@ -26,6 +27,8 @@ class AboutView(APIView):
     renderer_classes = (JSONRenderer,)
 
     def get(self, request, format=None):
+        ethereum_default_account_public_key = ethereum.utils.checksum_encode(ethereum.utils.privtoaddr(
+            settings.ETHEREUM_DEFAULT_ACCOUNT_PRIVATE_KEY)) if settings.ETHEREUM_DEFAULT_ACCOUNT_PRIVATE_KEY else None
         content = {
             'git': __git_info__,
             'version': __version__,
@@ -50,6 +53,9 @@ class AboutView(APIView):
                     'LMSR_MARKET_MAKER': settings.LMSR_MARKET_MAKER,
                     'UPORT_IDENTITY_MANAGER': os.environ['UPORT_IDENTITY_MANAGER'],
                     'GENERIC_IDENTITY_MANAGER_ADDRESS': os.environ['GENERIC_IDENTITY_MANAGER_ADDRESS'],
+                },
+                'issuance': {
+                    'ETHEREUM_DEFAULT_ACCOUNT_PUBLIC_KEY': ethereum_default_account_public_key,
                 }
             }
         }
