@@ -9,6 +9,17 @@ from tradingdb.relationaldb.models import (CentralizedOracle, Event, Market,
                                            Order, OutcomeTokenBalance)
 
 
+class InvalidEthereumAddressForFilter(Exception):
+    pass
+
+
+def normalize_address_or_raise(address: str):
+    try:
+        return normalize_address_without_0x(address.strip())
+    except Exception as e:
+        raise InvalidEthereumAddressForFilter(address) from e
+
+
 class DefaultPagination(LimitOffsetPagination):
     max_limit = 200
     default_limit = 100
@@ -88,11 +99,11 @@ class MarketFilter(filters.FilterSet):
                   'resolution_date_time', 'collateral_token',)
 
     def filter_creator(self, queryset, name, value):
-        creators = [normalize_address_without_0x(creator) for creator in value.split(',')]
+        creators = [normalize_address_or_raise(creator) for creator in value.split(',')]
         return queryset.filter(creator__in=creators)
 
     def filter_collateral_token(self, queryset, name, value):
-        value = normalize_address_without_0x(value)
+        value = normalize_address_or_raise(value)
         return queryset.filter(event__collateral_token__iexact=value)
 
 
@@ -120,7 +131,7 @@ class MarketTradesFilter(filters.FilterSet):
         super().__init__(data, *args, **kwargs)
 
     def filter_collateral_token(self, queryset, name, value):
-        value = normalize_address_without_0x(value)
+        value = normalize_address_or_raise(value)
         return queryset.filter(market__event__collateral_token__iexact=value)
 
 
@@ -139,5 +150,5 @@ class MarketSharesFilter(filters.FilterSet):
         fields = ('creation_date_time', 'collateral_token',)
 
     def filter_collateral_token(self, queryset, name, value):
-        value = normalize_address_without_0x(value)
+        value = normalize_address_or_raise(value)
         return queryset.filter(outcome_token__event__collateral_token__iexact=value)
