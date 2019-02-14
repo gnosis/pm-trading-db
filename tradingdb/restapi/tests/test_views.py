@@ -116,11 +116,11 @@ class TestViews(APITestCase):
         market = MarketFactory(event=event)
         from_date = (timezone.now() - timedelta(days=1)).strftime('%Y-%m-%d %H:%M:%S')
 
-        url = reverse('api:markets') + '?resolution_date_time_0=' + from_date
+        url = reverse('api:markets') + '?resolution_date_time_after=' + from_date
         correct_date_time_range_response = self.client.get(url, content_type='application/json')
         self.assertEqual(len(correct_date_time_range_response.json().get('results')), 1)
 
-        url = reverse('api:markets') + '?resolution_date_time_0=' + from_date + '&resolution_date_time_1=' + from_date
+        url = reverse('api:markets') + '?resolution_date_time_after=' + from_date + '&resolution_date_time_before=' + from_date
         empty_date_time_range_response = self.client.get(url, content_type='application/json')
         self.assertEqual(len(empty_date_time_range_response.json().get('results')), 0)
 
@@ -278,7 +278,7 @@ class TestViews(APITestCase):
         to_date = (creation_date_time + timedelta(days=1)).strftime('%Y-%m-%d %H:%M:%S')
         url = reverse('api:trades-by-market',
                       kwargs={'market_address': market.address})
-        url += '?creation_date_time_0=' + from_date + '&creation_date_time_1='+to_date
+        url += '?creation_date_time_after=' + from_date + '&creation_date_time_before='+to_date
         trades_response = self.client.get(url, content_type='application/json')
         self.assertEqual(trades_response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(trades_response.json().get('results')), 1)
@@ -288,7 +288,7 @@ class TestViews(APITestCase):
         to_date = (creation_date_time - timedelta(days=4)).strftime('%Y-%m-%d %H:%M:%S')
         url = reverse('api:trades-by-market',
                       kwargs={'market_address': market.address})
-        url += '?creation_date_time_0=' + from_date + '&creation_date_time_1=' + to_date
+        url += '?creation_date_time_after=' + from_date + '&creation_date_time_before=' + to_date
         trades_response = self.client.get(url, content_type='application/json')
         self.assertEqual(trades_response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(trades_response.json().get('results')), 0)
@@ -297,7 +297,7 @@ class TestViews(APITestCase):
         from_date = (creation_date_time - timedelta(days=5)).strftime('%Y-%m-%d %H:%M:%S')
         url = reverse('api:trades-by-market',
                       kwargs={'market_address': market.address})
-        url += '?creation_date_time_0=' + from_date
+        url += '?creation_date_time_after=' + from_date
         trades_response = self.client.get(url, content_type='application/json')
         self.assertEqual(trades_response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(trades_response.json().get('results')), 1)

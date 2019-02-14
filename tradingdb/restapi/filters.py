@@ -123,10 +123,10 @@ class MarketTradesFilter(filters.FilterSet):
 
     def __init__(self, data=None, *args, **kwargs):
         # if filterset is bound, use initial values as defaults
-        if data is not None and not 'creation_date_time_0' in data and not 'creation_date_time_1' in data:
+        if data is not None and not 'creation_date_time_after' in data and not 'creation_date_time_before' in data:
             data = data.copy()
-            data['creation_date_time_0'] = (timezone.now() - timedelta(days=14)).strftime('%Y-%m-%d %H:%M:%S')
-            data['creation_date_time_1'] = timezone.now()
+            data['creation_date_time_after'] = (timezone.now() - timedelta(days=14)).strftime('%Y-%m-%d %H:%M:%S')
+            data['creation_date_time_before'] = timezone.now()
 
         super().__init__(data, *args, **kwargs)
 
