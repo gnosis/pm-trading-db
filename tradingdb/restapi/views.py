@@ -64,7 +64,7 @@ class AboutView(APIView):
 
 class CentralizedOracleListView(generics.ListAPIView):
     serializer_class = CentralizedOracleSerializer
-    filter_class = CentralizedOracleFilter
+    filterset_class = CentralizedOracleFilter
     pagination_class = DefaultPagination
 
     def get_queryset(self):
@@ -86,7 +86,7 @@ class CentralizedOracleFetchView(generics.RetrieveAPIView):
 
 class EventListView(generics.ListAPIView):
     serializer_class = EventSerializer
-    filter_class = EventFilter
+    filterset_class = EventFilter
     pagination_class = DefaultPagination
 
     def get_queryset(self):
@@ -122,7 +122,7 @@ class EventFetchView(generics.RetrieveAPIView):
 
 class MarketListView(generics.ListAPIView):
     serializer_class = MarketSerializer
-    filter_class = MarketFilter
+    filterset_class = MarketFilter
     pagination_class = DefaultPagination
 
     def get_queryset(self):
@@ -228,7 +228,7 @@ class AllMarketSharesView(generics.ListAPIView):
 class MarketParticipantTradesView(generics.ListAPIView):
     serializer_class = MarketTradesSerializer
     pagination_class = DefaultPagination
-    filter_class = MarketTradesFilter
+    filterset_class = MarketTradesFilter
 
     def get_queryset(self):
         return Order.objects.filter(
@@ -251,7 +251,7 @@ class MarketTradesView(generics.ListAPIView):
     """
     serializer_class = MarketTradesSerializer
     pagination_class = DefaultPagination
-    filter_class = MarketTradesFilter
+    filterset_class = MarketTradesFilter
 
     def get_queryset(self):
         # Check if Market exists
@@ -277,7 +277,7 @@ class AccountTradesView(generics.ListAPIView):
     """
     serializer_class = MarketTradesSerializer
     pagination_class = DefaultPagination
-    filter_class = MarketTradesFilter
+    filterset_class = MarketTradesFilter
 
     def get_queryset(self):
         return Order.objects.filter(
@@ -299,7 +299,7 @@ class AccountSharesView(generics.ListAPIView):
     """
     serializer_class = OutcomeTokenBalanceSerializer
     pagination_class = DefaultPagination
-    filter_class = MarketSharesFilter
+    filterset_class = MarketSharesFilter
 
     def get_queryset(self):
         return OutcomeTokenBalance.objects.filter(
