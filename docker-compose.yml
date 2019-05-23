@@ -62,6 +62,6 @@ services:
 
   ethereum:
     image: trufflesuite/ganache-cli:latest
-    command: ganache-cli -d --mnemonic 'candy maple cake sugar pudding cream honey rich smooth crumble sweet treat' --defaultBalanceEther '1000000'
+    command: ganache-cli -d --mnemonic 'candy maple cake sugar pudding cream honey rich smooth crumble sweet treat' --defaultBalanceEther '1000000' -i 437894314312
     ports:
       - "8545:8545"
