@@ -24,5 +24,5 @@ gunicorn==19.9.0
 ipfsapi==0.4.1
 mpmath==1.0.0
 psycopg2-binary==2.7.7
-redis==2.10.6
+redis==3.2.1
 web3[tester]==4.9.2
