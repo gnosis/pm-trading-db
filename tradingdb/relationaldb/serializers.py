@@ -4,8 +4,10 @@ from decimal import Decimal
 
 from celery.utils.log import get_task_logger
 from django.conf import settings
+from django.utils.translation import ugettext_lazy as _
 from django_eth_events.utils import normalize_address_without_0x
 from django_eth_events.web3_service import Web3ServiceProvider
+from hexbytes import HexBytes
 from ipfsapi.exceptions import ErrorResponse
 from mpmath import mp
 from rest_framework import serializers
@@ -20,6 +22,8 @@ from . import models
 
 # Ethereum addresses have 40 chars (without 0x)
 ADDRESS_LENGTH = 40
+# Ethereum transactions have 64 chars (without 0x)
+TRANSACTION_LENGTH: str = 64
 
 mp.dps = 100
 mp.pretty = True
@@ -41,8 +45,11 @@ class BaseEventSerializer(serializers.BaseSerializer):
         In addition, all parameters contained in kwargs['data']['params'] are re-elaborated and added to
         the final data dictionary
         """
-        if kwargs.get('block'):
-            self.block = kwargs.pop('block')
+        # Remove those args not compliant with `serializers.BaseSerializer`
+        block = kwargs.pop('block', None) # Avoid KeyError in case key is not in dictionary
+
+        if block:
+            self.block = block
 
         super().__init__(*args, **kwargs)
 
@@ -55,7 +62,12 @@ class BaseEventSerializer(serializers.BaseSerializer):
         :return: dictionary with event params
         """
 
-        return {param['name']: param['value'] for param in event_data.get('params')}
+        parsed_event_data = {
+            **{param['name']: param['value'] for param in event_data.get('params')},
+            'transaction_hash': event_data.get('transaction_hash')
+        }
+
+        return parsed_event_data
 
 
 class ContractSerializer(BaseEventSerializer):
@@ -75,7 +87,7 @@ class ContractSerializer(BaseEventSerializer):
 
         parsed_event_data = super().parse_event_data(event_data)
         parsed_event_data.update({
-            'address': event_data.get('address'),
+            'address': event_data.get('address')
         })
         return parsed_event_data
 
@@ -94,7 +106,7 @@ class BlockTimestampedSerializer(BaseEventSerializer):
         parsed_event_data = super().parse_event_data(event_data)
         parsed_event_data.update({
             'creation_date_time': datetime.fromtimestamp(self.block.get('timestamp')),
-            'creation_block': self.block.get('number'),
+            'creation_block': self.block.get('number')
         })
         return parsed_event_data
 
@@ -753,7 +765,7 @@ class OutcomeTokenPurchaseSerializerTimestamped(ContractSerializerTimestamped, s
     class Meta:
         model = models.BuyOrder
         fields = ContractSerializerTimestamped.Meta.fields + ('buyer', 'outcomeTokenIndex', 'outcomeTokenCount',
-                                                         'outcomeTokenCost', 'marketFees',)
+                                                         'outcomeTokenCost', 'marketFees', 'transaction_hash',)
 
     address = serializers.CharField(max_length=ADDRESS_LENGTH)
     buyer = serializers.CharField(max_length=ADDRESS_LENGTH)
@@ -761,6 +773,7 @@ class OutcomeTokenPurchaseSerializerTimestamped(ContractSerializerTimestamped, s
     outcomeTokenCount = serializers.IntegerField()
     outcomeTokenCost = serializers.IntegerField()
     marketFees = serializers.IntegerField()
+    transaction_hash = serializers.CharField(max_length=TRANSACTION_LENGTH)
 
     def create(self, validated_data):
         try:
@@ -784,6 +797,7 @@ class OutcomeTokenPurchaseSerializerTimestamped(ContractSerializerTimestamped, s
             order.outcome_token_cost = validated_data.get('outcomeTokenCost')
             order.fees = validated_data.get('marketFees')
             order.net_outcome_tokens_sold = market.net_outcome_tokens_sold
+            order.transaction_hash = validated_data.get('transaction_hash')
 
             # Calculate current marginal price
             order.marginal_prices = list(map(
@@ -830,7 +844,7 @@ class OutcomeTokenSaleSerializerTimestamped(ContractSerializerTimestamped, seria
     class Meta:
         model = models.SellOrder
         fields = ContractSerializerTimestamped.Meta.fields + ('seller', 'outcomeTokenIndex', 'outcomeTokenCount',
-                                                              'outcomeTokenProfit', 'marketFees',)
+                                                              'outcomeTokenProfit', 'marketFees', 'transaction_hash',)
 
     address = serializers.CharField(max_length=ADDRESS_LENGTH)
     seller = serializers.CharField(max_length=ADDRESS_LENGTH)
@@ -838,6 +852,7 @@ class OutcomeTokenSaleSerializerTimestamped(ContractSerializerTimestamped, seria
     outcomeTokenCount = serializers.IntegerField()
     outcomeTokenProfit = serializers.IntegerField()
     marketFees = serializers.IntegerField()
+    transaction_hash = serializers.CharField(max_length=TRANSACTION_LENGTH)
 
     def create(self, validated_data):
         try:
@@ -862,6 +877,7 @@ class OutcomeTokenSaleSerializerTimestamped(ContractSerializerTimestamped, seria
             order.outcome_token_profit = validated_data.get('outcomeTokenProfit')
             order.fees = validated_data.get('marketFees')
             order.net_outcome_tokens_sold = market.net_outcome_tokens_sold
+            order.transaction_hash = validated_data.get('transaction_hash')
             order.marginal_prices = list(map(
                 lambda index_: Decimal(calc_lmsr_marginal_price(int(index_[0]),
                                                                 [int(x) for x in market.net_outcome_tokens_sold],

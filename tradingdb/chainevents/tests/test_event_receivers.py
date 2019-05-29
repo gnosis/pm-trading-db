@@ -20,7 +20,9 @@ from tradingdb.relationaldb.tests.factories import (CategoricalEventFactory,
                                                     OracleFactory,
                                                     OutcomeTokenFactory,
                                                     ScalarEventFactory,
-                                                    TournamentParticipantBalanceFactory)
+                                                    TournamentParticipantBalanceFactory,
+                                                    generate_eth_address,
+                                                    generate_transaction_hash)
 
 from ..event_receivers import (CentralizedOracleFactoryReceiver,
                                CentralizedOracleInstanceReceiver,
@@ -495,11 +497,12 @@ class TestEventReceiver(TestCase):
         categorical_event = CategoricalEventFactory()
         outcome_token = OutcomeTokenFactory(event=categorical_event, index=0)
         market = MarketFactory(event=categorical_event)
-        sender_address = '{:040d}'.format(100)
+        (_, _, sender_address) = generate_eth_address()
 
         outcome_token_purchase_event = {
             'name': 'OutcomeTokenPurchase',
             'address': market.address,
+            'transaction_hash': generate_transaction_hash(),
             'params': [
                 {'name': 'outcomeTokenCost', 'value': 100},
                 {'name': 'marketFees', 'value': 10},
@@ -519,17 +522,19 @@ class TestEventReceiver(TestCase):
         buy_orders = BuyOrder.objects.all()
         self.assertEqual(buy_orders.count(), 1)
         self.assertEqual(buy_orders[0].cost, 110) # outcomeTokenCost+fee
+        self.assertEqual(buy_orders[0].transaction_hash, outcome_token_purchase_event['transaction_hash'])
 
     def test_outcome_token_purchase_marginal_price(self):
         categorical_event = CategoricalEventFactory()
         OutcomeTokenFactory(event=categorical_event, index=0)
         OutcomeTokenFactory(event=categorical_event, index=1)
         market = MarketFactory(event=categorical_event, funding=1e18, net_outcome_tokens_sold=[0, 0])
-        sender_address = '{:040d}'.format(100)
+        (_, _, sender_address) = generate_eth_address()
 
         outcome_token_purchase_event = {
             'name': 'OutcomeTokenPurchase',
             'address': market.address,
+            'transaction_hash': generate_transaction_hash(),
             'params': [
                 {'name': 'outcomeTokenCost', 'value': 1000000000000000000},
                 {'name': 'marketFees', 'value': 0},
@@ -549,16 +554,18 @@ class TestEventReceiver(TestCase):
         buy_orders = BuyOrder.objects.all()
         self.assertEqual(buy_orders.count(), 1)
         self.assertListEqual(buy_orders[0].marginal_prices, [Decimal(0.7500), Decimal(0.2500)])  # outcomeTokenCost+fee
+        self.assertEqual(buy_orders[0].transaction_hash, outcome_token_purchase_event['transaction_hash'])
 
     def test_outcome_token_sell(self):
         categorical_event = CategoricalEventFactory()
         outcome_token = OutcomeTokenFactory(event=categorical_event, index=0)
         market = MarketFactory(event=categorical_event)
-        sender_address = '{:040d}'.format(100)
+        (_, _, sender_address) = generate_eth_address()
 
         outcome_token_sell_event = {
             'name': 'OutcomeTokenSale',
             'address': market.address,
+            'transaction_hash': generate_transaction_hash(),
             'params': [
                 {'name': 'outcomeTokenProfit', 'value': 100},
                 {'name': 'marketFees', 'value': 10},
@@ -578,17 +585,19 @@ class TestEventReceiver(TestCase):
         sell_orders = SellOrder.objects.all()
         self.assertEqual(sell_orders.count(), 1)
         self.assertEqual(sell_orders[0].profit, 90) # outcomeTokenProfit-fee
+        self.assertEqual(sell_orders[0].transaction_hash, outcome_token_sell_event['transaction_hash'])
 
     def test_collected_fees(self):
         categorical_event = CategoricalEventFactory()
         outcome_token = OutcomeTokenFactory(event=categorical_event, index=0)
         market = MarketFactory(event=categorical_event)
-        sender_address = '{:040d}'.format(100)
+        (_, _, sender_address) = generate_eth_address() # '{:040d}'.format(100)
         fees = 10
 
         outcome_token_purchase_event = {
             'name': 'OutcomeTokenPurchase',
             'address': market.address,
+            'transaction_hash': generate_transaction_hash(),
             'params': [
                 {'name': 'outcomeTokenCost', 'value': 100},
                 {'name': 'marketFees', 'value': fees},
@@ -608,6 +617,9 @@ class TestEventReceiver(TestCase):
         # Check that collected fees was incremented
         market_check = Market.objects.get(address=market.address)
         self.assertEqual(market_check.collected_fees, market.collected_fees+fees)
+        # Check that the buy order was saved with the correct transaction hash
+        buy_order = BuyOrder.objects.get(transaction_hash=outcome_token_purchase_event['transaction_hash'])
+        self.assertEqual(buy_order.sender, sender_address)
 
         block.update({'number': 2})
         MarketInstanceReceiver().save(outcome_token_purchase_event, block)

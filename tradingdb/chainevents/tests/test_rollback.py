@@ -18,7 +18,9 @@ from tradingdb.relationaldb.tests.factories import (CategoricalEventFactory,
                                                     OracleFactory,
                                                     OutcomeTokenFactory,
                                                     ScalarEventFactory,
-                                                    TournamentParticipantBalanceFactory)
+                                                    TournamentParticipantBalanceFactory,
+                                                    generate_eth_address,
+                                                    generate_transaction_hash)
 
 from ..event_receivers import (CentralizedOracleFactoryReceiver,
                                CentralizedOracleInstanceReceiver,
@@ -312,6 +314,7 @@ class TestRollback(TestCase):
         outcome_token_purchase_event = {
             'name': 'OutcomeTokenPurchase',
             'address': market_without_rollback.address,
+            'transaction_hash': generate_transaction_hash(),
             'params': [
                 {'name': 'outcomeTokenCost', 'value': 100},
                 {'name': 'marketFees', 'value': 10},
@@ -330,6 +333,10 @@ class TestRollback(TestCase):
         )
         self.assertEqual(len(orders_before_rollback), 1)
 
+        # Also double-check by querying with transaction_hash
+        orders_before_rollback = BuyOrder.objects.filter(transaction_hash=outcome_token_purchase_event['transaction_hash'])
+        self.assertEqual(len(orders_before_rollback), 1)
+
         # Outcome token purchase rollback
         MarketInstanceReceiver().rollback(outcome_token_purchase_event, block)
         market_with_rollback = Market.objects.get(event=event_factory.address)
@@ -340,11 +347,15 @@ class TestRollback(TestCase):
         )
         self.assertEqual(len(orders_after_rollback), 0)
 
+        # Also double-check by querying with transaction_hash
+        orders_after_rollback = BuyOrder.objects.filter(transaction_hash=outcome_token_purchase_event['transaction_hash'])
+        self.assertEqual(len(orders_after_rollback), 0)
+
     def test_market_outcome_token_sale_rollback(self):
         categorical_event = CategoricalEventFactory()
         outcome_token = OutcomeTokenFactory(event=categorical_event, index=0)
         market = MarketFactory(event=categorical_event)
-        seller_address = '{:040d}'.format(100)
+        (_, _, seller_address) = generate_eth_address()
 
         block = {
             'number': 1,
@@ -353,6 +364,7 @@ class TestRollback(TestCase):
         outcome_token_sell_event = {
             'name': 'OutcomeTokenSale',
             'address': market.address,
+            'transaction_hash': generate_transaction_hash(),
             'params': [
                 {'name': 'outcomeTokenProfit', 'value': 100},
                 {'name': 'marketFees', 'value': 10},
@@ -369,13 +381,21 @@ class TestRollback(TestCase):
         )
         self.assertEqual(len(orders_before_rollback), 1)
 
+        # Also double-check by querying with transaction hash
+        orders_before_rollback = SellOrder.objects.filter(transaction_hash=outcome_token_sell_event['transaction_hash'])
+        self.assertEqual(len(orders_before_rollback), 1)
+
         # Outcome token sell rollback
         MarketInstanceReceiver().rollback(outcome_token_sell_event, block)
-        orders_before_rollback = SellOrder.objects.filter(
+        orders_after_rollback = SellOrder.objects.filter(
             creation_block=block.get('number'),
             sender=seller_address
         )
-        self.assertEqual(len(orders_before_rollback), 0)
+        self.assertEqual(len(orders_after_rollback), 0)
+
+        # Also double-check by querying with transaction hash
+        orders_after_rollback = SellOrder.objects.filter(transaction_hash=outcome_token_sell_event['transaction_hash'])
+        self.assertEqual(len(orders_after_rollback), 0)
 
     def test_market_outcome_token_shortsale_rollback(self):
         pass
