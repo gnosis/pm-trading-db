@@ -23,7 +23,7 @@ from . import models
 # Ethereum addresses have 40 chars (without 0x)
 ADDRESS_LENGTH = 40
 # Ethereum transactions have 64 chars (without 0x)
-TRANSACTION_LENGTH: str = 64
+TRANSACTION_LENGTH: int = 64
 
 mp.dps = 100
 mp.pretty = True

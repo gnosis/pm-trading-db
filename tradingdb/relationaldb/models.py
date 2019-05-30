@@ -4,9 +4,9 @@ from model_utils.models import TimeStampedModel
 
 
 # Ethereum addresses have 40 chars (without 0x)
-ADDRESS_LENGTH: str = 40
+ADDRESS_LENGTH: int = 40
 # Ethereum transactions have 64 chars (without 0x)
-TRANSACTION_LENGTH: str = 64
+TRANSACTION_LENGTH: int = 64
 
 # ==================================
 #       Abstract model classes
