@@ -30,7 +30,7 @@ from tradingdb.relationaldb.serializers import (CategoricalEventSerializer,
 logger = get_task_logger(__name__)
 
 
-class SerializerEventReceiver(AbstractEventReceiver):
+class EventReceiverSerializer(AbstractEventReceiver):
 
     class Meta:
         events = {}
@@ -97,7 +97,7 @@ class SerializerEventReceiver(AbstractEventReceiver):
             logger.warning(serializer.errors)
 
 
-class CentralizedOracleFactoryReceiver(SerializerEventReceiver):
+class CentralizedOracleFactoryReceiver(EventReceiverSerializer):
 
     class Meta:
         events = {
@@ -106,7 +106,7 @@ class CentralizedOracleFactoryReceiver(SerializerEventReceiver):
         primary_key_name = 'centralizedOracle'
 
 
-class EventFactoryReceiver(SerializerEventReceiver):
+class EventFactoryReceiver(EventReceiverSerializer):
 
     class Meta:
         events = {
@@ -119,7 +119,7 @@ class EventFactoryReceiver(SerializerEventReceiver):
         }
 
 
-class MarketFactoryReceiver(SerializerEventReceiver):
+class MarketFactoryReceiver(EventReceiverSerializer):
 
     class Meta:
         events = {
@@ -128,12 +128,12 @@ class MarketFactoryReceiver(SerializerEventReceiver):
         primary_key_name = 'market'
 
 
-###########################
-# Instance Event Receivers
-###########################
+# ==================================== #
+#      Event Receiver instances
+# ==================================== #
 
 
-class BaseInstanceEventReceiver(SerializerEventReceiver):
+class BaseInstanceEventReceiver(EventReceiverSerializer):
     """
     Instance Event receivers get the model instance in a different way, info can be in the root object
     sometimes or in the parameters, we override this function
@@ -267,12 +267,12 @@ class OutcomeTokenInstanceReceiver(BaseInstanceEventReceiver):
         }
 
 
-# ============================== #
+# ================================== #
 #     Tournament event receivers
-# ============================== #
+# ================================== #
 
 
-class UportIdentityManagerReceiver(SerializerEventReceiver):
+class UportIdentityManagerReceiver(EventReceiverSerializer):
     class Meta:
         events = {
             'IdentityCreated': UportTournamentParticipantSerializerEventSerializerTimestamped,
@@ -282,7 +282,7 @@ class UportIdentityManagerReceiver(SerializerEventReceiver):
         }
 
 
-class GenericIdentityManagerReceiver(SerializerEventReceiver):
+class GenericIdentityManagerReceiver(EventReceiverSerializer):
     class Meta:
         events = {
             'AddressRegistration': GenericTournamentParticipantEventSerializerTimestamped,

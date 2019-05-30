@@ -2,12 +2,15 @@ from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from model_utils.models import TimeStampedModel
 
-# ==================================
-#       Abstract classes
-# ==================================
 
 # Ethereum addresses have 40 chars (without 0x)
-ADDRESS_LENGTH = 40
+ADDRESS_LENGTH: int = 40
+# Ethereum transactions have 64 chars (without 0x)
+TRANSACTION_LENGTH: int = 64
+
+# ==================================
+#       Abstract model classes
+# ==================================
 
 
 class BlockTimeStamped(models.Model):
@@ -227,9 +230,13 @@ class Order(BlockTimeStamped):
                                       db_column='outcome_token_address',
                                       null=True,
                                       on_delete=models.CASCADE)
-    outcome_token_count = models.DecimalField(max_digits=80, decimal_places=0)  # the amount of outcome tokens bought or sold
-    net_outcome_tokens_sold = ArrayField(models.DecimalField(max_digits=80, decimal_places=0))  # represents the outcome tokens distrubition at the buy/sell order moment
-    marginal_prices = ArrayField(models.DecimalField(max_digits=5, decimal_places=4))  # represent the marginal price of each outcome at the time of the market order
+    # the amount of outcome tokens bought or sold
+    outcome_token_count = models.DecimalField(max_digits=80, decimal_places=0)
+    # represents the outcome tokens distribution at the buy/sell order moment
+    net_outcome_tokens_sold = ArrayField(models.DecimalField(max_digits=80, decimal_places=0))
+    # represents the marginal price of each outcome at the time of the market order
+    marginal_prices = ArrayField(models.DecimalField(max_digits=5, decimal_places=4))
+    transaction_hash = models.CharField(max_length=TRANSACTION_LENGTH)
 
     def __str__(self):
         return 'Sender {} - Market {}'.format(self.sender, self.market_id)
