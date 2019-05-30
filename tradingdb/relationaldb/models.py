@@ -236,7 +236,7 @@ class Order(BlockTimeStamped):
     net_outcome_tokens_sold = ArrayField(models.DecimalField(max_digits=80, decimal_places=0))
     # represents the marginal price of each outcome at the time of the market order
     marginal_prices = ArrayField(models.DecimalField(max_digits=5, decimal_places=4))
-    transaction_hash = models.CharField(max_length=TRANSACTION_LENGTH)
+    transaction_hash = models.CharField(max_length=TRANSACTION_LENGTH, default='')
 
     def __str__(self):
         return 'Sender {} - Market {}'.format(self.sender, self.market_id)
