@@ -4,10 +4,8 @@ from decimal import Decimal
 
 from celery.utils.log import get_task_logger
 from django.conf import settings
-from django.utils.translation import ugettext_lazy as _
 from django_eth_events.utils import normalize_address_without_0x
 from django_eth_events.web3_service import Web3ServiceProvider
-from hexbytes import HexBytes
 from ipfsapi.exceptions import ErrorResponse
 from mpmath import mp
 from rest_framework import serializers
@@ -24,6 +22,7 @@ from . import models
 ADDRESS_LENGTH = 40
 # Ethereum transactions have 64 chars (without 0x)
 TRANSACTION_LENGTH: int = 64
+
 
 mp.dps = 100
 mp.pretty = True
@@ -144,6 +143,7 @@ class IpfsHashField(CharField):
 
     def get_event_description(self, ipfs_hash):
         """Returns the IPFS event_description object"""
+        logger.debug('{} get_event_description for IPFS hash {}'.format(self.__class__.__name__, ipfs_hash))
         return Ipfs().get(ipfs_hash)
 
     def to_internal_value(self, data):
