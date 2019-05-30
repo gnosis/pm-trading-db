@@ -42,8 +42,7 @@ class EventReceiverSerializer(AbstractEventReceiver):
         if self.Meta.events.get(event_name):
             # Block info is optional, only models that inherit from ContractCreatedByFactory need it
             if block_info:
-                serializer = self.Meta.events.get(event_name)(data=decoded_event,
-                                                              block=block_info)
+                serializer = self.Meta.events.get(event_name)(data=decoded_event, block=block_info)
             else:
                 serializer = self.Meta.events.get(event_name)(data=decoded_event)
 
@@ -129,9 +128,9 @@ class MarketFactoryReceiver(EventReceiverSerializer):
         primary_key_name = 'market'
 
 
-###########################
-# Instance Event Receivers
-###########################
+# ==================================== #
+#      Event Receiver instances
+# ==================================== #
 
 
 class BaseInstanceEventReceiver(EventReceiverSerializer):
@@ -268,9 +267,9 @@ class OutcomeTokenInstanceReceiver(BaseInstanceEventReceiver):
         }
 
 
-# ============================== #
+# ================================== #
 #     Tournament event receivers
-# ============================== #
+# ================================== #
 
 
 class UportIdentityManagerReceiver(EventReceiverSerializer):

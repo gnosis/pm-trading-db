@@ -19,7 +19,7 @@ from tradingdb.relationaldb.tests.factories import (CategoricalEventFactory,
                                                     OutcomeTokenFactory,
                                                     ScalarEventFactory,
                                                     TournamentParticipantBalanceFactory,
-                                                    generate_eth_address,
+                                                    generate_eth_account,
                                                     generate_transaction_hash)
 
 from ..event_receivers import (CentralizedOracleFactoryReceiver,
@@ -355,7 +355,7 @@ class TestRollback(TestCase):
         categorical_event = CategoricalEventFactory()
         outcome_token = OutcomeTokenFactory(event=categorical_event, index=0)
         market = MarketFactory(event=categorical_event)
-        (_, _, seller_address) = generate_eth_address()
+        seller_address = generate_eth_account(only_address=True)
 
         block = {
             'number': 1,

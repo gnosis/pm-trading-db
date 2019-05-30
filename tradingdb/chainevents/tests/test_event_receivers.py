@@ -21,7 +21,7 @@ from tradingdb.relationaldb.tests.factories import (CategoricalEventFactory,
                                                     OutcomeTokenFactory,
                                                     ScalarEventFactory,
                                                     TournamentParticipantBalanceFactory,
-                                                    generate_eth_address,
+                                                    generate_eth_account,
                                                     generate_transaction_hash)
 
 from ..event_receivers import (CentralizedOracleFactoryReceiver,
@@ -497,7 +497,7 @@ class TestEventReceiver(TestCase):
         categorical_event = CategoricalEventFactory()
         outcome_token = OutcomeTokenFactory(event=categorical_event, index=0)
         market = MarketFactory(event=categorical_event)
-        (_, _, sender_address) = generate_eth_address()
+        sender_address = generate_eth_account(only_address=True)
 
         outcome_token_purchase_event = {
             'name': 'OutcomeTokenPurchase',
@@ -529,7 +529,7 @@ class TestEventReceiver(TestCase):
         OutcomeTokenFactory(event=categorical_event, index=0)
         OutcomeTokenFactory(event=categorical_event, index=1)
         market = MarketFactory(event=categorical_event, funding=1e18, net_outcome_tokens_sold=[0, 0])
-        (_, _, sender_address) = generate_eth_address()
+        sender_address = generate_eth_account(only_address=True)
 
         outcome_token_purchase_event = {
             'name': 'OutcomeTokenPurchase',
@@ -560,7 +560,7 @@ class TestEventReceiver(TestCase):
         categorical_event = CategoricalEventFactory()
         outcome_token = OutcomeTokenFactory(event=categorical_event, index=0)
         market = MarketFactory(event=categorical_event)
-        (_, _, sender_address) = generate_eth_address()
+        sender_address = generate_eth_account(only_address=True)
 
         outcome_token_sell_event = {
             'name': 'OutcomeTokenSale',
@@ -591,7 +591,7 @@ class TestEventReceiver(TestCase):
         categorical_event = CategoricalEventFactory()
         outcome_token = OutcomeTokenFactory(event=categorical_event, index=0)
         market = MarketFactory(event=categorical_event)
-        (_, _, sender_address) = generate_eth_address() # '{:040d}'.format(100)
+        sender_address = generate_eth_account(only_address=True)
         fees = 10
 
         outcome_token_purchase_event = {

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 from datetime import datetime
-from typing import Tuple
+from typing import Tuple, Union
 
 import factory as factory_boy
 import pytz
@@ -22,14 +22,17 @@ def generate_key_pair() -> Tuple[str, str]:
     return private_key, public_key
 
 
-def generate_eth_address() -> Tuple[str, str, str]:
+def generate_eth_account(only_address=False) -> Union[Tuple[str, str, str], str]:
     (private_key, public_key) = generate_key_pair()
-    return private_key, public_key, public_key[2:].lower()
+    address = public_key[2:].lower()
+    if only_address:
+        return address
+    return private_key, public_key, address
 
 
 def generate_transaction_hash() -> str:
-    (private_key, public_key, sender) = generate_eth_address()
-    (_, _, recipient) = generate_eth_address()
+    (private_key, public_key, sender) = generate_eth_account()
+    recipient = generate_eth_account(only_address=True)
 
     transaction = {
         'to': '0x%s' % recipient,
