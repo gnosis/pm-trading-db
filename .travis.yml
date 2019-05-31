@@ -1,34 +1,30 @@
+dist: xenial
 language: python
 cache: pip
 python:
   - "3.6"
-dist: trusty
 env:
   global:
+  - DJANGO_SETTINGS_MODULE=config.settings.test
   - DOCKERHUB_PROJECT=pm-trading-db
-  - SOURCE_FOLDER=tradingdb
+  - ETHEREUM_NODE_URL=http://localhost:8545
   - PIP_USE_MIRRORS=true
-  - DJANGO_READ_DOT_ENV_FILE=True
-  - DOCKER_COMPOSE_VERSION=1.24.0
-  - IPFS_HOST=http://localhost
+  - SOURCE_FOLDER=tradingdb
 addons:
   postgresql: "9.6"
 services:
   - postgresql
   - docker
-before_install:
-  - sudo rm /usr/local/bin/docker-compose
-  - sudo curl -L "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-  - sudo chmod +x /usr/local/bin/docker-compose
 install:
-  - docker-compose build ipfs ethereum
+  - npm install -g ganache-cli@6.4.3 &
   - travis_retry pip install -r requirements.txt
   - travis_retry pip install coveralls==1.7.0
 before_script:
   - psql -c 'create database travisci;' -U postgres
 script:
-  - docker-compose up -d ethereum ipfs
-  - coverage run --source=$SOURCE_FOLDER manage.py test --settings=config.settings.test
+  - ganache-cli -d -p 8545 --defaultBalanceEther 10000 --gasLimit 10000000 -a 10 --noVMErrorsOnRPCResponse > /dev/null &
+  - sleep 5
+  - coverage run --source=$SOURCE_FOLDER manage.py test --settings=$DJANGO_SETTINGS_MODULE
 deploy:
   - provider: script
     script: bash scripts/deploy_docker.sh staging
