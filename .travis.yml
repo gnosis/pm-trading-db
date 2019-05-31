@@ -8,6 +8,7 @@ env:
   - DJANGO_SETTINGS_MODULE=config.settings.test
   - DOCKERHUB_PROJECT=pm-trading-db
   - ETHEREUM_NODE_URL=http://localhost:8545
+  - IPFS_HOST=http://localhost
   - PIP_USE_MIRRORS=true
   - SOURCE_FOLDER=tradingdb
 addons:
@@ -16,6 +17,11 @@ services:
   - postgresql
   - docker
 install:
+  - wget https://dist.ipfs.io/go-ipfs/v0.4.20/go-ipfs_v0.4.20_linux-386.tar.gz \
+      && tar xvfz go-ipfs_v0.4.20_linux-386.tar.gz \
+      && cd go-ipfs \
+      && sudo chmod +x install.sh
+      && ./install.sh
   - npm install -g ganache-cli@6.4.3 &
   - travis_retry pip install -r requirements.txt
   - travis_retry pip install coveralls==1.7.0
@@ -23,6 +29,8 @@ before_script:
   - psql -c 'create database travisci;' -U postgres
 script:
   - ganache-cli -d -p 8545 --defaultBalanceEther 10000 --gasLimit 10000000 -a 10 --noVMErrorsOnRPCResponse > /dev/null &
+  - sleep 5
+  - ipfs daemon --local &
   - sleep 5
   - coverage run --source=$SOURCE_FOLDER manage.py test --settings=$DJANGO_SETTINGS_MODULE
 deploy:
