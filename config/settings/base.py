@@ -245,6 +245,6 @@ ETHEREUM_MAX_BATCH_REQUESTS = env.int('ETHEREUM_MAX_BATCH_REQUESTS', default=500
 # ------------------------------------------------------------------------------
 # IPFS
 # ------------------------------------------------------------------------------
-IPFS_HOST = env('IPFS_HOST', default='ipfs.infura.io')
+IPFS_HOST = env('IPFS_HOST', default='https://ipfs.infura.io')
 IPFS_PORT = env('IPFS_PORT', default=5001)
 IPFS_TIMEOUT = env('IPFS_TIMEOUT', default=120)
