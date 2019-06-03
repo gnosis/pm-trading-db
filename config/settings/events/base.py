@@ -2,6 +2,7 @@ import environ
 
 from tradingdb.chainevents.abis import abi_file_path, load_json_file
 
+
 env = environ.Env()
 
 # ------------------------------------------------------------------------------
