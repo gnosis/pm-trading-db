@@ -1,27 +1,31 @@
-import os
+import environ
 
 from tradingdb.chainevents.abis import abi_file_path, load_json_file
 
+
+env = environ.Env()
+
 # ------------------------------------------------------------------------------
-# GNOSIS ETHEREUM CONTRACTS
+# ETH EVENTS - Set a list of addresses the Event Listener has to listen to
 # ------------------------------------------------------------------------------
+
 ETH_EVENTS = [
     {
-        'ADDRESSES': [os.environ['CENTRALIZED_ORACLE_FACTORY']],
+        'ADDRESSES': env.list('CENTRALIZED_ORACLE_FACTORY'),
         'EVENT_ABI': load_json_file(abi_file_path('CentralizedOracleFactory.json')),
         'EVENT_DATA_RECEIVER': 'chainevents.event_receivers.CentralizedOracleFactoryReceiver',
         'NAME': 'centralizedOracleFactory',
-        'PUBLISH': True,
+        'PUBLISH': True
     },
     {
-        'ADDRESSES': [os.environ['EVENT_FACTORY']],
+        'ADDRESSES': env.list('EVENT_FACTORY'),
         'EVENT_ABI': load_json_file(abi_file_path('EventFactory.json')),
         'EVENT_DATA_RECEIVER': 'chainevents.event_receivers.EventFactoryReceiver',
         'NAME': 'eventFactory',
-        'PUBLISH': True,
+        'PUBLISH': True
     },
     {
-        'ADDRESSES': [os.environ['MARKET_FACTORY']],
+        'ADDRESSES': env.list('MARKET_FACTORY'),
         'EVENT_ABI': load_json_file(abi_file_path('StandardMarketFactory.json')),
         'EVENT_DATA_RECEIVER': 'chainevents.event_receivers.MarketFactoryReceiver',
         'NAME': 'standardMarketFactory',
