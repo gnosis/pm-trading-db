@@ -164,7 +164,7 @@ class MarketFactory(ContractCreatedByFactory):
         model = models.Market
 
     event = factory_boy.SubFactory(CategoricalEventFactory)
-    market_maker = factory_boy.Sequence(lambda n: '{:040x}'.format(n))
+    market_maker = factory_boy.LazyFunction(lambda: generate_eth_account(only_address=True))
     fee = factory_boy.Sequence(lambda n: n)
     funding = factory_boy.Sequence(lambda n: (n+1)*1e18)
     net_outcome_tokens_sold = [0, 0]

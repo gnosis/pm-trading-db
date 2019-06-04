@@ -19,6 +19,11 @@ ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 INTERNAL_IPS = ['localhost', '127.0.0.1', '172.17.0.1', '172.18.0.1']
 
 # ------------------------------------------------------------------------------
+# IPFS
+# ------------------------------------------------------------------------------
+IPFS_HOST = env('IPFS_HOST', default=IPFS_HOST) # use IPFS_HOST from .env_local if provided, otherwise base.IPFS_HOST
+
+# ------------------------------------------------------------------------------
 # Tournament settings
 # ------------------------------------------------------------------------------
 TOURNAMENT_TOKEN = env('TOURNAMENT_TOKEN')

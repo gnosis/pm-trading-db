@@ -5,6 +5,7 @@ from django.test import TestCase
 from django_eth_events.utils import normalize_address_without_0x
 from django_eth_events.web3_service import Web3Service, Web3ServiceProvider
 from eth_tester import EthereumTester
+from rest_framework.serializers import ValidationError
 from web3.providers.eth_tester import EthereumTesterProvider
 
 from chainevents.abis import abi_file_path, load_json_file
@@ -32,7 +33,7 @@ from .factories import (CategoricalEventDescriptionFactory,
                         EventFactory, MarketFactory,
                         OutcomeTokenBalanceFactory, OutcomeTokenFactory,
                         ScalarEventDescriptionFactory, ScalarEventFactory,
-                        TournamentParticipantBalanceFactory)
+                        TournamentParticipantBalanceFactory, generate_eth_account)
 from .utils import tournament_token_bytecode
 
 
@@ -403,6 +404,64 @@ class TestSerializers(TestCase):
         self.assertTrue(s.is_valid(), s.errors)
         instance = s.save()
         self.assertIsNotNone(instance)
+
+    def test_create_market_with_multiple_addresses(self):
+        oracle = CentralizedOracleFactory()
+        event = CategoricalEventFactory(oracle=oracle)
+        market = MarketFactory()
+
+        # Run in updated settings context
+        with self.settings(LMSR_MARKET_MAKER="0x{},0x{}".format(market.market_maker,
+                                                                generate_eth_account(only_address=True))):
+
+            block = {
+                'number': market.creation_block,
+                'timestamp': mktime(market.creation_date_time.timetuple())
+            }
+
+            market_dict = {
+                'address': market.factory,
+                'params': [
+                    {
+                        'name': 'creator',
+                        'value': market.creator
+                    },
+                    {
+                        'name': 'centralizedOracle',
+                        'value': oracle.address,
+                    },
+                    {
+                        'name': 'marketMaker',
+                        'value': market.market_maker
+                    },
+                    {
+                        'name': 'fee',
+                        'value': market.fee
+                    },
+                    {
+                        'name': 'market',
+                        'value': market.address
+                    },
+                    {
+                        'name': 'eventContract',
+                        'value': event.address
+                    },
+                    {
+                        'name': 'fee',
+                        'value': market.fee
+                    }
+                ]
+            }
+            market.delete()
+            s = MarketSerializerTimestamped(data=market_dict, block=block)
+            self.assertTrue(s.is_valid(), s.errors)
+            instance = s.save()
+            self.assertIsNotNone(instance)
+
+            # Test lmsr market marker address doesn't exists
+            market_dict['params'][2]['value'] = generate_eth_account(only_address=True)
+            s = MarketSerializerTimestamped(data=market_dict, block=block)
+            self.assertFalse(s.is_valid())
 
     def test_create_categorical_event_description(self):
         event_description = CategoricalEventDescriptionFactory()
