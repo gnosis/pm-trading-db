@@ -366,7 +366,11 @@ class MarketSerializerTimestamped(ContractCreatedByFactorySerializerTimestamped,
     collected_fees = serializers.IntegerField(default=0)
 
     def validate_marketMaker(self, market_maker_address):
-        if not Web3.toChecksumAddress(settings.LMSR_MARKET_MAKER) == Web3.toChecksumAddress(market_maker_address):
+        # Convert settings.LMSR_MARKET_MAKER to list of checksum addresses
+        lmsr_addresses = [Web3.toChecksumAddress(address) for address in settings.LMSR_MARKET_MAKER.split(',') if address]
+
+        # If given market_marker_address is not among addresses in settings, we don't accept it
+        if not Web3.toChecksumAddress(market_maker_address) in lmsr_addresses:
             raise serializers.ValidationError('Market Maker {} does not exist'.format(market_maker_address))
         return market_maker_address
 
