@@ -10,11 +10,11 @@ from tradingdb.relationaldb.models import (CentralizedOracle, Event, Market,
                                            Order, OutcomeTokenBalance)
 
 
-def normalize_address_or_raise(address: str):
+def normalize_address_or_raise(address: str, code: int = 400):
     try:
         return normalize_address_without_0x(address.strip())
     except Exception as e:
-        raise InvalidEthereumAddressForFilter("Invalid address {}".format(address)) from e
+        raise InvalidEthereumAddressForFilter("Invalid address {}".format(address), code=code) from e
 
 
 class DefaultPagination(LimitOffsetPagination):

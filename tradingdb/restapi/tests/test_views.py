@@ -148,6 +148,12 @@ class TestViews(APITestCase):
         response = self.client.get(url, content_type='application/json')
         self.assertEqual(len(response.json().get('results')), 0)
 
+        # Test with invalid, not ethereum compliant, collateral token
+        wrong_collateral_token = event.collateral_token[:-1]
+        url = reverse('api:markets') + '?collateral_token=%s' % wrong_collateral_token
+        response = self.client.get(url, content_type='application/json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
     def test_market_trading_volume(self):
 
         # create markets
