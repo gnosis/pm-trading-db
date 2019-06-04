@@ -106,6 +106,11 @@ class TestViews(APITestCase):
         response = self.client.get(url, content_type='application/json')
         self.assertEqual(len(response.json().get('results')), 2)
 
+        # Test with not valid address
+        url = reverse('api:markets') + '?creator=%s' % market.creator[:-1]
+        response = self.client.get(url, content_type='application/json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
     def test_markets_by_resolution_date(self):
         # test empty events response
         empty_markets_response = self.client.get(reverse('api:markets'), content_type='application/json')
