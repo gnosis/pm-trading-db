@@ -5,19 +5,16 @@ from django_eth_events.utils import normalize_address_without_0x
 from django_filters import rest_framework as filters
 from rest_framework.pagination import LimitOffsetPagination
 
+from .exceptions import InvalidEthereumAddressForFilter
 from tradingdb.relationaldb.models import (CentralizedOracle, Event, Market,
                                            Order, OutcomeTokenBalance)
 
 
-class InvalidEthereumAddressForFilter(Exception):
-    pass
-
-
-def normalize_address_or_raise(address: str):
+def normalize_address_or_raise(address: str, code: int = 400):
     try:
         return normalize_address_without_0x(address.strip())
     except Exception as e:
-        raise InvalidEthereumAddressForFilter(address) from e
+        raise InvalidEthereumAddressForFilter("Invalid address {}".format(address), code=code) from e
 
 
 class DefaultPagination(LimitOffsetPagination):
