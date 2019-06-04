@@ -3,8 +3,9 @@ from time import mktime
 from django.conf import settings
 from django.test import TestCase
 from django_eth_events.utils import normalize_address_without_0x
-from django_eth_events.web3_service import Web3Service
+from django_eth_events.web3_service import Web3Service, Web3ServiceProvider
 from eth_tester import EthereumTester
+from rest_framework.serializers import ValidationError
 from web3.providers.eth_tester import EthereumTesterProvider
 
 from chainevents.abis import abi_file_path, load_json_file
@@ -32,7 +33,7 @@ from .factories import (CategoricalEventDescriptionFactory,
                         EventFactory, MarketFactory,
                         OutcomeTokenBalanceFactory, OutcomeTokenFactory,
                         ScalarEventDescriptionFactory, ScalarEventFactory,
-                        TournamentParticipantBalanceFactory)
+                        TournamentParticipantBalanceFactory, generate_eth_account)
 from .utils import tournament_token_bytecode
 
 
@@ -404,6 +405,64 @@ class TestSerializers(TestCase):
         instance = s.save()
         self.assertIsNotNone(instance)
 
+    def test_create_market_with_multiple_addresses(self):
+        oracle = CentralizedOracleFactory()
+        event = CategoricalEventFactory(oracle=oracle)
+        market = MarketFactory()
+
+        # Run in updated settings context
+        with self.settings(LMSR_MARKET_MAKER="0x{},0x{}".format(market.market_maker,
+                                                                generate_eth_account(only_address=True))):
+
+            block = {
+                'number': market.creation_block,
+                'timestamp': mktime(market.creation_date_time.timetuple())
+            }
+
+            market_dict = {
+                'address': market.factory,
+                'params': [
+                    {
+                        'name': 'creator',
+                        'value': market.creator
+                    },
+                    {
+                        'name': 'centralizedOracle',
+                        'value': oracle.address,
+                    },
+                    {
+                        'name': 'marketMaker',
+                        'value': market.market_maker
+                    },
+                    {
+                        'name': 'fee',
+                        'value': market.fee
+                    },
+                    {
+                        'name': 'market',
+                        'value': market.address
+                    },
+                    {
+                        'name': 'eventContract',
+                        'value': event.address
+                    },
+                    {
+                        'name': 'fee',
+                        'value': market.fee
+                    }
+                ]
+            }
+            market.delete()
+            s = MarketSerializerTimestamped(data=market_dict, block=block)
+            self.assertTrue(s.is_valid(), s.errors)
+            instance = s.save()
+            self.assertIsNotNone(instance)
+
+            # Test lmsr market marker address doesn't exists
+            market_dict['params'][2]['value'] = generate_eth_account(only_address=True)
+            s = MarketSerializerTimestamped(data=market_dict, block=block)
+            self.assertFalse(s.is_valid())
+
     def test_create_categorical_event_description(self):
         event_description = CategoricalEventDescriptionFactory()
         event_description.delete()
@@ -647,7 +706,7 @@ class TestSerializers(TestCase):
             }
         )
         blockchain_balance = token_contract.functions.balanceOf(checksumed_registrant_address2).call()
-        self.assertEquals(blockchain_balance, tokens_amount)
+        self.assertEqual(blockchain_balance, tokens_amount)
 
         # Save participant 2
         oracle = CentralizedOracleFactory()
@@ -672,19 +731,14 @@ class TestSerializers(TestCase):
         }
 
         # Mocks
-        setattr(settings, 'TOURNAMENT_TOKEN', tournament_token_address)
-        def new(cls, provider=None):
-            return web3_service
-
-        # Mock Web3Service __new__ method to retrieve the same web3 instance used to deploy the contract
-        Web3Service.__new__ = new
-
-        s = GenericTournamentParticipantEventSerializerTimestamped(data=participant_with_tokens_event, block=block)
-        self.assertTrue(s.is_valid(), s.errors)
-        instance = s.save()
-        self.assertEqual(TournamentParticipant.objects.all().count(), 2)
-        self.assertEqual(TournamentParticipant.objects.first().tournament_balance.balance, tokens_amount)
-
+        with self.settings(TOURNAMENT_TOKEN=tournament_token_address):
+            # Mock Web3Service __new__ method to retrieve the same web3 instance used to deploy the contract
+            Web3ServiceProvider.instance = web3_service
+            s = GenericTournamentParticipantEventSerializerTimestamped(data=participant_with_tokens_event, block=block)
+            self.assertTrue(s.is_valid(), s.errors)
+            instance = s.save()
+            self.assertEqual(TournamentParticipant.objects.all().count(), 2)
+            self.assertEqual(TournamentParticipant.objects.first().tournament_balance.balance, tokens_amount)
 
     def test_save_uport_tournament_participant(self):
         oracle = CentralizedOracleFactory()

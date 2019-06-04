@@ -122,7 +122,7 @@ class TestDaemonExec(TestCase):
         self.assertEqual(n_oracles, 0)
         ipfs_hash = self.create_event_description().encode()
         # Create centralized oracle
-        tx_hash = self.centralized_oracle_factory.transact(self.tx_data).createCentralizedOracle(ipfs_hash)
+        tx_hash = self.centralized_oracle_factory.functions.createCentralizedOracle(ipfs_hash).transact(self.tx_data)
         self.assertIsNotNone(tx_hash)
         self.listener_under_test.execute()
         self.assertEqual(len(models.CentralizedOracle.objects.all()), 1)

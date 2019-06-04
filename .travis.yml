@@ -9,17 +9,25 @@ env:
   - SOURCE_FOLDER=tradingdb
   - PIP_USE_MIRRORS=true
   - DJANGO_READ_DOT_ENV_FILE=True
+  - DOCKER_COMPOSE_VERSION=1.24.0
+  - IPFS_HOST=http://localhost
 addons:
   postgresql: "9.6"
 services:
   - postgresql
   - docker
+before_install:
+  - sudo rm /usr/local/bin/docker-compose
+  - sudo curl -L "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+  - sudo chmod +x /usr/local/bin/docker-compose
 install:
+  - docker-compose build ipfs ethereum
   - travis_retry pip install -r requirements.txt
-  - travis_retry pip install coveralls
+  - travis_retry pip install coveralls==1.7.0
 before_script:
   - psql -c 'create database travisci;' -U postgres
 script:
+  - docker-compose up -d ethereum ipfs
   - coverage run --source=$SOURCE_FOLDER manage.py test --settings=config.settings.test
 deploy:
   - provider: script

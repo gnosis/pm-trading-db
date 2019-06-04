@@ -1,5 +1,6 @@
 import os
 
+import ethereum.utils
 from django.conf import settings
 from django.shortcuts import get_list_or_404, get_object_or_404
 from rest_framework import generics
@@ -26,6 +27,8 @@ class AboutView(APIView):
     renderer_classes = (JSONRenderer,)
 
     def get(self, request, format=None):
+        ethereum_default_account_public_key = ethereum.utils.checksum_encode(ethereum.utils.privtoaddr(
+            settings.ETHEREUM_DEFAULT_ACCOUNT_PRIVATE_KEY)) if settings.ETHEREUM_DEFAULT_ACCOUNT_PRIVATE_KEY else None
         content = {
             'git': __git_info__,
             'version': __version__,
@@ -50,6 +53,9 @@ class AboutView(APIView):
                     'LMSR_MARKET_MAKER': settings.LMSR_MARKET_MAKER,
                     'UPORT_IDENTITY_MANAGER': os.environ['UPORT_IDENTITY_MANAGER'],
                     'GENERIC_IDENTITY_MANAGER_ADDRESS': os.environ['GENERIC_IDENTITY_MANAGER_ADDRESS'],
+                },
+                'issuance': {
+                    'ETHEREUM_DEFAULT_ACCOUNT_PUBLIC_KEY': ethereum_default_account_public_key,
                 }
             }
         }
@@ -58,7 +64,7 @@ class AboutView(APIView):
 
 class CentralizedOracleListView(generics.ListAPIView):
     serializer_class = CentralizedOracleSerializer
-    filter_class = CentralizedOracleFilter
+    filterset_class = CentralizedOracleFilter
     pagination_class = DefaultPagination
 
     def get_queryset(self):
@@ -80,7 +86,7 @@ class CentralizedOracleFetchView(generics.RetrieveAPIView):
 
 class EventListView(generics.ListAPIView):
     serializer_class = EventSerializer
-    filter_class = EventFilter
+    filterset_class = EventFilter
     pagination_class = DefaultPagination
 
     def get_queryset(self):
@@ -116,7 +122,7 @@ class EventFetchView(generics.RetrieveAPIView):
 
 class MarketListView(generics.ListAPIView):
     serializer_class = MarketSerializer
-    filter_class = MarketFilter
+    filterset_class = MarketFilter
     pagination_class = DefaultPagination
 
     def get_queryset(self):
@@ -222,7 +228,7 @@ class AllMarketSharesView(generics.ListAPIView):
 class MarketParticipantTradesView(generics.ListAPIView):
     serializer_class = MarketTradesSerializer
     pagination_class = DefaultPagination
-    filter_class = MarketTradesFilter
+    filterset_class = MarketTradesFilter
 
     def get_queryset(self):
         return Order.objects.filter(
@@ -245,7 +251,7 @@ class MarketTradesView(generics.ListAPIView):
     """
     serializer_class = MarketTradesSerializer
     pagination_class = DefaultPagination
-    filter_class = MarketTradesFilter
+    filterset_class = MarketTradesFilter
 
     def get_queryset(self):
         # Check if Market exists
@@ -271,7 +277,7 @@ class AccountTradesView(generics.ListAPIView):
     """
     serializer_class = MarketTradesSerializer
     pagination_class = DefaultPagination
-    filter_class = MarketTradesFilter
+    filterset_class = MarketTradesFilter
 
     def get_queryset(self):
         return Order.objects.filter(
@@ -293,7 +299,7 @@ class AccountSharesView(generics.ListAPIView):
     """
     serializer_class = OutcomeTokenBalanceSerializer
     pagination_class = DefaultPagination
-    filter_class = MarketSharesFilter
+    filterset_class = MarketSharesFilter
 
     def get_queryset(self):
         return OutcomeTokenBalance.objects.filter(

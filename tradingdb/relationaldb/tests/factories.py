@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
-from datetime import datetime
 import os
+from datetime import datetime
+from typing import Tuple, Union
 
-from ethereum import utils
 import factory as factory_boy
+import pytz
+from ethereum import utils
 from factory.fuzzy import FuzzyDateTime
 from faker import Factory as FakerFactory
 from faker import Faker
-import pytz
 
 from .. import models
 
@@ -15,12 +16,35 @@ fakerFactory = FakerFactory.create()
 faker = Faker()
 
 
-# TODO `factory_boy.Sequence(lambda n: '{:040x}'.format(n))` must be `factory_boy.LazyFunction(generate_eth_address)`
-def generate_eth_address() -> str:
+def generate_key_pair() -> Tuple[str, str]:
     private_key = utils.sha3(os.urandom(4096))
     public_key = utils.checksum_encode(utils.privtoaddr(private_key))
-    print(public_key)
-    return public_key[2:].lower()
+    return private_key, public_key
+
+
+def generate_eth_account(only_address=False) -> Union[Tuple[str, str, str], str]:
+    (private_key, public_key) = generate_key_pair()
+    address = public_key[2:].lower()
+    if only_address:
+        return address
+    return private_key, public_key, address
+
+
+def generate_transaction_hash() -> str:
+    (private_key, public_key, sender) = generate_eth_account()
+    recipient = generate_eth_account(only_address=True)
+
+    transaction = {
+        'to': '0x%s' % recipient,
+        'value': 0,
+        'gas': 1000000,
+        'gasPrice': 1000000000,
+        'nonce': 0,
+        'chainId': 1
+    }
+
+    signature = utils.ecdsa_raw_sign(utils.sha3(transaction), private_key)
+    return utils.sha3rlp(signature).hex()
 
 
 class BlockTimestampedFactory(factory_boy.Factory):
@@ -140,7 +164,7 @@ class MarketFactory(ContractCreatedByFactory):
         model = models.Market
 
     event = factory_boy.SubFactory(CategoricalEventFactory)
-    market_maker = factory_boy.Sequence(lambda n: '{:040x}'.format(n))
+    market_maker = factory_boy.LazyFunction(lambda: generate_eth_account(only_address=True))
     fee = factory_boy.Sequence(lambda n: n)
     funding = factory_boy.Sequence(lambda n: (n+1)*1e18)
     net_outcome_tokens_sold = [0, 0]
@@ -154,6 +178,7 @@ class MarketFactory(ContractCreatedByFactory):
 
 
 class OrderFactory(BlockTimestampedFactory, factory_boy.DjangoModelFactory):
+    transaction_hash = factory_boy.LazyFunction(generate_transaction_hash)
     market = factory_boy.SubFactory(MarketFactory)
     sender = factory_boy.Sequence(lambda n: '{:040x}'.format(n))
     outcome_token = factory_boy.SubFactory(OutcomeTokenFactory)
