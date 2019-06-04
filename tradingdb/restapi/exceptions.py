@@ -1,7 +1,8 @@
-from rest_framework.exceptions import APIException, status
+from rest_framework.exceptions import APIException
 
 
 class InvalidEthereumAddressForFilter(APIException):
     def __init__(self, detail, code=400):
-        self.status_code = status.HTTP_400_BAD_REQUEST
+        # Set the response `status_code`, override default 500 error
+        self.status_code = code
         super().__init__(detail, code)
