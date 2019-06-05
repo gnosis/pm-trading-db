@@ -43,34 +43,33 @@ class TestEventReceiver(TestCase):
         return mktime(datetime_instance.timetuple())
 
     def test_centralized_oracle_receiver(self):
-        oracle = CentralizedOracleFactory()
+        oracle1 = CentralizedOracleFactory()
         # saving event_description to IPFS
         event_description_json = {
-            'title': oracle.event_description.title,
-            'description': oracle.event_description.description,
-            'resolutionDate': oracle.event_description.resolution_date.isoformat(),
-            'outcomes': oracle.event_description.outcomes
+            'title': oracle1.event_description.title,
+            'description': oracle1.event_description.description,
+            'resolutionDate': oracle1.event_description.resolution_date.isoformat(),
+            'outcomes': oracle1.event_description.outcomes
         }
 
         ipfs_hash = self.ipfs_api.post(event_description_json)
 
         block = {
-            'number': oracle.creation_block,
-            'timestamp': self.to_timestamp(oracle.creation_date_time)
+            'number': oracle1.creation_block,
+            'timestamp': self.to_timestamp(oracle1.creation_date_time)
         }
 
-        oracle_address = oracle.address
         oracle_event = {
             'name': 'CentralizedOracleCreation',
-            'address': oracle.factory,
+            'address': oracle1.factory,
             'params': [
                 {
                     'name': 'creator',
-                    'value': oracle.creator
+                    'value': oracle1.creator
                 },
                 {
                     'name': 'centralizedOracle',
-                    'value': oracle_address,
+                    'value': oracle1.address,
                 },
                 {
                     'name': 'ipfsHash',
@@ -78,20 +77,27 @@ class TestEventReceiver(TestCase):
                 }
             ]
         }
-        oracle.delete()
+        # Delete oracle instance from database
+        oracle1.delete()
+        # Run the event receiver, it should save data back to database
         CentralizedOracleFactoryReceiver().save(oracle_event, block)
-        saved_oracle1 = CentralizedOracle.objects.get(address=oracle_address)
+        saved_oracle1 = CentralizedOracle.objects.get(address=oracle1.address)
         self.assertIsNotNone(saved_oracle1.pk)
 
-        # Cannot save twice
-        oracle2 = CentralizedOracleFactory()
-        oracle_event.get('params')[0].update({'value': oracle2.creator})
-        oracle_event.get('params')[2].update({'value': oracle2.event_description.ipfs_hash})
+        # delete saved oracle1
+        saved_oracle1.delete()
+
+        # Update oracle creation event data, set new creator address and new ipfs_hash
+        new_oracle_creator_address = generate_eth_account(only_address=True)
+        oracle_event.get('params')[0].update({'value': new_oracle_creator_address})
+        oracle_event.get('params')[2].update({'value': saved_oracle1.event_description.ipfs_hash})
+
+        # Run the event receiver, it should save data back to database
         instance = CentralizedOracleFactoryReceiver().save(oracle_event, block)
-        self.assertIsNone(instance)
-        saved_oracle2 = CentralizedOracle.objects.get(address=oracle_address)
-        self.assertEqual(saved_oracle1.event_description.ipfs_hash, saved_oracle2.event_description.ipfs_hash)
-        self.assertEqual(saved_oracle1.creator, saved_oracle2.creator)
+        self.assertIsNotNone(instance)
+
+        saved_oracle2 = CentralizedOracle.objects.get(creator=new_oracle_creator_address)
+        self.assertEqual(saved_oracle1.address, saved_oracle2.address)
 
     def test_scalar_event_receiver(self):
         oracle = OracleFactory()

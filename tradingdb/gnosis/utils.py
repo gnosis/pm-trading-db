@@ -1,23 +1,44 @@
+from typing import Tuple, Union
+
+from django_eth_events.utils import remove_0x_head
+from eth_account import Account
+from eth_utils import to_normalized_address
 from mpmath import mp, mpf
 
 
-def singleton(clazz):
-    instances = {}
-
-    def getinstance(*args, **kwargs):
-        if clazz not in instances:
-            instances[clazz] = clazz(*args, **kwargs)
-        return instances[clazz]
-    return getinstance
+def add_0x_prefix(value):
+    return '0x' + value if value[:2] not in (b'0x', '0x') else value
 
 
-class SingletonObject:
-    _instances = {}
+def generate_eth_account(only_address: bool = False, checksum_address: bool = False) -> Union[Tuple[str, str, str], str]:
+    account = Account.create()
+    if checksum_address:
+        # Address is already checksumed, just remove 0x prefix
+        address = remove_0x_head(account.address)
+    else:
+        address = remove_0x_head(to_normalized_address(account.address))
 
-    def __new__(cls, *args, **kwargs):
-        if cls._instances.get(cls, None) is None:
-            cls._instances[cls] = super().__new__(cls, *args, **kwargs)
-        return SingletonObject._instances[cls]
+    if only_address:
+        return address
+    return account.privateKey.hex(), address
+
+
+def generate_transaction_hash(gas: int = 1000000, gas_price: int = 1000000000, value: int = 0, nonce: int = 0,
+                              chain_id: int = 0) -> str:
+    (private_key, sender) = generate_eth_account()
+    recipient = generate_eth_account(only_address=True, checksum_address=True)
+
+    transaction = {
+        'to': '0x%s' % recipient,
+        'value': value,
+        'gas': gas,
+        'gasPrice': gas_price,
+        'nonce': nonce,
+        'chainId': chain_id
+    }
+
+    signature = Account.signTransaction(transaction, private_key)
+    return remove_0x_head(signature.get('hash'))
 
 
 def remove_null_values(obj):
@@ -39,8 +60,28 @@ def remove_null_values(obj):
     return obj
 
 
-def add_0x_prefix(value):
-    return '0x' + value if value[:2] not in (b'0x', '0x') else value
+def singleton(clazz):
+    instances = {}
+
+    def getinstance(*args, **kwargs):
+        if clazz not in instances:
+            instances[clazz] = clazz(*args, **kwargs)
+        return instances[clazz]
+    return getinstance
+
+
+class SingletonObject:
+    _instances = {}
+
+    def __new__(cls, *args, **kwargs):
+        if cls._instances.get(cls, None) is None:
+            cls._instances[cls] = super().__new__(cls, *args, **kwargs)
+        return SingletonObject._instances[cls]
+
+
+# =======================================
+#       SPECIFIC TO TRADINGDB
+# =======================================
 
 
 def calc_lmsr_marginal_price(token_index, net_outcome_tokens_sold, funding):

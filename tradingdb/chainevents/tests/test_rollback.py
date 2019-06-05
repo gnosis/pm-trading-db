@@ -203,6 +203,7 @@ class TestRollback(TestCase):
 
     def test_categorical_event_factory_rollback(self):
         event = CategoricalEventFactory()
+        event.delete()
         oracle = OracleFactory()
         event_address = event.address
 
@@ -353,7 +354,8 @@ class TestRollback(TestCase):
 
     def test_market_outcome_token_sale_rollback(self):
         categorical_event = CategoricalEventFactory()
-        outcome_token = OutcomeTokenFactory(event=categorical_event, index=0)
+        # Create outcome token on database
+        OutcomeTokenFactory(event=categorical_event, index=0)
         market = MarketFactory(event=categorical_event)
         seller_address = generate_eth_account(only_address=True)
 
@@ -474,8 +476,8 @@ class TestRollback(TestCase):
 
     def test_outcome_token_transfer_rollback(self):
         outcome_token_factory = OutcomeTokenFactory()
-        owner_one = outcome_token_factory.address[0:-5] + 'other'
-        owner_two = outcome_token_factory.address[0:-2] + 'to'
+        owner_one = generate_eth_account(only_address=True)
+        owner_two = generate_eth_account(only_address=True)
         block = {
             'number': 1,
             'timestamp': self.to_timestamp(timezone.now())
@@ -534,10 +536,10 @@ class TestRollback(TestCase):
         self.assertEqual(owner_two_token_balance.balance, 1000)
 
     def test_tournament_participant_rollback(self):
-        identity = 'ebe4dd7a4a9e712e742862719aa04709cc6d80a6'
+        identity = generate_eth_account(only_address=True)
         participant_event = {
             'name': 'IdentityCreated',
-            'address': 'abbcd5b340c80b5f1c0545c04c987b87310296ae',
+            'address': generate_eth_account(only_address=True),
             'params': [
                 {
                     'name': 'identity',
@@ -545,15 +547,15 @@ class TestRollback(TestCase):
                 },
                 {
                     'name': 'creator',
-                    'value': '50858f2c7873fac9398ed9c195d185089caa7967'
+                    'value': generate_eth_account(only_address=True)
                 },
                 {
                     'name': 'owner',
-                    'value': '8f357b2c8071c2254afbc65907997f9adea6cc78',
+                    'value': generate_eth_account(only_address=True),
                 },
                 {
                     'name': 'recoveryKey',
-                    'value': 'b67c2d2fcfa3e918e3f9a5218025ebdd12d26212'
+                    'value': generate_eth_account(only_address=True)
                 }
             ]
         }
@@ -670,7 +672,7 @@ class TestRollback(TestCase):
 
     def test_winnings_redemption_rollback(self):
         event = CategoricalEventFactory(redeemed_winnings=100)
-        address = event.address[0:-4] + 'user'
+        address = generate_eth_account(only_address=True)
 
         winnings_event = {
             'name': 'WinningsRedemption',
