@@ -5,7 +5,6 @@ from django.test import TestCase
 from django_eth_events.utils import normalize_address_without_0x
 from django_eth_events.web3_service import Web3Service, Web3ServiceProvider
 from eth_tester import EthereumTester
-from rest_framework.serializers import ValidationError
 from web3.providers.eth_tester import EthereumTesterProvider
 
 from chainevents.abis import abi_file_path, load_json_file
@@ -33,8 +32,9 @@ from .factories import (CategoricalEventDescriptionFactory,
                         EventFactory, MarketFactory,
                         OutcomeTokenBalanceFactory, OutcomeTokenFactory,
                         ScalarEventDescriptionFactory, ScalarEventFactory,
-                        TournamentParticipantBalanceFactory, generate_eth_account)
+                        TournamentParticipantBalanceFactory)
 from .utils import tournament_token_bytecode
+from gnosis.utils import generate_eth_account
 
 
 class TestSerializers(TestCase):
